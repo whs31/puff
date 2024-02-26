@@ -1,5 +1,5 @@
 [package]
-name = "poppy-cli"
+name = "poppy"
 version = "0.1.0"
 edition = "2021"
 
@@ -24,3 +24,6 @@ toml = "0.8.8"
 decompress = "0.6.0"
 serde = { version = "1.0.193", features = ["derive"] }
 md5 = "0.7.0"
+
+[build-dependencies]
+build-data = "0.1.5"

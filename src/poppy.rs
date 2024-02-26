@@ -1,5 +1,7 @@
+use log::info;
+
 pub fn run_poppy() -> Result<(), anyhow::Error>
 {
-    println!("Hello, poppy!");
+    info!("Hello, poppy!");
     Ok(())
 }

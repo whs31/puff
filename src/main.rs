@@ -19,13 +19,16 @@ fn main() {
     .map_err(|_| std::process::exit(1) )
     .unwrap();
 
-  if !args.install /* todo: other commands */ {
+  if !args.install && !args.sync /* todo: other commands */ {
     poppy::Poppy::suggest_help()
   }
 
   poppy::Poppy::new(utils::config::Config::create_or_load()
-    .expect("failed to load config")
+    .expect("failed to load config"),
+    args
   )
+    .map_err(|e| { error!("fatal error in poppy creation: {}", e); std::process::exit(1) } )
+    .unwrap()
     .run()
     .map_err(|e| { error!("fatal error in poppy: {}", e); std::process::exit(1) } )
     .expect("failed to run poppy");

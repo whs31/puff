@@ -4,7 +4,7 @@ use crate::consts::POPPY_NAME;
 
 lazy_static!
 {
-    pub static ref PROJECT_DIRS: Mutex<directories::ProjectDirs> = Mutex::new(
-        directories::ProjectDirs::from("org", "poppy", POPPY_NAME).unwrap()
-    );
+  pub static ref PROJECT_DIRS: Mutex<directories::ProjectDirs> = Mutex::new(
+    directories::ProjectDirs::from("org", "poppy", POPPY_NAME).unwrap()
+  );
 }

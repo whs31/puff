@@ -1,11 +1,8 @@
 use log::{debug, error, info, trace, warn};
+use crate::utils::config::CONFIG;
 
 pub fn run_poppy() -> Result<(), anyhow::Error>
 {
-    trace!("i am trace");
-    debug!("i am debug");
-    info!("Hello, poppy!");
-    warn!("asdasd");
-    error!("err");
-    Ok(())
+  let _w = CONFIG.lock().unwrap();
+  Ok(())
 }

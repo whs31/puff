@@ -34,7 +34,10 @@ impl Poppy
 
   fn print_environment(&self) -> &Self
   {
-    debug!("cmake version: {}", self.env.cmake_version.to_string().magenta());
+    println!();
+    debug!("cmake version: {}", &self.env.cmake_version.to_string().magenta());
+    debug!("platform: {}", &self.env.arch.to_string().green());
+    println!();
     self
   }
 

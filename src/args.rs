@@ -7,6 +7,6 @@ pub struct Args
   /// Install dependencies from manifest in current working folder
   #[arg(short, long)] pub install: bool,
 
-  // Sync remote registry
+  /// Sync remote registry
   #[arg(short, long)] pub sync: bool
 }

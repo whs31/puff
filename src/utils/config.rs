@@ -1,14 +1,8 @@
 use std::path::Path;
 use std::sync::Mutex;
 use colored::Colorize;
-use lazy_static::lazy_static;
 use log::{debug, trace};
 use crate::utils::global::PROJECT_DIRS;
-
-lazy_static!
-{
-  pub static ref CONFIG: Mutex<Config> = Mutex::new(Config::create_or_load().expect("failed to create or load config file"));
-}
 
 #[derive(Debug, serde::Deserialize, serde::Serialize)]
 pub struct Config
@@ -46,7 +40,7 @@ impl Default for ConfigRemote
 
 impl Config
 {
-  fn create_or_load() -> anyhow::Result<Self>
+  pub fn create_or_load() -> anyhow::Result<Self>
   {
     trace!("initializing config");
     let dirs = PROJECT_DIRS.lock().unwrap();

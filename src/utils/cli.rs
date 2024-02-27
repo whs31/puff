@@ -17,6 +17,7 @@ fn log_format(
     match level {
       Level::Error => POPPY_NAME.color(Red).bold(),
       Level::Warn => POPPY_NAME.color(Yellow).bold(),
+      Level::Trace => POPPY_NAME.color(Cyan).dimmed(),
       _ => POPPY_NAME.color(Cyan).bold(),
     },
     match level {
@@ -24,7 +25,7 @@ fn log_format(
       Level::Warn => record.args().to_string().color(Yellow).bold(),
       Level::Info => record.args().to_string().color(Cyan).bold(),
       Level::Debug => record.args().to_string().bold(),
-      Level::Trace => record.args().to_string().into(),
+      Level::Trace => record.args().to_string().dimmed(),
     }
   )
 }

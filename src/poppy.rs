@@ -1,6 +1,7 @@
 use std::path::Path;
 use colored::Colorize;
 use log::{debug, error, info, trace, warn};
+use crate::registry;
 use crate::utils::environment::Environment;
 use crate::utils::global::PROJECT_DIRS;
 
@@ -46,6 +47,12 @@ impl Poppy
     info!("syncing with remote repository");
     debug!("syncing into cache ({})", &self.registry_path.dimmed());
     std::fs::create_dir_all(Path::new(&self.registry_path).parent().unwrap())?;
+
+    registry::git::clone_repository(
+      &self.config.remotes.registry_url,
+      &self.registry_path,
+      "main" // todo: branch
+    )?;
     Ok(())
   }
 

@@ -7,7 +7,7 @@ use crate::utils::global::PROJECT_DIRS;
 #[derive(Debug, serde::Deserialize, serde::Serialize)]
 pub struct Config
 {
-  remotes: ConfigRemote
+  pub remotes: ConfigRemote
 }
 
 #[derive(Debug, serde::Deserialize, serde::Serialize)]

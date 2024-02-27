@@ -6,6 +6,7 @@ mod consts;
 mod poppy;
 mod utils;
 mod args;
+mod registry;
 
 fn main() {
   let args = Args::parse();
@@ -24,18 +25,18 @@ fn main() {
   }
 
   // todo: tommorow
-  let client = reqwest::blocking::Client::new();
-  let res = client.get("http://192.168.18.1:8082/artifactory/example-repo-local/radar/fmt/fmt-1.0.0-any-sources.tar.gz")
-    .basic_auth("admin", Some("cmVmdGtuOjAxOjE3NDA1ODU0OTE6czFMaXpDU094b2tOVk5VZnZFcXJKMHo1RjBH"))
-    .send().unwrap()
-    .text().unwrap();
-  let file = std::env::current_dir()
-    .unwrap()
-    .join("temp-temp")
-    .into_os_string()
-    .into_string()
-    .unwrap();
-  std::fs::write(file, res).unwrap();
+  // let client = reqwest::blocking::Client::new();
+  // let res = client.get("http://192.168.18.1:8082/artifactory/example-repo-local/radar/fmt/fmt-1.0.0-any-sources.tar.gz")
+  //   .basic_auth("admin", Some("cmVmdGtuOjAxOjE3NDA1ODU0OTE6czFMaXpDU094b2tOVk5VZnZFcXJKMHo1RjBH"))
+  //   .send().unwrap()
+  //   .text().unwrap();
+  // let file = std::env::current_dir()
+  //   .unwrap()
+  //   .join("temp-temp")
+  //   .into_os_string()
+  //   .into_string()
+  //   .unwrap();
+  // std::fs::write(file, res).unwrap();
   // -------
 
   poppy::Poppy::new(utils::config::Config::create_or_load()

@@ -23,8 +23,12 @@ impl Poppy
   pub fn version()
   {
     println!("{}", POPPY_ASCII_ART.yellow().bold());
-    println!("{} - package manager!", POPPY_NAME.bright_yellow().bold());
-    println!("version: {}", POPPY_VERSION.cyan().bold());
+    println!("{} {} version {}",
+             POPPY_NAME.bright_yellow().bold(),
+             "package manager!".bold(),
+             POPPY_VERSION.cyan().bold()
+    );
+    println!();
     println!("built from branch: {}",
              option_env!("GIT_BRANCH").unwrap_or("unknown").bold().magenta()
     );
@@ -37,6 +41,6 @@ impl Poppy
     println!("build timestamp: {}",
              option_env!("SOURCE_TIMESTAMP").unwrap_or("unknown").green().bold().black()
     );
-    println!("{}", "2024 whs31 @ radar-mms (c)".white());
+    println!("copyright {}", "whs31 @ radar-mms (c) 2024".blue().bold());
   }
 }

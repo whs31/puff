@@ -10,6 +10,6 @@ fn main() {
         .map_err(|_| std::process::exit(1) )
         .unwrap();
     poppy::run_poppy()
-        .map_err(|e| error!("Error: {}", e))
+        .map_err(|e| { error!("fatal error: {}", e); std::process::exit(1); } )
         .unwrap();
 }

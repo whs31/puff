@@ -1,8 +1,9 @@
 use std::path::Path;
 use colored::Colorize;
-use log::{debug, info};
+use log::{debug, info, trace};
+use walkdir::WalkDir;
 use crate::registry;
-use crate::registry::entry::RegistryEntry;
+use crate::registry::entry::{RegistryEntry, RegistryEntryRaw};
 
 pub struct Registry
 {
@@ -34,7 +35,43 @@ impl Registry
       &self.registry_path,
       "main" // todo: branch
     )?;
+
+    self.fetch_local_cache()?;
+
     info!("sync completed");
     Ok(())
+  }
+
+  fn fetch_local_cache(&mut self) -> anyhow::Result<()>
+  {
+    debug!("fetching registry cache");
+    let yamls = self.collect_yamls()?;
+    Ok(())
+  }
+
+  fn collect_yamls(&self) -> anyhow::Result<Vec<String>>
+  {
+    trace!("collecting yamls");
+    let mut yamls = vec![];
+    for entry in WalkDir::new(self.registry_path.as_str())
+      .into_iter()
+      .filter_map(|e| e.ok())
+      .filter(|e| e.file_type().is_file()
+        && e.path().extension().is_some()
+        && e.path().extension().unwrap() == "yml"
+        && !e.path().file_name().unwrap().to_str().unwrap().starts_with(".")
+      )
+    {
+      let content = std::fs::read_to_string(entry.path())?;
+      yamls.push(content);
+    }
+    trace!("found {} yamls!", yamls.len());
+    Ok(yamls)
+  }
+
+  fn parse_yaml(yaml: &str) -> anyhow::Result<RegistryEntry>
+  {
+    let entry: RegistryEntryRaw = serde_yaml::from_str(yaml)?;
+    Ok(entry.try_into()?)
   }
 }

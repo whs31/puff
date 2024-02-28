@@ -48,3 +48,18 @@ impl Display for PlatformArch
     })
   }
 }
+
+impl From<&str> for PlatformArch
+{
+  fn from(value: &str) -> Self
+  {
+    match value
+    {
+      "windows-x64" => Self::Windows64,
+      "linux-x64" => Self::Linux64,
+      "android" => Self::Android,
+      "any" => Self::Any,
+      _ => Self::Unknown
+    }
+  }
+}

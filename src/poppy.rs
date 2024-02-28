@@ -67,6 +67,7 @@ impl Poppy
       return Ok(self);
     }
     let manifest = Manifest::from_pwd()?;
+    manifest.pretty_print();
     Ok(self)
   }
 

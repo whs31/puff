@@ -126,4 +126,19 @@ impl Manifest {
     debug!("manifest saved to {}", path.to_str().unwrap().dimmed());
     Ok(())
   }
+
+  pub fn pretty_print(&self)
+  {
+    debug!("manifest:");
+    debug!("package name: {}", self.package.name.bright_magenta().bold());
+    debug!("package version: {}", self.package.version.to_string().bright_green().bold());
+    debug!("package direct dependencies:");
+    if let Some(dependencies) = &self.dependencies {
+      for (name, dependency) in dependencies {
+        debug!("\t{:<20}: {}", name.purple().bold(), dependency.version.to_string().cyan().bold());
+      }
+    } else {
+      debug!("\tnone");
+    }
+  }
 }

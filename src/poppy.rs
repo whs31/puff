@@ -10,6 +10,7 @@ pub struct Poppy
 {
   pub config: crate::utils::Config,
   pub registry: Registry,
+  args: crate::Args,
   env: Environment
 }
 
@@ -25,15 +26,17 @@ impl Poppy
     Ok(Self {
       config,
       registry,
+      args,
       env: Environment::from_current_environment()?
     })
   }
 
   pub fn run(&mut self) -> anyhow::Result<()>
   {
+    let args = self.args.clone();
     self
       .print_environment()
-      .sync()?;
+      .sync(!args.lazy)?;
     Ok(())
   }
 
@@ -46,8 +49,8 @@ impl Poppy
     self
   }
 
-  fn sync(&mut self) -> anyhow::Result<&mut Self>  {
-    self.registry.sync()?;
+  fn sync(&mut self, reclone: bool) -> anyhow::Result<&mut Self>  {
+    self.registry.sync(reclone)?;
     Ok(self)
   }
 

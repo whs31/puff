@@ -1,4 +1,4 @@
-#[derive(clap::Parser, Debug)]
+#[derive(clap::Parser, Debug, Clone)]
 pub struct Args
 {
   /// Print poppy version
@@ -8,5 +8,8 @@ pub struct Args
   #[arg(short, long)] pub install: bool,
 
   /// Sync remote registry
-  #[arg(short, long)] pub sync: bool
+  #[arg(short, long)] pub sync: bool,
+
+  /// Perform operations in lazy mode (no implicit git clone/downloading)
+  #[arg(short, long)] pub lazy: bool
 }

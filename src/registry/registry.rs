@@ -1,6 +1,6 @@
 use std::path::Path;
 use colored::Colorize;
-use log::{debug, info, trace};
+use log::{debug, info, trace, warn};
 use walkdir::WalkDir;
 use crate::registry;
 use crate::registry::entry::{RegistryEntry, RegistryEntryRaw};
@@ -24,17 +24,22 @@ impl Registry
     }
   }
 
-  pub fn sync(&mut self) -> anyhow::Result<()>
+  pub fn sync(&mut self, reclone: bool) -> anyhow::Result<()>
   {
     info!("syncing with remote repository");
     debug!("syncing into cache ({})", &self.registry_path.dimmed());
     std::fs::create_dir_all(Path::new(&self.registry_path).parent().unwrap())?;
 
-    registry::git::clone_repository(
-      &self.registry_url,
-      &self.registry_path,
-      "main" // todo: branch
-    )?;
+    if !reclone {
+      warn!("lazy sync is enabled. updating remote registry will not be performed unless cached registry is broken.");
+    }
+    if reclone || !std::path::Path::new(&self.registry_path).exists() {
+      registry::git::clone_repository(
+        &self.registry_url,
+        &self.registry_path,
+        "main" // todo: branch
+      )?;
+    }
 
     self.fetch_local_cache()?;
 

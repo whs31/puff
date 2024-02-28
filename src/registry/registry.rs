@@ -45,7 +45,15 @@ impl Registry
   fn fetch_local_cache(&mut self) -> anyhow::Result<()>
   {
     debug!("fetching registry cache");
-    let yamls = self.collect_yamls()?;
+    let yamls = self.collect_yamls()?
+      .into_iter()
+      .map(|y| Self::parse_yaml(&y))
+      .collect::<Result<Vec<_>, _>>()?;
+    self.packages = yamls;
+    for entry in &self.packages
+    {
+      debug!("found package: {}", &entry.pretty_format());
+    }
     Ok(())
   }
 

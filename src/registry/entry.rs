@@ -1,4 +1,5 @@
 use std::collections::HashMap;
+use colored::Colorize;
 use crate::utils::helper_types::{Distribution, PlatformArch, Version};
 
 #[derive(Debug, Clone, PartialEq, Eq, serde::Deserialize)]
@@ -47,5 +48,37 @@ impl TryFrom<RegistryEntryRaw> for RegistryEntry
       name: value.name,
       versions
     })
+  }
+}
+
+impl RegistryEntry
+{
+  pub fn pretty_format(&self) -> String
+  {
+    let mut str_t = format!("{}: ", self.name.yellow().bold());
+    for (v, dist) in &self.versions
+    {
+      str_t = format!("{} {}",
+        str_t,
+        v.to_string().green().bold()
+      );
+
+      for (d, platforms) in dist
+      {
+        str_t = format!("{} {}",
+          str_t,
+          d.to_string().cyan().bold()
+        );
+        for platform in platforms
+        {
+          str_t = format!("{}/{}",
+            str_t,
+            platform.to_string().blue().dimmed()
+          );
+        }
+        str_t = format!("{} ", str_t);
+      }
+    }
+    str_t
   }
 }

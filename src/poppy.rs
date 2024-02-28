@@ -2,13 +2,14 @@ use std::path::Path;
 use colored::Colorize;
 use log::{debug, error, info, trace, warn};
 use crate::registry;
+use crate::registry::Registry;
 use crate::utils::environment::Environment;
 use crate::utils::global::PROJECT_DIRS;
 
 pub struct Poppy
 {
   pub config: crate::utils::Config,
-  registry_path: String,
+  pub registry: Registry,
   env: Environment
 }
 
@@ -17,23 +18,26 @@ impl Poppy
   pub fn new(config: crate::utils::Config, args: crate::Args) -> anyhow::Result<Self>
   {
     let dirs = PROJECT_DIRS.lock().unwrap();
+    let registry = Registry::new(
+      config.remotes.registry_url.as_str(),
+      dirs.cache_dir().to_str().unwrap()
+    );
     Ok(Self {
       config,
-      registry_path: dirs.cache_dir().to_string_lossy().to_string(),
+      registry,
       env: Environment::from_current_environment()?
     })
   }
 
-  pub fn run(&self) -> anyhow::Result<()>
+  pub fn run(&mut self) -> anyhow::Result<()>
   {
     self
       .print_environment()
-      .sync()
-    // todo: sync must be conditional
-    //Ok(())
+      .sync()?;
+    Ok(())
   }
 
-  fn print_environment(&self) -> &Self
+  fn print_environment(&mut self) -> &mut Self
   {
     println!();
     debug!("cmake version: {}", &self.env.cmake_version.to_string().magenta());
@@ -42,18 +46,9 @@ impl Poppy
     self
   }
 
-  fn sync(&self) -> anyhow::Result<()>
-  {
-    info!("syncing with remote repository");
-    debug!("syncing into cache ({})", &self.registry_path.dimmed());
-    std::fs::create_dir_all(Path::new(&self.registry_path).parent().unwrap())?;
-
-    registry::git::clone_repository(
-      &self.config.remotes.registry_url,
-      &self.registry_path,
-      "main" // todo: branch
-    )?;
-    Ok(())
+  fn sync(&mut self) -> anyhow::Result<&mut Self>  {
+    self.registry.sync()?;
+    Ok(self)
   }
 
   pub fn version()

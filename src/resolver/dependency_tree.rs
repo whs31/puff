@@ -15,6 +15,9 @@ impl DependencyStack
     }
   }
 
+  // todo: maybe push manifest as whole?
+  // todo: also maybe hide push/pop from user?
+
   pub fn push(&mut self, dependency: Dependency) -> anyhow::Result<&mut Self>
   {
     // if self.check(&dependency) todo

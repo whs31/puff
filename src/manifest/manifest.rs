@@ -43,15 +43,15 @@ impl Default for ManifestPackage
 impl Manifest {
   pub fn from_cli_input() -> anyhow::Result<Self>
   {
-    info!("please, enter package name:");
+    info!("enter package name:");
     let mut name = String::new();
     std::io::stdin().read_line(&mut name)?;
-    info!("please, enter package version:");
+    info!("enter package version:");
     let mut version = String::new();
     std::io::stdin().read_line(&mut version)?;
     let version = Version::try_from(version.trim().to_string())?;
-    info!("please, enter authors of package (separated by comma):");
-    debug!("note: you can leave it blank if you don't want to specify it");
+    info!("enter authors of package (separated by comma):");
+    debug!("note: leave it blank if you don't want to specify it");
     let mut authors = String::new();
     std::io::stdin().read_line(&mut authors)?;
     let authors = if authors.is_empty() {
@@ -59,8 +59,8 @@ impl Manifest {
     } else {
       Some(authors.split(",").map(|s| s.trim().to_string()).collect())
     };
-    info!("please, enter description of package:");
-    debug!("note: you can leave it blank if you don't want to specify it");
+    info!("enter description of package:");
+    debug!("note: leave it blank if you don't want to specify it");
     let mut description = String::new();
     std::io::stdin().read_line(&mut description)?;
     let description = if description.is_empty() {
@@ -69,12 +69,12 @@ impl Manifest {
       Some(description.trim().to_string())
     };
 
-    info!("please, specify dependencies of package {} (separated by comma):", name.magenta().bold());
+    info!("specify dependencies of package {} (separated by comma):", name.magenta().bold());
     debug!("example format of dependency: name@version/distribution, name@version/distribution, ...");
-    debug!("note: you can leave it blank if package has no dependencies");
+    debug!("note: leave it blank if package has no dependencies");
     let mut dependencies = String::new();
     std::io::stdin().read_line(&mut dependencies)?;
-    let dependencies = if dependencies.is_empty() {
+    let dependencies = if dependencies.trim().is_empty() {
       None
     } else {
       let hashmap = Some(dependencies
@@ -84,10 +84,10 @@ impl Manifest {
         .into_iter()
         .map(|s| {
           let mut split = s.split("@");
-          let name = split.next().unwrap().trim().to_string();
-          let mut split2 = split.next().unwrap().split("/");
-          let version = Version::try_from(split2.next().unwrap().trim().to_string()).unwrap();
-          let distribution = Distribution::try_from(split2.next().unwrap().trim().to_string()).unwrap();
+          let name = split.next().unwrap_or_default().trim().to_string();
+          let mut split2 = split.next().unwrap_or_default().split("/");
+          let version = Version::try_from(split2.next().unwrap_or_default().trim().to_string()).unwrap_or_default();
+          let distribution = Distribution::try_from(split2.next().unwrap_or_default().trim().to_string()).unwrap_or_default();
           (name, ManifestDependencyData { version, distribution })
         })
         .collect::<HashMap<String, ManifestDependencyData>>()
@@ -106,12 +106,21 @@ impl Manifest {
     })
   }
 
+  pub fn from_pwd() -> anyhow::Result<Self>
+  {
+    let path = std::env::current_dir()?
+      .join(POPPY_MANIFEST_NAME);
+    anyhow::ensure!(path.exists(), "manifest not found in pwd");
+
+    let manifest = std::fs::read_to_string(path)?;
+    Ok(toml::from_str(&manifest)?)
+  }
+
   pub fn save(&self) -> anyhow::Result<()>
   {
-    let path = std::env::current_dir()?.join(POPPY_MANIFEST_NAME);
-    if path.exists() {
-      anyhow::bail!("manifest already exists");
-    }
+    let path = std::env::current_dir()?
+      .join(POPPY_MANIFEST_NAME);
+    anyhow::ensure!(!path.exists(), "manifest already exists in pwd");
     std::fs::write(&path, toml::to_string(&self)?)?;
     debug!("manifest saved to {}", path.to_str().unwrap().dimmed());
     Ok(())

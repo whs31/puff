@@ -10,6 +10,9 @@ pub struct Args
   /// Sync remote registry
   #[arg(short, long)] pub sync: bool,
 
+  /// Override platform arch (default: native)
+  #[arg(short, long)] pub arch: Option<String>,
+
   /// Perform operations in lazy mode (no implicit git clone/downloading)
   #[arg(short, long)] pub lazy: bool,
 

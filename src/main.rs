@@ -17,7 +17,7 @@ fn main() {
   }
 
   utils::cli::init_cli_logger("trace")
-    .map_err(|e| eprintln!("failed to init cli logger. this is critical error and should never happen."))
+    .map_err(|e| eprintln!("failed to init cli logger. this is critical error and should never happen ({})", e) )
     .map_err(|_| std::process::exit(1) )
     .unwrap();
 

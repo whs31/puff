@@ -17,6 +17,7 @@ pub const POPPY_ASCII_ART: &str = r#"
              :JY   5?:
 "#;
 
+#[allow(dead_code)]
 pub const POPPY_DOTS_ART: &str = r#"
 ⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⣀⣤⣤⣀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀
 ⠀⠀⠀⠀⠀⠀⠀⠀⠀⢀⢀⡀⠈⠙⠻⣿⣿⣿⣷⣦⣄⡀⠀⠀⠀⠀⠀⠀⠀⠀

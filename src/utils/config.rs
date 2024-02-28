@@ -1,5 +1,4 @@
 use std::path::Path;
-use std::sync::Mutex;
 use colored::Colorize;
 use log::{debug, trace};
 use crate::utils::global::PROJECT_DIRS;

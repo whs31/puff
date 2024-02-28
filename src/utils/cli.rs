@@ -1,6 +1,6 @@
 use colored::Color::{Cyan, Red, Yellow};
 use colored::Colorize;
-use flexi_logger::{AdaptiveFormat, DeferredNow};
+use flexi_logger::{DeferredNow};
 use log::{Level, Record};
 use crate::consts::POPPY_NAME;
 

@@ -1,7 +1,4 @@
-use std::fmt::Display;
-use std::ops::Deref;
 use anyhow::Context;
-use log::warn;
 use crate::utils::helper_types::{PlatformArch, Version};
 
 pub struct Environment

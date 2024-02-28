@@ -1,11 +1,11 @@
-use std::path::Path;
 use colored::Colorize;
 use log::{debug, error, info, trace, warn};
+use crate::consts::POPPY_REGISTRY_DIRECTORY_NAME;
 use crate::manifest::Manifest;
-use crate::registry;
 use crate::registry::Registry;
 use crate::utils::environment::Environment;
 use crate::utils::global::PROJECT_DIRS;
+use crate::utils::helper_types::PlatformArch;
 
 pub struct Poppy
 {
@@ -22,13 +22,31 @@ impl Poppy
     let dirs = PROJECT_DIRS.lock().unwrap();
     let registry = Registry::new(
       config.remotes.registry_url.as_str(),
-      dirs.cache_dir().to_str().unwrap()
+      dirs
+        .cache_dir()
+        .join(POPPY_REGISTRY_DIRECTORY_NAME)
+        .to_str()
+        .expect("converting registry path to string slice should never fail")
     );
+
+    let env = match &args.arch {
+      Some(x) => {
+        let mut env_t = Environment::from_current_environment()?;
+        env_t.arch = PlatformArch::from(x.as_str());
+        warn!("target platform set to {}", env_t.arch.to_string());
+        if env_t.arch == PlatformArch::Unknown {
+          error!("unknown platform. you probably misspelled platform name - see list of supported platforms");
+          std::process::exit(1);
+        }
+        env_t
+      },
+      None => Environment::from_current_environment()?,
+    };
     Ok(Self {
       config,
       registry,
       args,
-      env: Environment::from_current_environment()?
+      env
     })
   }
 
@@ -74,7 +92,7 @@ impl Poppy
   fn create_manifest(&self) -> anyhow::Result<()>
   {
     info!("creating new manifest in current working folder");
-    let mut manifest = Manifest::from_cli_input()?
+    Manifest::from_cli_input()?
       .save()?;
     info!("manifest created successfully");
     Ok(())

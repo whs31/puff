@@ -26,6 +26,7 @@ walkdir = "2.4.0"
 toml = "0.8.8"
 decompress = "0.6.0"
 serde = { version = "1.0.193", features = ["derive"] }
+serde_yaml = "0.9.32"
 md5 = "0.7.0"
 
 [build-dependencies]

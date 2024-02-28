@@ -41,7 +41,8 @@ impl Poppy
     }
     self
       .print_environment()
-      .sync(!args.lazy)?;
+      .sync(!args.lazy)?
+      .install(!args.install)?;
     Ok(())
   }
 
@@ -56,6 +57,16 @@ impl Poppy
 
   fn sync(&mut self, reclone: bool) -> anyhow::Result<&mut Self>  {
     self.registry.sync(reclone)?;
+    Ok(self)
+  }
+
+  fn install(&mut self, skip_install: bool) -> anyhow::Result<&mut Self>
+  {
+    if skip_install {
+      warn!("install will be skipped. see --help for more info");
+      return Ok(self);
+    }
+    let manifest = Manifest::from_pwd()?;
     Ok(self)
   }
 

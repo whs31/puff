@@ -1,6 +1,6 @@
 use std::collections::HashMap;
 use colored::Colorize;
-use log::{debug, info};
+use log::{debug, info, trace};
 use crate::consts::POPPY_MANIFEST_NAME;
 use crate::utils::helper_types::{Distribution, Version};
 
@@ -112,7 +112,8 @@ impl Manifest {
       .join(POPPY_MANIFEST_NAME);
     anyhow::ensure!(path.exists(), "manifest not found in pwd");
 
-    let manifest = std::fs::read_to_string(path)?;
+    let manifest = std::fs::read_to_string(path.clone())?;
+    trace!("loaded manifest from {}", path.to_str().unwrap().dimmed());
     Ok(toml::from_str(&manifest)?)
   }
 

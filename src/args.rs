@@ -11,5 +11,8 @@ pub struct Args
   #[arg(short, long)] pub sync: bool,
 
   /// Perform operations in lazy mode (no implicit git clone/downloading)
-  #[arg(short, long)] pub lazy: bool
+  #[arg(short, long)] pub lazy: bool,
+
+  /// Create and configure manifest in current working folder
+  #[arg(long)] pub create: bool,
 }

@@ -1,6 +1,7 @@
 use std::path::Path;
 use colored::Colorize;
 use log::{debug, error, info, trace, warn};
+use crate::manifest::Manifest;
 use crate::registry;
 use crate::registry::Registry;
 use crate::utils::environment::Environment;
@@ -34,6 +35,10 @@ impl Poppy
   pub fn run(&mut self) -> anyhow::Result<()>
   {
     let args = self.args.clone();
+    if args.create {
+      self.create_manifest()?;
+      return Ok(());
+    }
     self
       .print_environment()
       .sync(!args.lazy)?;
@@ -52,6 +57,15 @@ impl Poppy
   fn sync(&mut self, reclone: bool) -> anyhow::Result<&mut Self>  {
     self.registry.sync(reclone)?;
     Ok(self)
+  }
+
+  fn create_manifest(&self) -> anyhow::Result<()>
+  {
+    info!("creating new manifest in current working folder");
+    let mut manifest = Manifest::from_cli_input()?
+      .save()?;
+    info!("manifest created successfully");
+    Ok(())
   }
 
   pub fn version()

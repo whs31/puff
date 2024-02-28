@@ -32,6 +32,18 @@ impl PlatformArch
       _ => Self::Unknown
     })
   }
+
+  pub fn to_short_string(&self) -> String
+  {
+    match self
+    {
+      PlatformArch::Windows64 => String::from("win64"),
+      PlatformArch::Linux64 => String::from("lnx64"),
+      PlatformArch::Android => String::from("android"),
+      PlatformArch::Any => String::from("*"),
+      PlatformArch::Unknown => String::from("?")
+    }
+  }
 }
 
 impl Display for PlatformArch

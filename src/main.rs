@@ -7,6 +7,7 @@ mod poppy;
 mod utils;
 mod args;
 mod registry;
+mod manifest;
 
 fn main() {
   let args = Args::parse();
@@ -20,7 +21,7 @@ fn main() {
     .map_err(|_| std::process::exit(1) )
     .unwrap();
 
-  if !args.install && !args.sync /* todo: other commands */ {
+  if !args.install && !args.sync && !args.create/* todo: other commands */ {
     poppy::Poppy::suggest_help()
   }
 

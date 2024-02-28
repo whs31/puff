@@ -55,10 +55,10 @@ impl RegistryEntry
 {
   pub fn pretty_format(&self) -> String
   {
-    let mut str_t = format!("{}: ", self.name.yellow().bold());
+    let mut str_t = format!("{:<12}: ", self.name.yellow().bold());
     for (v, dist) in &self.versions
     {
-      str_t = format!("{} {}",
+      str_t = format!("{} {:<8}",
         str_t,
         v.to_string().green().bold()
       );
@@ -73,7 +73,7 @@ impl RegistryEntry
         {
           str_t = format!("{}/{}",
             str_t,
-            platform.to_string().blue().dimmed()
+            platform.to_short_string().blue().dimmed()
           );
         }
         str_t = format!("{} ", str_t);

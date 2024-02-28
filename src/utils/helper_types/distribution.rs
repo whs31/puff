@@ -4,9 +4,13 @@ use serde::{Deserialize, Serialize};
 #[derive(Debug, Clone, PartialEq, Eq, Hash, Deserialize, Serialize)]
 pub enum Distribution
 {
+  #[serde(rename = "static")]
   Static,
+  #[serde(rename = "shared")]
   Shared,
+  #[serde(rename = "sources")]
   Sources,
+  #[serde(rename = "???")]
   Unknown
 }
 

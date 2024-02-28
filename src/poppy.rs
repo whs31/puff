@@ -3,6 +3,7 @@ use log::{debug, error, info, trace, warn};
 use crate::consts::POPPY_REGISTRY_DIRECTORY_NAME;
 use crate::manifest::Manifest;
 use crate::registry::Registry;
+use crate::resolver::DependencyStack;
 use crate::utils::environment::Environment;
 use crate::utils::global::PROJECT_DIRS;
 use crate::utils::helper_types::PlatformArch;
@@ -11,6 +12,7 @@ pub struct Poppy
 {
   pub config: crate::utils::Config,
   pub registry: Registry,
+  pub resolver: DependencyStack,
   args: crate::Args,
   env: Environment
 }
@@ -45,6 +47,7 @@ impl Poppy
     Ok(Self {
       config,
       registry,
+      resolver: DependencyStack::new(),
       args,
       env
     })

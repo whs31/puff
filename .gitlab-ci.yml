@@ -22,8 +22,12 @@ install-alse-first:
     rules:
         - when: manual
     stage: install
-    script: 
+    before_script:
+        - whereis cargo
         - cargo --version
+        - ls -la /usr/bin/cargo
+        
+    script: 
         - cargo build --release
         - cp target/release/poppy /local_bin
 

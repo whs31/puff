@@ -1,10 +1,10 @@
 use anyhow::ensure;
 use colored::Colorize;
 use log::{debug, error, info, trace, warn};
-use crate::consts::POPPY_REGISTRY_DIRECTORY_NAME;
+use crate::consts::{POPPY_CACHE_DIRECTORY_NAME, POPPY_REGISTRY_DIRECTORY_NAME};
 use crate::manifest::Manifest;
 use crate::registry::Registry;
-use crate::resolver::DependencyStack;
+use crate::resolver::{Cache, DependencyStack};
 use crate::utils::environment::Environment;
 use crate::utils::global::PROJECT_DIRS;
 use crate::utils::helper_types::PlatformArch;
@@ -45,10 +45,18 @@ impl Poppy
       },
       None => Environment::from_current_environment()?,
     };
+    let resolver = DependencyStack::new(
+      dirs
+        .cache_dir()
+        .join(POPPY_CACHE_DIRECTORY_NAME)
+        .to_str()
+        .unwrap()
+    )?;
+
     Ok(Self {
       config,
       registry,
-      resolver: DependencyStack::new(),
+      resolver,
       args,
       env
     })

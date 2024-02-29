@@ -1,18 +1,20 @@
-use crate::resolver::Dependency;
+use crate::resolver::{Cache, Dependency};
 
 pub struct DependencyStack
 {
-  stack: Vec<Dependency>
+  stack: Vec<Dependency>,
+  cache: Cache
 }
 
 impl DependencyStack
 {
-  pub fn new() -> Self
+  pub fn new(cache_path: &str) -> anyhow::Result<Self>
   {
-    Self
+    Ok(Self
     {
-      stack: Vec::new()
-    }
+      stack: Vec::new(),
+      cache: Cache::new(cache_path)?
+    })
   }
 
   // todo: maybe push manifest as whole?

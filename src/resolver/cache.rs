@@ -12,6 +12,9 @@ impl Cache
 {
   pub fn new(path: &str) -> anyhow::Result<Self>
   {
+    if !PathBuf::from(path).exists() {
+      std::fs::create_dir_all(path)?
+    }
     Ok(Self { path: PathBuf::from(path) })
   }
 

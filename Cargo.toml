@@ -28,6 +28,7 @@ decompress = "0.6.0"
 serde = { version = "1.0.193", features = ["derive"] }
 serde_yaml = "0.9.32"
 md5 = "0.7.0"
+strfmt = "0.2.4"
 
 [build-dependencies]
 build-data = "0.1.5"

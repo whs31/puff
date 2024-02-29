@@ -11,7 +11,7 @@ pub struct Args
   #[arg(short, long)] pub sync: bool,
 
   /// Override platform arch (default: native)
-  #[arg(short, long)] pub arch: Option<String>,
+  #[arg(long)] pub arch: Option<String>,
 
   /// Perform operations in lazy mode (no implicit git clone/downloading)
   #[arg(short, long)] pub lazy: bool,
@@ -26,5 +26,11 @@ pub struct Args
   #[arg(long)] pub username: Option<String>,
 
   /// Set token for artifactory OAuth. Use --username to set username.
-  #[arg(long)] pub token: Option<String>
+  #[arg(long)] pub token: Option<String>,
+
+  /// Push file to artifactory
+  #[arg(long)] pub push: Option<String>,
+
+  /// Specify distribution to push to artifactory
+  #[arg(long)] pub distribution: Option<String>,
 }

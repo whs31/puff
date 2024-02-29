@@ -27,6 +27,17 @@ fn main() {
     std::process::exit(0);
   }
 
+  if args.push.is_some() {
+    poppy::Poppy::push(utils::config::Config::create_or_load()
+      .expect("failed to load config"),
+      args
+        .clone()
+    )
+      .map_err(|e| { error!("fatal error in poppy push: {}", e); std::process::exit(1) } )
+      .unwrap();
+    std::process::exit(0);
+  }
+
   if !args.install && !args.sync && !args.create/* todo: other commands */ {
     poppy::Poppy::suggest_help()
   }

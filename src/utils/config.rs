@@ -41,7 +41,7 @@ impl Default for ConfigRemote
     Self {
       registry_url: String::from("http://uav.radar-mms.com/gitlab/test/essentials/poppy/poppy-registry.git"),
       ci_url: String::from("http://uav.radar-mms.com/gitlab/test/essentials/ci.git"),
-      artifactory_url: String::from("") // todo
+      artifactory_url: String::from("http://uav.radar-mms.com/artifactory/poppy-cxx-repo/radar/{name}/{name}-{major}.{minor}.{patch}-{arch}-{distribution}.tar.gz")
     }
   }
 }

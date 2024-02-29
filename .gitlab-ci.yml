@@ -23,7 +23,7 @@ install-alse-first:
         - when: manual
     stage: install
     script: 
-        - rust --version
+        - cargo --version
         # - cargo build --release
         # - cp target/release/poppy /local_bin
 

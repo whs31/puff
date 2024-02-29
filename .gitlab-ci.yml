@@ -24,8 +24,8 @@ install-alse-first:
     stage: install
     script: 
         - cargo --version
-        # - cargo build --release
-        # - cp target/release/poppy /local_bin
+        - cargo build --release
+        - cp target/release/poppy /local_bin
 
 stages:
     - install

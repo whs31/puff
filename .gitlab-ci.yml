@@ -18,13 +18,14 @@
 # https://gitlab.com/gitlab-org/gitlab/-/blob/master/lib/gitlab/ci/templates/Getting-Started.gitlab-ci.yml
 
 install-alse-first:
-    tags: [alse-first]
+    tags: [widows]
     rules:
         - when: manual
     stage: install
     script: 
-        - cargo build --release
-        - cp target/release/poppy /local_bin
+        - rust --version
+        # - cargo build --release
+        # - cp target/release/poppy /local_bin
 
 stages:
     - install

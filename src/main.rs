@@ -22,6 +22,11 @@ fn main() {
     .map_err(|_| std::process::exit(1) )
     .unwrap();
 
+  if args.purge {
+    poppy::Poppy::purge();
+    std::process::exit(0);
+  }
+
   if !args.install && !args.sync && !args.create/* todo: other commands */ {
     poppy::Poppy::suggest_help()
   }

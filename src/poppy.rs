@@ -124,4 +124,21 @@ impl Poppy
     error!("this is unrecoverable error. poppy will shutdown");
     std::process::exit(1);
   }
+
+  pub fn purge()
+  {
+    warn!("purging config and cache folders");
+    let dirs = PROJECT_DIRS.lock().unwrap();
+    let config_folder = dirs.config_dir();
+    let cache_folder = dirs.cache_dir();
+    match std::fs::remove_dir_all(config_folder) {
+      Ok(_) => debug!("purged config folder successfully"),
+      Err(e) => error!("failed to purge config folder: {}", e)
+    }
+    match std::fs::remove_dir_all(cache_folder) {
+      Ok(_) => debug!("purged cache folder successfully"),
+      Err(e) => error!("failed to purge cache folder: {}", e)
+    }
+    info!("done!");
+  }
 }

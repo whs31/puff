@@ -18,4 +18,7 @@ pub struct Args
 
   /// Create and configure manifest in current working folder
   #[arg(long)] pub create: bool,
+
+  /// Clear config, cache and registry folders
+  #[arg(long)] pub purge: bool
 }

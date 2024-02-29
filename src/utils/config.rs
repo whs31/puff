@@ -6,7 +6,8 @@ use crate::utils::global::PROJECT_DIRS;
 #[derive(Debug, serde::Deserialize, serde::Serialize)]
 pub struct Config
 {
-  pub remotes: ConfigRemote
+  pub remotes: ConfigRemote,
+  pub auth: ConfigAuth
 }
 
 #[derive(Debug, serde::Deserialize, serde::Serialize)]
@@ -17,11 +18,19 @@ pub struct ConfigRemote
   pub artifactory_url: String
 }
 
+#[derive(Debug, Default, serde::Deserialize, serde::Serialize)]
+pub struct ConfigAuth
+{
+  pub username: String,
+  pub token: String
+}
+
 impl Default for Config
 {
   fn default() -> Self {
     Self {
-      remotes: ConfigRemote::default()
+      remotes: ConfigRemote::default(),
+      auth: ConfigAuth::default()
     }
   }
 }
@@ -67,5 +76,8 @@ impl Config
     debug!("registry url:    {}", self.remotes.registry_url.blue());
     debug!("ci url:          {}", self.remotes.ci_url.blue());
     debug!("artifactory url: {}", self.remotes.artifactory_url.blue());
+
+    debug!("username: {}", if self.auth.username.is_empty() { "empty".red() } else { format!("**{}**", &self.auth.username[2..5]).green() });
+    debug!("token: {}", if self.auth.token.is_empty() { "empty".red() } else { "********".green() });
   }
 }

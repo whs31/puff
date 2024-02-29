@@ -18,7 +18,7 @@
 # https://gitlab.com/gitlab-org/gitlab/-/blob/master/lib/gitlab/ci/templates/Getting-Started.gitlab-ci.yml
 
 install-alse-first:
-    tags: [windows-first]
+    tags: [alse-first]
     rules:
         - when: manual
     stage: install

@@ -2,11 +2,13 @@ use log::trace;
 
 pub fn push_to_artifactory(url: &str, data: &[u8], username: &str, token: &str) -> anyhow::Result<()> {
   trace!("pushing {} bytes to {}", data.len(), url);
+  trace!("username: {}", username);
+  trace!("token: {}", token);
   let client = reqwest::blocking::Client::builder()
-    .redirect(reqwest::redirect::Policy::none())
+    //.redirect(reqwest::redirect::Policy::none())
     .build()?;
   let res = client
-    .post(url)
+    .put(url)
     .basic_auth(username, Some(token))
     .body(data.to_vec())
     .send()?;

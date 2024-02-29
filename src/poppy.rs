@@ -1,3 +1,4 @@
+use anyhow::ensure;
 use colored::Colorize;
 use log::{debug, error, info, trace, warn};
 use crate::consts::POPPY_REGISTRY_DIRECTORY_NAME;
@@ -60,11 +61,43 @@ impl Poppy
       self.create_manifest()?;
       return Ok(());
     }
+
+    if args.username.is_some() && args.token.is_some() {
+      self.setup_oauth(args.username.as_ref().unwrap(), args.token.as_ref().unwrap())?;
+    }
+
+    if self.config.auth.username.is_empty() || self.config.auth.token.is_empty() {
+      warn!("no username or token provided for artifactory oauth. please provide using --username and --token flags or enter credentials interactively");
+      self.input_oauth()?;
+    }
+
     self
       .print_environment()
       .sync(!args.lazy)?
       .install(!args.install)?;
     Ok(())
+  }
+
+  fn setup_oauth(&mut self, username: &str, token: &str) -> anyhow::Result<()>
+  {
+    info!("setting up artifactory oauth for {}", username.bright_yellow());
+    ensure!(!username.is_empty(), "username cannot be empty");
+    ensure!(!token.is_empty(), "token cannot be empty");
+    self.config.auth.username = String::from(username);
+    self.config.auth.token = String::from(token);
+    self.config.save()?;
+    Ok(())
+  }
+
+  fn input_oauth(&mut self) -> anyhow::Result<()>
+  {
+    let mut username = String::new();
+    let mut token = String::new();
+    info!("enter username:");
+    std::io::stdin().read_line(&mut username)?;
+    info!("enter token:");
+    std::io::stdin().read_line(&mut token)?;
+    self.setup_oauth(&username.trim(), &token.trim())
   }
 
   fn print_environment(&mut self) -> &mut Self

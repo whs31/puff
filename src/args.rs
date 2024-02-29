@@ -20,5 +20,11 @@ pub struct Args
   #[arg(long)] pub create: bool,
 
   /// Clear config, cache and registry folders
-  #[arg(long)] pub purge: bool
+  #[arg(long)] pub purge: bool,
+
+  /// Set username for artifactory OAuth. Use --token to set token.
+  #[arg(long)] pub username: Option<String>,
+
+  /// Set token for artifactory OAuth. Use --username to set username.
+  #[arg(long)] pub token: Option<String>
 }

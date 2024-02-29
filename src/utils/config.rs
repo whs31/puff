@@ -80,4 +80,14 @@ impl Config
     debug!("username: {}", if self.auth.username.is_empty() { "empty".red() } else { format!("**{}**", &self.auth.username[2..5]).green() });
     debug!("token: {}", if self.auth.token.is_empty() { "empty".red() } else { "********".green() });
   }
+
+  pub fn save(&self) -> anyhow::Result<()>
+  {
+    trace!("saving config");
+    let dirs = PROJECT_DIRS.lock().unwrap();
+    let path = Path::new(dirs.config_dir()).join("config.toml");
+    let contents = toml::to_string(&self)?;
+    std::fs::write(&path, contents)?;
+    Ok(())
+  }
 }

@@ -1,10 +1,10 @@
 use anyhow::Context;
 use colored::Colorize;
-use log::{debug, info, trace};
+use log::{debug, error, info, trace, warn};
 use crate::manifest::Manifest;
 use crate::registry::Registry;
 use crate::resolver::{Cache, Dependency};
-use crate::utils::helper_types::PlatformArch;
+use crate::utils::helper_types::{Distribution, PlatformArch};
 
 pub struct DependencyStack
 {
@@ -39,7 +39,7 @@ impl DependencyStack
 
   fn resolve_recursively(&self, manifest: &Manifest, reg: &Registry, arch: PlatformArch) -> anyhow::Result<Vec<Dependency>>
   {
-    debug!("resolving dependencies for package {}", &manifest.package.name.magenta());
+    trace!("resolving dependencies for package {}", &manifest.package.name.magenta());
     if manifest.dependencies.is_none() || manifest.dependencies.as_ref().unwrap().is_empty() {
       debug!("{} has no direct dependencies!", &manifest.package.name.magenta());
       return Ok(Vec::new())
@@ -50,11 +50,25 @@ impl DependencyStack
       .context("failed conversion from hashmap to vec")?
       .iter()
       .map(|dep| {
-        Dependency::new(dep.0.to_string(), dep.1.version.clone(), dep.1.distribution.clone(), arch)
+        let arch_or_any = match &dep.1.distribution {
+          Distribution::Sources => PlatformArch::Any,
+          _ => arch
+        };
+        Dependency::new(dep.0.to_string(), dep.1.version.clone(), dep.1.distribution.clone(), arch_or_any)
       })
       .collect::<Vec<Dependency>>();
     for dep in deps {
-      trace!("resolving dependency {}", &dep.name.yellow());
+      trace!("resolving direct dependency {}", &dep.name.yellow());
+      if !reg.contains(&dep) {
+        error!("dependency {}@{}/{}/{} not found in registry",
+          &dep.name.yellow(),
+          &dep.version.to_string().purple(),
+          &dep.distribution.to_string().purple(),
+          &dep.arch.to_string().blue()
+        );
+        error!("try updating local registry with poppy --sync or check manifest file");
+        return Err(anyhow::anyhow!("dependency not found in registry"))
+      }
     }
     debug!("resolving package {} - done!", &manifest.package.name.magenta());
     Ok(Vec::new()) // todo

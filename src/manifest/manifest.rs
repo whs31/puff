@@ -129,17 +129,17 @@ impl Manifest {
   pub fn from_tar_gz(archive_path: &str) -> anyhow::Result<Self>
   {
     // unpack to tmp dir (prod)
-    // let tmp_dir = tempfile::tempdir()?;
-    // let tmp_dir_path = tmp_dir.path();//Path::new(tmp_dir).join(archive_path.split("/").last().context("failed to get filename for tar.gz")?);
+    let tmp_dir = tempfile::tempdir()?;
+    let tmp_dir_path = tmp_dir.path();//Path::new(tmp_dir).join(archive_path.split("/").last().context("failed to get filename for tar.gz")?);
 
     // unpack to tmp dir (test) todo!
-    let tmp_dir = "/home/radar/tmptmp";
-    let tmp_dir_path = Path::new(tmp_dir)
-      .join(archive_path.split("/")
-        .last()
-        .context("failed to get filename for tar.gz")?
-      );
-    std::fs::create_dir_all(tmp_dir_path.parent().unwrap())?;
+    // let tmp_dir = "/home/radar/tmptmp";
+    // let tmp_dir_path = Path::new(tmp_dir)
+    //   .join(archive_path.split("/")
+    //     .last()
+    //     .context("failed to get filename for tar.gz")?
+    //   );
+    // std::fs::create_dir_all(tmp_dir_path.parent().unwrap())?;
 
     crate::resolver::pull::unpack_to(
       archive_path,

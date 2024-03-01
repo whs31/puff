@@ -36,7 +36,8 @@ install-alse-first:
 
 install-windows-first:
     tags: [windows-first]
-    needs: [install-alse-first]
+    needs: 
+        - install-alse-first
     script:
         - cat test.test
     

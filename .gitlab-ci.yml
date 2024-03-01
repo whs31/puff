@@ -12,6 +12,7 @@ install-dev:
     script: 
         - cargo build --release
         - cp target/release/poppy /usr/bin/
+        - poppy --version
 
 stages:
     - install

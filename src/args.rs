@@ -22,6 +22,9 @@ pub struct Args
   /// Clear config, cache and registry folders
   #[arg(long)] pub purge: bool,
 
+  /// Specify for purge to clear only cache
+  #[arg(long)] pub cache_only: bool,
+
   /// Set username for artifactory OAuth. Use --token to set token.
   #[arg(long)] pub username: Option<String>,
 

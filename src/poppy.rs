@@ -172,15 +172,20 @@ impl Poppy
     std::process::exit(1);
   }
 
-  pub fn purge()
+  pub fn purge(cache_only: bool)
   {
-    warn!("purging config and cache folders");
+    match cache_only {
+      true => warn!("purging cache folder only"),
+      false => warn!("purging config and cache folders")
+    }
     let dirs = PROJECT_DIRS.lock().unwrap();
     let config_folder = dirs.config_dir();
     let cache_folder = dirs.cache_dir();
-    match std::fs::remove_dir_all(config_folder) {
-      Ok(_) => debug!("purged config folder successfully"),
-      Err(e) => error!("failed to purge config folder: {}", e)
+    if !cache_only {
+      match std::fs::remove_dir_all(config_folder) {
+        Ok(_) => debug!("purged config folder successfully"),
+        Err(e) => error!("failed to purge config folder: {}", e)
+      }
     }
     match std::fs::remove_dir_all(cache_folder) {
       Ok(_) => debug!("purged cache folder successfully"),

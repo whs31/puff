@@ -32,13 +32,15 @@ impl DependencyStack
       &manifest.package.name.yellow(),
       &arch.to_string().yellow()
     );
-    let dep = self.resolve_recursively(manifest, reg, arch)?;
+    let dep = self.resolve_recursively(reg, arch)?;
     self.stack = dep;
     Ok(self)
   }
 
-  fn resolve_recursively(&self, manifest: &Manifest, reg: &Registry, arch: PlatformArch) -> anyhow::Result<Vec<Dependency>>
+  fn resolve_recursively(&self, reg: &Registry, arch: PlatformArch) -> anyhow::Result<Vec<Dependency>>
   {
+    trace!("searching manifest in pwd...");
+    let manifest = Manifest::from_pwd()?;
     debug!("resolving dependencies for package {}", &manifest.package.name.magenta());
     if manifest.dependencies.is_none() || manifest.dependencies.as_ref().unwrap().is_empty() {
       debug!("{} has no direct dependencies!", &manifest.package.name.magenta());
@@ -71,10 +73,9 @@ impl DependencyStack
         return Err(anyhow::anyhow!("dependency not found in registry"))
       }
       debug!("found {name_f} in registry");
-      if !self.cache.contains(&dep) {
-        trace!("dependency {name_f} not found in cache");
-        self.cache.get_or_download(&dep)?;
-      }
+      let archive = self.cache.get_or_download(&dep)?;
+      let inner_manifest = Manifest::from_tar_gz(archive.to_str().unwrap())?;
+      inner_manifest.pretty_print();
     }
     debug!("resolving package {} - done!", &manifest.package.name.magenta());
     Ok(Vec::new()) // todo

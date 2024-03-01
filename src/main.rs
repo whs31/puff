@@ -27,7 +27,7 @@ fn main() {
     .unwrap();
 
   if args.purge {
-    poppy::Poppy::purge();
+    poppy::Poppy::purge(args.cache_only);
     std::process::exit(0);
   }
 

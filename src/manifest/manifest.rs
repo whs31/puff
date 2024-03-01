@@ -1,4 +1,6 @@
 use std::collections::HashMap;
+use std::path::{Path, PathBuf};
+use anyhow::Context;
 use colored::Colorize;
 use log::{debug, info, trace};
 use crate::consts::POPPY_MANIFEST_NAME;
@@ -112,9 +114,40 @@ impl Manifest {
       .join(POPPY_MANIFEST_NAME);
     anyhow::ensure!(path.exists(), "manifest not found in pwd");
 
+    Self::from_path(path.to_str().context("failed to convert path to str")?)
+  }
+
+  pub fn from_path(path: &str) -> anyhow::Result<Self>
+  {
+    let path = PathBuf::from(path);
+    anyhow::ensure!(path.exists(), "manifest not found at {}", path.to_str().unwrap().dimmed());
     let manifest = std::fs::read_to_string(path.clone())?;
     trace!("loaded manifest from {}", path.to_str().unwrap().dimmed());
     Ok(toml::from_str(&manifest)?)
+  }
+
+  pub fn from_tar_gz(archive_path: &str) -> anyhow::Result<Self>
+  {
+    // unpack to tmp dir (prod)
+    // let tmp_dir = tempfile::tempdir()?;
+    // let tmp_dir_path = tmp_dir.path();//Path::new(tmp_dir).join(archive_path.split("/").last().context("failed to get filename for tar.gz")?);
+
+    // unpack to tmp dir (test) todo!
+    let tmp_dir = "/home/radar/tmptmp";
+    let tmp_dir_path = Path::new(tmp_dir)
+      .join(archive_path.split("/")
+        .last()
+        .context("failed to get filename for tar.gz")?
+      );
+    std::fs::create_dir_all(tmp_dir_path.parent().unwrap())?;
+
+    crate::resolver::pull::unpack_to(
+      archive_path,
+      tmp_dir_path.to_str().context("failed to convert path to str")?
+    )?;
+    Self::from_path(
+      tmp_dir_path.join(POPPY_MANIFEST_NAME).to_str().context("failed to convert path to str")?
+    )
   }
 
   pub fn save(&self) -> anyhow::Result<()>

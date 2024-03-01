@@ -39,6 +39,15 @@ impl TryFrom<RegistryEntryRaw> for RegistryEntry
           .collect::<Vec<PlatformArch>>();
         distributions.insert(Distribution::from(distribution.as_str()), platforms);
       }
+      // sort distributions alphabetically
+      let mut dist_vec = distributions
+        .into_iter()
+        .collect::<Vec<_>>();
+      dist_vec.sort_by(|a, b| a.0.cmp(&b.0));
+      let distributions = dist_vec
+        .into_iter()
+        .map(|(k, v)| (k, v))
+        .collect::<HashMap<Distribution, Vec<PlatformArch>>>();
       versions.insert(
         Version::try_from(version.as_str())?,
         distributions

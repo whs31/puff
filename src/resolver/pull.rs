@@ -86,6 +86,8 @@ pub async fn pull_from_artifactory(
   trace!("api checksum: {}", md5_from_api);
   if md5_from_api != format!("{:x}", md5) {
     warn!("checksum mismatch");
+  } else {
+    debug!("md5 checksum match: {}", "OK".to_string().green());
   }
   //ensure!(md5_from_api == md5.hexdigest(), "md5 checksum mismatch");
   Ok(data)

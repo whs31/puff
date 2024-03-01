@@ -2,7 +2,7 @@ use std::collections::HashMap;
 use anyhow::{Context, ensure};
 use colored::Colorize;
 use indicatif::{ProgressBar, ProgressDrawTarget, ProgressStyle};
-use log::{trace, warn};
+use log::{debug, trace, warn};
 use futures_util::stream::StreamExt;
 use crate::resolver::Dependency;
 
@@ -38,12 +38,12 @@ pub async fn pull_from_artifactory(
     .basic_auth(username, Some(token))
     .send()
     .await?;
-  trace!("response status: {}", result.status());
+  debug!("response status: {}", result.status());
   ensure!(result.status().is_success(), "pulling from artifactory failed with status code {}", result.status().as_str());
   let total = result
     .content_length()
     .unwrap_or(1);
-  trace!("total bytes: {}", total);
+  debug!("total size: {} KB", total / 1024);
   let pb = ProgressBar::new(total);
   pb.set_style(ProgressStyle::with_template(
     "{wide_msg} {spinner:.green} {bar:30.yellow/white} {human_pos:4}/ {human_len:4} ({percent:3}%)"

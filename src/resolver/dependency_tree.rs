@@ -1,3 +1,4 @@
+use std::path::MAIN_SEPARATOR;
 use anyhow::Context;
 use colored::Colorize;
 use log::{debug, error, info, trace, warn};
@@ -9,7 +10,32 @@ use crate::utils::helper_types::{Distribution, PlatformArch};
 pub struct DependencyStack
 {
   pub cache: Cache,
-  stack: Vec<Dependency>
+  stack: Vec<DependencyStackItem>
+}
+
+#[derive(Debug, Clone, Hash, PartialEq, Eq)]
+struct DependencyStackItem
+{
+  pub(in self) dependency: Dependency,
+  pub(in self) archive_path: String
+}
+
+impl DependencyStackItem {
+  pub fn pretty_print(&self) -> String
+  {
+    format!("{}@{}/{}/{} => .../{}",
+      self.dependency.name.magenta(),
+      self.dependency.version.to_string().green(),
+      self.dependency.distribution.to_string().cyan(),
+      self.dependency.arch.to_string().blue(),
+      self.archive_path[self.archive_path
+        .rfind(MAIN_SEPARATOR)
+        .context("failed to find separator"
+        ).expect("this should never happen") + 1..]
+        .white()
+        .dimmed()
+    )
+  }
 }
 
 impl DependencyStack
@@ -23,24 +49,33 @@ impl DependencyStack
     })
   }
 
-  // todo: maybe push manifest as whole?
-  // todo: also maybe hide push/pop from user?
-
   pub fn resolve(&mut self, manifest: &Manifest, reg: &Registry, arch: PlatformArch) -> anyhow::Result<&mut Self>
   {
     info!("resolving dependencies for top-level package {} for arch {}",
       &manifest.package.name.yellow(),
       &arch.to_string().yellow()
     );
-    let dep = self.resolve_recursively(reg, arch)?;
-    self.stack = dep;
+    let manifest = Manifest::from_pwd()?;
+    let raw = self.resolve_recursively(manifest, reg, arch)?;
+    info!("found {} direct and indirect dependencies", raw.len());
+    raw
+      .iter()
+      .for_each(|d| trace!("- {}", d.pretty_print()));
+    // remove duplicates
+    let mut seen = std::collections::HashSet::new();
+    self.stack = raw
+      .into_iter()
+      .filter(|dep| seen.insert(dep.dependency.clone()))
+      .collect::<Vec<DependencyStackItem>>();
+    info!("resolved {} dependencies", self.stack.len());
+    self.stack
+      .iter()
+      .for_each(|d| info!("- {}", d.pretty_print()));
     Ok(self)
   }
 
-  fn resolve_recursively(&self, reg: &Registry, arch: PlatformArch) -> anyhow::Result<Vec<Dependency>>
+  fn resolve_recursively(&self, manifest: Manifest, reg: &Registry, arch: PlatformArch) -> anyhow::Result<Vec<DependencyStackItem>>
   {
-    trace!("searching manifest in pwd...");
-    let manifest = Manifest::from_pwd()?;
     debug!("resolving dependencies for package {}", &manifest.package.name.magenta());
     if manifest.dependencies.is_none() || manifest.dependencies.as_ref().unwrap().is_empty() {
       debug!("{} has no direct dependencies!", &manifest.package.name.magenta());
@@ -59,6 +94,7 @@ impl DependencyStack
         Dependency::new(dep.0.to_string(), dep.1.version.clone(), dep.1.distribution.clone(), arch_or_any)
       })
       .collect::<Vec<Dependency>>();
+    let mut res = Vec::new();
     for dep in deps {
       let name_f = format!("{}@{}/{}/{}",
         &dep.name.yellow(),
@@ -74,26 +110,29 @@ impl DependencyStack
       }
       debug!("found {name_f} in registry");
       let archive = self.cache.get_or_download(&dep)?;
-      let inner_manifest = Manifest::from_tar_gz(archive.to_str().unwrap())?;
-      inner_manifest.pretty_print();
+      res.push(DependencyStackItem {
+        dependency: dep,
+        archive_path: archive
+          .to_str()
+          .context("failed to convert path to string")?
+          .to_string()
+      });
+      res.extend(
+        self.resolve_recursively(
+          Manifest::from_tar_gz(
+            archive
+              .to_str()
+              .context("failed to convert path to string")?
+          )?,
+          reg,
+          arch
+        )?
+      );
     }
     debug!("resolving package {} - done!", &manifest.package.name.magenta());
-    Ok(Vec::new()) // todo
+    Ok(res)
   }
 
-  pub fn push(&mut self, dependency: Dependency) -> anyhow::Result<&mut Self>
-  {
-    // if self.check(&dependency) todo
-    self.stack.push(dependency);
-    Ok(self)
-  }
-
-  pub fn pop(&mut self) -> Option<Dependency> { self.stack.pop() }
   pub fn len(&self) -> usize { self.stack.len() }
   pub fn is_empty(&self) -> bool  { self.stack.is_empty() }
-
-  pub fn check(&self, dependency: &Dependency) -> bool
-  {
-    todo!()
-  }
 }

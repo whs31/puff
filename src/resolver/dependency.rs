@@ -1,5 +1,6 @@
 use crate::utils::helper_types::{Distribution, PlatformArch, Version};
 
+#[derive(Debug, Clone, Hash, PartialEq, Eq)]
 pub struct Dependency
 {
   pub name: String,

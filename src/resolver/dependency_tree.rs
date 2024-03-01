@@ -58,16 +58,20 @@ impl DependencyStack
       })
       .collect::<Vec<Dependency>>();
     for dep in deps {
+      let name_f = format!("{}@{}/{}/{}",
+        &dep.name.yellow(),
+        &dep.version.to_string().purple(),
+        &dep.distribution.to_string().purple(),
+        &dep.arch.to_string().blue()
+      );
       trace!("resolving direct dependency {}", &dep.name.yellow());
       if !reg.contains(&dep) {
-        error!("dependency {}@{}/{}/{} not found in registry",
-          &dep.name.yellow(),
-          &dep.version.to_string().purple(),
-          &dep.distribution.to_string().purple(),
-          &dep.arch.to_string().blue()
-        );
+        error!("dependency {name_f} not found in registry");
         error!("try updating local registry with poppy --sync or check manifest file");
         return Err(anyhow::anyhow!("dependency not found in registry"))
+      } else {
+        trace!("found {name_f} in registry")
+        // check cache
       }
     }
     debug!("resolving package {} - done!", &manifest.package.name.magenta());

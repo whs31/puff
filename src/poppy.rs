@@ -52,7 +52,9 @@ impl Poppy
         .cache_dir()
         .join(POPPY_CACHE_DIRECTORY_NAME)
         .to_str()
-        .unwrap()
+        .unwrap(),
+      config.remotes.artifactory_url.as_str(),
+      (config.auth.username.as_str(), config.auth.token.as_str())
     )?;
 
     Ok(Self {
@@ -219,7 +221,8 @@ impl Poppy
     fmt.insert("arch".to_string(), arch.clone().to_string());
     fmt.insert("distribution".to_string(), distribution.clone().to_string());
 
-    let url = strfmt::strfmt(&config.remotes.artifactory_url, &fmt).unwrap();
+    let url = strfmt::strfmt(&config.remotes.artifactory_url, &fmt)
+      .context("failed to format artifactory url")?;
     //debug!("artifactory prepared url: {}", url);
 
     crate::resolver::push::push_to_artifactory(

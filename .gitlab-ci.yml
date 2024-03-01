@@ -22,13 +22,13 @@ install-alse-first:
     rules:
         - when: manual
     stage: install
-    before_script:
+    # before_script:
         # - whereis cargo
         # - cargo --version
         # - ls -la /usr/bin/cargo
         
     script: 
-        echo "hello from alse" >> test.test
+        - echo "hello from alse" >> test.test
         # - cargo build --release
         # - cp target/release/poppy /local_bin
     artifacts:
@@ -36,9 +36,8 @@ install-alse-first:
 
 install-windows-first:
     tags: [widows-first]
-    needs: 
-        jobs: install-alse-first
-    sctipt:
+    needs: [install-alse-first]
+    script:
         - cat test.test
     
 

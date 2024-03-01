@@ -18,6 +18,26 @@ impl Cache
     Ok(Self { path: PathBuf::from(path) })
   }
 
+  pub fn get_or_download(&self, dependency: &Dependency) -> anyhow::Result<PathBuf>
+  {
+    if self.contains(dependency) {
+      trace!("{} exists in cache", dependency.name.magenta().bold());
+      let tar_name = format!("{}-{}.{}.{}-{}-{}.tar.gz",
+        dependency.name,
+        dependency.version.major,
+        dependency.version.minor,
+        dependency.version.patch,
+        dependency.arch.to_string(),
+        dependency.distribution.to_string()
+      );
+      return Ok(self.path
+        .join(&dependency.name)
+        .join(tar_name)
+      )
+    }
+    Err(anyhow::anyhow!("downloading is not implemented"))
+  }
+
   pub fn contains(&self, dependency: &Dependency) -> bool
   {
     // http://uav.radar-mms.com/artifactory/poppy-cxx-repo/radar/fmt/fmt-1.0.0-any-sources.tar.gz
@@ -40,6 +60,9 @@ impl Cache
       dependency.distribution.to_string()
     );
     trace!("checking {tar_name}...");
-    self.path.join(tar_name).exists()
+    self.path
+      .join(&dependency.name)
+      .join(tar_name)
+      .exists()
   }
 }

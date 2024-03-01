@@ -69,9 +69,11 @@ impl DependencyStack
         error!("dependency {name_f} not found in registry");
         error!("try updating local registry with poppy --sync or check manifest file");
         return Err(anyhow::anyhow!("dependency not found in registry"))
-      } else {
-        trace!("found {name_f} in registry")
-        // check cache
+      }
+      trace!("found {name_f} in registry");
+      if !self.cache.contains(&dep) {
+        trace!("dependency {name_f} not found in cache");
+        self.cache.get_or_download(&dep)?;
       }
     }
     debug!("resolving package {} - done!", &manifest.package.name.magenta());

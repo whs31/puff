@@ -54,6 +54,7 @@ impl Poppy
         .to_str()
         .unwrap(),
       config.remotes.artifactory_url.as_str(),
+      config.remotes.artifactory_api_url.as_str(),
       (config.auth.username.as_str(), config.auth.token.as_str())
     )?;
 

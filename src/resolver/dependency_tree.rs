@@ -14,11 +14,11 @@ pub struct DependencyStack
 
 impl DependencyStack
 {
-  pub fn new(cache_path: &str, artifactory_url: &str, oauth: (&str, &str)) -> anyhow::Result<Self>
+  pub fn new(cache_path: &str, artifactory_url: &str, artifactory_api_url: &str, oauth: (&str, &str)) -> anyhow::Result<Self>
   {
     Ok(Self
     {
-      cache: Cache::new(cache_path, artifactory_url, oauth)?,
+      cache: Cache::new(cache_path, artifactory_url, artifactory_api_url, oauth)?,
       stack: Vec::new()
     })
   }

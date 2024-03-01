@@ -2,12 +2,18 @@ use std::collections::HashMap;
 use anyhow::{Context, ensure};
 use colored::Colorize;
 use indicatif::{ProgressBar, ProgressDrawTarget, ProgressStyle};
-use log::trace;
+use log::{trace, warn};
 use futures_util::stream::StreamExt;
 use crate::resolver::Dependency;
 
 #[tokio::main]
-pub async fn pull_from_artifactory(dep: &Dependency, artifactory_base_url: &str, username: &str, token: &str) -> anyhow::Result<Vec<u8>> {
+pub async fn pull_from_artifactory(
+  dep: &Dependency,
+  artifactory_base_url: &str,
+  artifactory_api_url: &str,
+  username: &str,
+  token: &str
+) -> anyhow::Result<Vec<u8>> {
   trace!("pulling dependency {} from artifactory", dep.name.blue().bold());
   let client = reqwest::Client::builder()
     //.redirect(reqwest::redirect::Policy::none())
@@ -21,6 +27,11 @@ pub async fn pull_from_artifactory(dep: &Dependency, artifactory_base_url: &str,
   fmt.insert("distribution".to_string(), dep.distribution.clone().to_string());
   let url = strfmt::strfmt(artifactory_base_url, &fmt)
     .context("failed to format artifactory url")?;
+  let api_url = strfmt::strfmt(artifactory_api_url, &fmt)
+    .context("failed to format artifactory api url")?;
+
+  trace!("url: {}", url);
+  trace!("api url: {}", api_url);
 
   let result = client
     .get(url.as_str())
@@ -57,6 +68,24 @@ pub async fn pull_from_artifactory(dep: &Dependency, artifactory_base_url: &str,
   trace!("checking checksum...");
   let md5 = md5::compute(&data);
   trace!("md5: {:x}", md5);
-  // todo: parse json and compare md5
+
+  let checksum = client
+    .get(api_url)
+    .basic_auth(username, Some(token))
+    .send()
+    .await?
+    .text()
+    .await?;
+  let json: serde_json::Value = serde_json::from_str(checksum.as_str())?;
+  let md5_from_api = json
+    .get("checksums")
+    .and_then(|checksums| checksums.get("md5"))
+    .and_then(|checksum| checksum.as_str())
+    .context("checksum not found in api response")?;
+  trace!("api checksum: {}", md5_from_api);
+  if md5_from_api != format!("{:x}", md5) {
+    warn!("checksum mismatch");
+  }
+  //ensure!(md5_from_api == md5.hexdigest(), "md5 checksum mismatch");
   Ok(data)
 }

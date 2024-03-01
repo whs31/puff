@@ -8,12 +8,13 @@ pub struct Cache
 {
   path: PathBuf,
   artifactory_url: String,
+  artifactory_api_url: String,
   oauth: (String, String)
 }
 
 impl Cache
 {
-  pub fn new(path: &str, artifactory_url: &str, oauth: (&str, &str)) -> anyhow::Result<Self>
+  pub fn new(path: &str, artifactory_url: &str, artifactory_api_url: &str, oauth: (&str, &str)) -> anyhow::Result<Self>
   {
     if !PathBuf::from(path).exists() {
       std::fs::create_dir_all(path)?
@@ -21,6 +22,7 @@ impl Cache
     Ok(Self {
       path: PathBuf::from(path),
       artifactory_url: artifactory_url.to_string(),
+      artifactory_api_url: artifactory_api_url.to_string(),
       oauth: (oauth.0.to_string(), oauth.1.to_string())
     })
   }
@@ -46,6 +48,7 @@ impl Cache
     crate::resolver::pull::pull_from_artifactory(
       &dependency,
       &self.artifactory_url,
+      &self.artifactory_api_url,
       self.oauth.0.as_str(),
       self.oauth.1.as_str()
     )?;

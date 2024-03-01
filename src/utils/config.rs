@@ -15,7 +15,8 @@ pub struct ConfigRemote
 {
   pub registry_url: String,
   pub ci_url: String,
-  pub artifactory_url: String
+  pub artifactory_url: String,
+  pub artifactory_api_url: String
 }
 
 #[derive(Debug, Default, serde::Deserialize, serde::Serialize)]
@@ -41,7 +42,8 @@ impl Default for ConfigRemote
     Self {
       registry_url: String::from("http://uav.radar-mms.com/gitlab/test/essentials/poppy/poppy-registry.git"),
       ci_url: String::from("http://uav.radar-mms.com/gitlab/test/essentials/ci.git"),
-      artifactory_url: String::from("http://uav.radar-mms.com/artifactory/poppy-cxx-repo/radar/{name}/{name}-{major}.{minor}.{patch}-{arch}-{distribution}.tar.gz")
+      artifactory_url: String::from("http://uav.radar-mms.com/artifactory/poppy-cxx-repo/radar/{name}/{name}-{major}.{minor}.{patch}-{arch}-{distribution}.tar.gz"),
+      artifactory_api_url: String::from("http://uav.radar-mms.com/artifactory/api/storage/poppy-cxx-repo/radar/{name}/{name}-{major}.{minor}.{patch}-{arch}-{distribution}.tar.gz")
     }
   }
 }
@@ -76,6 +78,7 @@ impl Config
     debug!("registry url:    {}", self.remotes.registry_url.blue());
     debug!("ci url:          {}", self.remotes.ci_url.blue());
     debug!("artifactory url: {}", self.remotes.artifactory_url.blue());
+    debug!("artifactory api url: {}", self.remotes.artifactory_api_url.blue().dimmed());
 
     debug!("username: {}", if self.auth.username.is_empty() { "empty".red() } else { format!("**{}**", &self.auth.username[2..5]).green() });
     debug!("token: {}", if self.auth.token.is_empty() { "empty".red() } else { "********".green() });

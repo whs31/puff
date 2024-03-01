@@ -132,6 +132,7 @@ impl Poppy
     }
     let manifest = Manifest::from_pwd()?;
     manifest.pretty_print();
+    self.resolver.resolve(&manifest, &self.registry, self.env.arch.clone())?;
     Ok(self)
   }
 

@@ -4,6 +4,7 @@ use log::{debug, info, trace, warn};
 use walkdir::WalkDir;
 use crate::registry;
 use crate::registry::entry::{RegistryEntry, RegistryEntryRaw};
+use crate::resolver::Dependency;
 
 pub struct Registry
 {
@@ -45,6 +46,16 @@ impl Registry
 
     info!("sync completed");
     Ok(())
+  }
+
+  pub fn contains(&self, dependency: &Dependency) -> bool
+  {
+    self.packages.iter().any(|x| {
+      x.name == dependency.name
+        && x.versions.contains_key(&dependency.version)
+        && x.versions[&dependency.version].contains_key(&dependency.distribution)
+        && x.versions[&dependency.version][&dependency.distribution].contains(&dependency.arch)
+    })
   }
 
   fn fetch_local_cache(&mut self) -> anyhow::Result<()>

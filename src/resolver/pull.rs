@@ -1,4 +1,5 @@
 use std::collections::HashMap;
+use std::path::Path;
 use anyhow::{Context, ensure};
 use colored::Colorize;
 use indicatif::{ProgressBar, ProgressDrawTarget, ProgressStyle};
@@ -88,4 +89,43 @@ pub async fn pull_from_artifactory(
   }
   //ensure!(md5_from_api == md5.hexdigest(), "md5 checksum mismatch");
   Ok(data)
+}
+
+pub fn save_to(path: &str, data: &[u8]) -> anyhow::Result<()> {
+  trace!("saving {} bytes to {}", data.len(), path);
+  std::fs::create_dir_all(Path::new(path).parent().unwrap())?;
+  std::fs::write(path, data)?;
+  Ok(())
+}
+
+pub fn unpack_to(from: &str, to: &str) -> anyhow::Result<()> {
+  trace!("unpacking {} to {}...",
+    Path::new(from)
+      .file_name()
+      .context("failed to get filename for tar.gz")?
+      .to_str()
+      .context("failed to convert filename to str")?,
+    Path::new(to)
+      .file_name()
+      .context("failed to get filename for tar.gz")?
+      .to_str()
+      .context("failed to convert filename to str")?
+  );
+  std::fs::create_dir_all(to)?;
+  // unpack tar.gz
+  let mut archive = tar::Archive::new(std::fs::File::open(from)?);
+  archive.unpack(to)?;
+  trace!("unpacking {} to {}... OK!",
+    Path::new(from)
+      .file_name()
+      .context("failed to get filename for tar.gz")?
+      .to_str()
+      .context("failed to convert filename to str")?,
+    Path::new(to)
+      .file_name()
+      .context("failed to get filename for tar.gz")?
+      .to_str()
+      .context("failed to convert filename to str")?
+  );
+  Ok(())
 }

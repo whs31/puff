@@ -45,7 +45,7 @@ impl Cache
       )
     }
 
-    crate::resolver::pull::pull_from_artifactory(
+    let package = crate::resolver::pull::pull_from_artifactory(
       &dependency,
       &self.artifactory_url,
       &self.artifactory_api_url,
@@ -53,14 +53,20 @@ impl Cache
       self.oauth.1.as_str()
     )?;
 
-    // self.path
-    //   .join(&dependency.name)
-    //   .join(tar_name)
-    //   .as_path()
-    //   .to_str()
-    //   .context("path conversion failed")?
+    crate::resolver::pull::save_to(
+      &self.path
+        .join(&dependency.name)
+        .join(&tar_name)
+        .as_path()
+        .to_str()
+        .context("path conversion failed")?,
+      &package
+    )?;
 
-    Err(anyhow::anyhow!("not implemented"))
+    Ok(self.path
+      .join(&dependency.name)
+      .join(&tar_name)
+    )
   }
 
   pub fn contains(&self, dependency: &Dependency) -> bool

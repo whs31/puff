@@ -236,4 +236,17 @@ impl Poppy
     info!("pushing done!");
     Ok(())
   }
+
+  pub fn manifest_info(what: &str) -> anyhow::Result<()>
+  {
+    let manifest = Manifest::from_pwd()?;
+    match what {
+      "name" => println!("{}", manifest.package.name),
+      "version" => println!("{}", manifest.package.version),
+      "authors" => println!("{}", manifest.package.authors.context("authors not found")?.join(",")),
+      "description" => println!("{}", manifest.package.description.context("description not found")?),
+      _ => return Err(anyhow::anyhow!("unknown grep option"))
+    }
+    Ok(())
+  }
 }

@@ -33,4 +33,14 @@ pub struct Args
 
   /// Specify distribution to push to artifactory
   #[arg(long)] pub distribution: Option<String>,
+
+  /// Get specified field from manifest in current working folder
+  /// Allowed values:
+  ///   - name
+  ///   - version
+  ///   - authors
+  ///   - description
+  /// Example usage: poppy --manifest-info name
+  /// Output: example-package
+  #[arg(long, verbatim_doc_comment)] pub manifest_info: Option<String>,
 }

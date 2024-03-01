@@ -17,7 +17,11 @@ fn main() {
     std::process::exit(0);
   }
 
-  utils::cli::init_cli_logger("trace")
+  let level = match args.manifest_info.is_some() {
+    true => "info",
+    false => "trace"
+  };
+  utils::cli::init_cli_logger(level)
     .map_err(|e| eprintln!("failed to init cli logger. this is critical error and should never happen ({})", e) )
     .map_err(|_| std::process::exit(1) )
     .unwrap();
@@ -25,6 +29,16 @@ fn main() {
   if args.purge {
     poppy::Poppy::purge();
     std::process::exit(0);
+  }
+
+  if args.manifest_info.is_some() {
+    match poppy::Poppy::manifest_info(args.manifest_info.clone().unwrap().as_str()) {
+      Ok(_) => std::process::exit(0),
+      Err(e) => {
+        error!("failed to grep {}, reason: {}", args.manifest_info.unwrap().as_str(), e);
+        std::process::exit(1)
+      }
+    }
   }
 
   if args.push.is_some() {

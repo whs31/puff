@@ -36,6 +36,7 @@ install-alse-first:
 
 install-windows-first:
     tags: [windows-first]
+    stage: install
     needs: 
         - install-alse-first
     script:

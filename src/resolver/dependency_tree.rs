@@ -40,8 +40,8 @@ impl DependencyStackItem {
 
   pub fn install(&self, to: &str) -> anyhow::Result<()>
   {
-    let target_folder = Path::new(to)
-      .join(&self.dependency.name);
+    let target_folder = Path::new(to);
+      //.join(&self.dependency.name);
     trace!("installing {} to {}", self.pretty_print(), target_folder.display());
     std::fs::create_dir_all(&target_folder)?;
     self.unpack(target_folder

@@ -1,5 +1,5 @@
 use std::collections::HashMap;
-use std::path::{Path, PathBuf};
+use std::path::PathBuf;
 use anyhow::Context;
 use colored::Colorize;
 use log::{debug, info, trace};

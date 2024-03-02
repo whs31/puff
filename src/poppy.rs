@@ -168,6 +168,9 @@ impl Poppy
     println!("commit: {}", option_env!("GIT_COMMIT").unwrap_or("unknown").bold().magenta());
     println!("dirty: {}", option_env!("GIT_DIRTY").unwrap_or("unknown").bold().red());
     println!("build timestamp: {}", option_env!("SOURCE_TIMESTAMP").unwrap_or("unknown").green().bold().black());
+    println!("cli tool by {}", "whs31 <ryazantsev.dl@edu.spbstu.ru>".blue().bold());
+    println!("remote/ci server by {}", "spoo0k <mukhin.va@gmail.com>".blue().bold());
+    println!("written in rust with love");
     println!("copyright {}", "whs31 @ radar-mms (c) 2024".blue().bold());
   }
 

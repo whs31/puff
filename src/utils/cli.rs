@@ -6,7 +6,7 @@ use crate::consts::POPPY_NAME;
 
 fn log_format(
   w: &mut dyn std::io::Write,
-  now: &mut DeferredNow,
+  _now: &mut DeferredNow,
   record: &Record
 ) -> Result<(), std::io::Error>
 {

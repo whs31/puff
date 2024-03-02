@@ -8,6 +8,7 @@ install-dev:
     script: 
         - cargo build --release
         - cp target/release/poppy /usr/bin/
+        - cp target/release/poppy .
         - poppy --version
     artifacts:
         paths: 

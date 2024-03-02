@@ -36,8 +36,19 @@ package:
         paths:
             - ./poppy.tar.gz
 
+push-artifactory:
+    tags: [dev-utils]
+    stage: push
+    needs:
+        - job: package
+          artifacts: true
+    script:
+        - chmod +x ./poppup.py
+        - ./poppup.py --push --file=./poppy.tar.gz --name=poppy --arch=linux-x64
+
 stages:
     - build
     - install
     - package
+    - push
     

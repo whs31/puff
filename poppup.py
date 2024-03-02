@@ -1,3 +1,5 @@
+#!/usr/bin/env python3
+
 import requests
 import argparse
 
@@ -33,22 +35,43 @@ class Artifactory(object):
         r = requests.put(url, data=file, auth=(self.credentials.user, self.credentials.token))
         return r
 
+    def exists(self, _name, _version, _arch, _dist):
+        url = self.url.format(name=_name, version=_version, arch=_arch, dist=_dist)
+        r = requests.head(url, auth=(self.credentials.user, self.credentials.token))
+        return r
+
+class Cargo(object):
+    def __init__(self, cargo_toml_path):
+        self.cargo_toml_path = cargo_toml_path
+
+    def version(self):
+        with open(self.cargo_toml_path, 'r') as f:
+            for line in f.readlines():
+                if line.startswith('version = '):
+                    return line.split('=')[1].strip().strip('"')
+
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument('--push', action='store_true')
     parser.add_argument('--file', type=str)
     parser.add_argument('--name', type=str)
-    parser.add_argument('--version', type=str)
     parser.add_argument('--arch', type=str)
-    parser.add_argument('--dist', type=str)
     args = parser.parse_args()
 
-    print(args.file, args.name, args.version, args.arch, args.dist)
+    print('args: ', args.file, args.name, args.arch)
+
 
     artifactory = Artifactory(Credentials())
+    cargo = Cargo('./Cargo.toml')
     if args.push:
         file = open(args.file, 'rb')
-        artifactory.push(file, args.name, args.version, args.arch, args.dist)
+        version = cargo.version()
+        print(f'cargo version: {version}')
+        if not artifactory.exists(args.name, version, args.arch, 'executable'):
+            artifactory.push(file, args.name, version, args.arch, 'executable')
+            print(f'file {args.file} pushed to artifactory')
+        else:
+            print(f'file {args.file} already exists in artifactory')
 
 
 if __name__ == '__main__':

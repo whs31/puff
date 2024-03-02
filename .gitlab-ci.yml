@@ -9,6 +9,10 @@ install-dev:
         - cargo build --release
         - cp target/release/poppy /usr/bin/
         - poppy --version
+    artifacts:
+        paths: 
+            - poppy
+
 
 stages:
     - install

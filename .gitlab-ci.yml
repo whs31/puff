@@ -24,6 +24,15 @@ install-dev:
         paths: 
             - ./poppy
 
+package:
+    tags: [dev-utils]
+    stage: package
+    needs:
+        - job: build
+          artifacts: true
+    script:
+        - tar -czvf poppy.tar.gz poppy
+
 stages:
     - build
     - install

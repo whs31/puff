@@ -28,7 +28,7 @@ class Credentials(object):
 class Artifactory(object):
     def __init__(self, credentials):
         self.credentials = credentials
-        self.url = 'http://uav.radar-mms.com/artifactory/poppy-cxx-repo/radar/{name}/{name}-{version}-{arch}-{dist}.tar.gz'
+        self.url = 'http://213.170.107.251/artifactory/poppy-cxx-repo/radar/{name}/{name}-{version}-{arch}-{dist}.tar.gz'
 
     def push(self, file, _name, _version, _arch, _dist):
         url = self.url.format(name=_name, version=_version, arch=_arch, dist=_dist)

@@ -32,6 +32,9 @@ package:
           artifacts: true
     script:
         - tar -czvf poppy.tar.gz poppy
+    artifacts:
+        paths:
+            - ./poppy.tar.gz
 
 stages:
     - build

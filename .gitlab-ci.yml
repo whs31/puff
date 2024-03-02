@@ -1,20 +1,31 @@
 ---
+build:
+    tags: [dev-utils]
+    stage: build
+    before_script:
+        - cargo --version
+    script:
+        - cargo build --release
+        - cp target/release/poppy .
+    artifacts:
+        paths:
+            - ./poppy
+
 install-dev:
     tags: [dev-utils]
     stage: install
-    before_script:
-        - cargo --version
-        
-    script: 
-        - cargo build --release
-        - cp target/release/poppy /usr/bin/
-        - cp target/release/poppy .
+    needs:
+        - job: build
+          artifacts: true
+    script:
+        - cp ./poppy /usr/bin/
         - poppy --version
     artifacts:
         paths: 
-            - poppy
-
+            - ./poppy
 
 stages:
+    - build
     - install
+    - package
     

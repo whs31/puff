@@ -32,12 +32,16 @@ class Artifactory(object):
 
     def push(self, file, _name, _version, _arch, _dist):
         url = self.url.format(name=_name, version=_version, arch=_arch, dist=_dist)
+        print(f'pushing to url: {url}')
         r = requests.put(url, data=file, auth=(self.credentials.user, self.credentials.token))
+        print(f'response status code: {r.status_code}')
         return r
 
     def exists(self, _name, _version, _arch, _dist):
         url = self.url.format(name=_name, version=_version, arch=_arch, dist=_dist)
+        print(f'checking url: {url}')
         r = requests.head(url, auth=(self.credentials.user, self.credentials.token))
+        print(f'response status code: {r.status_code}')
         return r
 
 class Cargo(object):

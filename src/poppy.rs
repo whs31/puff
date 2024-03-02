@@ -3,7 +3,7 @@ use std::path::Path;
 use anyhow::{Context, ensure};
 use colored::Colorize;
 use log::{debug, error, info, trace, warn};
-use crate::consts::{POPPY_CACHE_DIRECTORY_NAME, POPPY_REGISTRY_DIRECTORY_NAME};
+use crate::consts::{POPPY_CACHE_DIRECTORY_NAME, POPPY_INSTALLATION_DIRECTORY_NAME, POPPY_REGISTRY_DIRECTORY_NAME};
 use crate::manifest::Manifest;
 use crate::registry::Registry;
 use crate::resolver::{DependencyStack};
@@ -53,6 +53,11 @@ impl Poppy
         .join(POPPY_CACHE_DIRECTORY_NAME)
         .to_str()
         .unwrap(),
+      std::env::current_dir()
+        .context("failed to get current directory")?
+        .join(POPPY_INSTALLATION_DIRECTORY_NAME)
+        .to_str()
+        .context("failed to convert path to string")?,
       config.remotes.artifactory_url.as_str(),
       config.remotes.artifactory_api_url.as_str(),
       (config.auth.username.as_str(), config.auth.token.as_str())
@@ -133,9 +138,10 @@ impl Poppy
       warn!("install will be skipped. see --help for more info");
       return Ok(self);
     }
-    let manifest = Manifest::from_pwd()?;
-    manifest.pretty_print();
-    self.resolver.resolve(&manifest, &self.registry, self.env.arch.clone())?;
+    self.resolver
+      .resolve(&self.registry, self.env.arch.clone())?
+      .install_dependencies()?;
+    info!("install completed successfully");
     Ok(self)
   }
 

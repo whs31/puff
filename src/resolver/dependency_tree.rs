@@ -1,4 +1,4 @@
-use std::path::MAIN_SEPARATOR;
+use std::path::{MAIN_SEPARATOR, Path};
 use anyhow::Context;
 use colored::Colorize;
 use log::{debug, error, info, trace, warn};
@@ -10,6 +10,7 @@ use crate::utils::helper_types::{Distribution, PlatformArch};
 pub struct DependencyStack
 {
   pub cache: Cache,
+  pub target_folder: String,
   stack: Vec<DependencyStackItem>
 }
 
@@ -36,27 +37,47 @@ impl DependencyStackItem {
         .dimmed()
     )
   }
+
+  pub fn install(&self, to: &str) -> anyhow::Result<()>
+  {
+    let target_folder = Path::new(to)
+      .join(&self.dependency.name);
+    trace!("installing {} to {}", self.pretty_print(), target_folder.display());
+    std::fs::create_dir_all(&target_folder)?;
+    self.unpack(target_folder
+      .to_str()
+      .context("failed to convert path to string")?
+    )
+  }
+
+  pub fn unpack(&self, to: &str) -> anyhow::Result<()>
+  {
+    crate::resolver::pull::unpack_to(self.archive_path.as_str(), to)
+      .context("failed to unpack dependency archive")
+  }
 }
 
 impl DependencyStack
 {
-  pub fn new(cache_path: &str, artifactory_url: &str, artifactory_api_url: &str, oauth: (&str, &str)) -> anyhow::Result<Self>
+  pub fn new(cache_path: &str, target_folder: &str, artifactory_url: &str, artifactory_api_url: &str, oauth: (&str, &str)) -> anyhow::Result<Self>
   {
     Ok(Self
     {
       cache: Cache::new(cache_path, artifactory_url, artifactory_api_url, oauth)?,
+      target_folder: String::from(target_folder),
       stack: Vec::new()
     })
   }
 
-  pub fn resolve(&mut self, manifest: &Manifest, reg: &Registry, arch: PlatformArch) -> anyhow::Result<&mut Self>
+  pub fn resolve(&mut self, reg: &Registry, arch: PlatformArch) -> anyhow::Result<&mut Self>
   {
+    let manifest = Manifest::from_pwd()?;
+    manifest.pretty_print();
     info!("resolving dependencies for top-level package {} for arch {}",
       &manifest.package.name.yellow(),
       &arch.to_string().yellow()
     );
-    let manifest = Manifest::from_pwd()?;
-    let raw = self.resolve_recursively(manifest, reg, arch)?;
+    let raw = self.resolve_recursively(manifest.clone(), reg, arch)?;
     info!("found {} direct and indirect dependencies", raw.len());
     raw
       .iter()
@@ -71,6 +92,11 @@ impl DependencyStack
     self.stack
       .iter()
       .for_each(|d| info!("- {}", d.pretty_print()));
+
+    if self.stack.is_empty() {
+      warn!("no dependencies found for package {}", &manifest.package.name.magenta());
+    }
+
     Ok(self)
   }
 
@@ -133,6 +159,17 @@ impl DependencyStack
     Ok(res)
   }
 
+  pub fn install_dependencies(&self) -> anyhow::Result<()>
+  {
+    debug!("install folder: {}", &self.target_folder);
+    self.stack
+      .iter()
+      .try_for_each(|d| d.install(self.target_folder.as_str()))
+  }
+
+  #[allow(dead_code)]
   pub fn len(&self) -> usize { self.stack.len() }
+
+  #[allow(dead_code)]
   pub fn is_empty(&self) -> bool  { self.stack.is_empty() }
 }

@@ -36,3 +36,6 @@ tempfile = "3.10.1"
 
 [build-dependencies]
 build-data = "0.1.5"
+
+[package.metadata.appimage]
+auto_link = true

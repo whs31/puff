@@ -64,7 +64,7 @@ install-alse-1:
           when: always
         - when: manual
     before_script:
-        - pip install requests
+        - pip3 install requests
     script:
         - python3 poppup.py --install-latest --arch=linux-x64 --where=/local_bin
         - poppy --version
@@ -82,7 +82,7 @@ install-alse-2:
         - job: push-artifactory
           artifacts: true
     before_script:
-        - pip install requests
+        - pip3 install requests
     script:
         - python3 poppup.py --install-latest --arch=linux-x64 --where=/local_bin
         - poppy --version

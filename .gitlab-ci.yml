@@ -12,10 +12,7 @@ build:
     script:
         - cargo build --release --target=x86_64-unknown-linux-musl
         - cp ./target/x86_64-unknown-linux-musl/release/poppy ./poppy
-        # - APPIMAGE_EXTRACT_AND_RUN=1 cargo appimage # --target=x86_64-unknown-linux-musl
-        # - cp target/appimage/poppy.AppImage .
-        # - mv poppy.AppImage poppy
-        # - chmod +x ./poppy
+
     artifacts:
         paths:
             - ./poppy
@@ -71,7 +68,7 @@ install-alse-1:
         - pip3 install requests
     script:
         - python3 poppup.py --install-latest --arch=linux-x64 --where=/local_bin
-        - APPIMAGE_EXTRACT_AND_RUN=1 poppy --version
+        - poppy --version
 
 install-alse-2:
     tags: [alse-second]
@@ -89,7 +86,7 @@ install-alse-2:
         - pip3 install requests
     script:
         - python3 poppup.py --install-latest --arch=linux-x64 --where=/local_bin
-        - APPIMAGE_EXTRACT_AND_RUN=1 poppy --version
+        - poppy --version
 
 stages:
     - build

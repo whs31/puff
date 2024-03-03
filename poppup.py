@@ -44,7 +44,7 @@ class Artifactory(object):
         print(f'response status code: {r.status_code}')
         return r
 
-    def install_latest(self, _arch):
+    def install_latest(self, _arch, _where):
         query = 'items.find({"repo": "poppy-cxx-repo", "name": {"$match": "poppy-*"}}).sort({"$desc": ["created"]}).limit(2)'
         r = requests.post(self.aql_url, data=query, auth=(self.credentials.user, self.credentials.token))
         print(f'response status code: {r.status_code}')
@@ -71,13 +71,10 @@ class Artifactory(object):
             # list the files
             for name in f.getnames():
                 print(name)
-        # copy poppy to usr/bin or C:\Program Files\poppy
 
-        if platform.system() == 'Windows':
-            print('not implemented for windows')
-        else:
-            os.chmod('poppy', 0o777)
-            shutil.copy('poppy', '/usr/bin/poppy')
+        os.chmod('poppy', 0o777)
+        shutil.copy('poppy', f'{_where}/poppy')
+        print(f'installed poppy to {_where}/poppy')
 
         os.remove('poppy-latest.tar.gz')
         os.remove('poppy')
@@ -108,14 +105,15 @@ def main():
     parser.add_argument('--file', type=str)
     parser.add_argument('--name', type=str)
     parser.add_argument('--arch', type=str)
+    parser.add_argument('--where', type=str)
     args = parser.parse_args()
 
-    print('args: ', args.file, args.name, args.arch)
+    print('args: ', args.file, args.name, args.arch, args.where)
 
 
     artifactory = Artifactory(Credentials())
     if args.install_latest:
-        artifactory.install_latest(args.arch)
+        artifactory.install_latest(args.arch, args.where)
 
     if args.push:
         cargo = Cargo('./Cargo.toml')

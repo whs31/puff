@@ -46,9 +46,32 @@ push-artifactory:
         - chmod +x ./poppup.py
         - ./poppup.py --push --file=./poppy.tar.gz --name=poppy --arch=linux-x64
 
+install-alse-1:
+    tags: [alse-first]
+    stage: install-runners
+    needs:
+        - job: push-artifactory
+          artifacts: true
+    script:
+        - chmod +x ./poppup.py
+        - ./poppup.py --install-latest --arch=linux-x64 --where=/local_bin
+        - poppy --version
+
+install-alse-1:
+    tags: [alse-second]
+    stage: install-runners
+    needs:
+        - job: push-artifactory
+          artifacts: true
+    script:
+        - chmod +x ./poppup.py
+        - ./poppup.py --install-latest --arch=linux-x64 --where=/local_bin
+        - poppy --version
+
 stages:
     - build
     - install
     - package
     - push
+    - install-runners
     

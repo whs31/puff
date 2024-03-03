@@ -15,7 +15,7 @@ build:
         - cp target/appimage/poppy.AppImage .
         - mv poppy.AppImage poppy
         - chmod +x ./poppy
-        - ./poppy --appimage-mount /tmp/mount_dhfgihsdfg
+        - APPIMAGE_EXTRACT_AND_RUN=1 ./poppy --appimage-mount /tmp/mount_dhfgihsdfg
         - ls /tmp/mount_dhfgihsdfg
     artifacts:
         paths:

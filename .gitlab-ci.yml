@@ -12,8 +12,9 @@ build:
     script:
         # - cargo build --release
         - APPIMAGE_EXTRACT_AND_RUN=1 cargo appimage # --target=x86_64-unknown-linux-musl
-        - cd target/appimage && ls -la && cd ../..
-        - cp target/release/poppy .
+        - cp target/appimage/poppy.AppImage .
+        - mv poppy.AppImage poppy
+        - chmod +x ./poppy
     artifacts:
         paths:
             - ./poppy

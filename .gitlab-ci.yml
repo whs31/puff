@@ -59,8 +59,7 @@ install-alse-1:
           when: always
         - when: manual
     script:
-        - chmod +x ./poppup.py
-        - ./poppup.py --install-latest --arch=linux-x64 --where=/local_bin
+        - python3 poppup.py --install-latest --arch=linux-x64 --where=/local_bin
         - poppy --version
 
 install-alse-2:
@@ -76,8 +75,7 @@ install-alse-2:
         - job: push-artifactory
           artifacts: true
     script:
-        - chmod +x ./poppup.py
-        - ./poppup.py --install-latest --arch=linux-x64 --where=/local_bin
+        - python3 poppup.py --install-latest --arch=linux-x64 --where=/local_bin
         - poppy --version
 
 stages:

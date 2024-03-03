@@ -88,6 +88,38 @@ install-alse-2:
         - python3 poppup.py --install-latest --arch=linux-x64 --where=/local_bin
         - poppy --version
 
+install-windows-1:
+    tags: [windows-first]
+    stage: install-runners
+    rules:
+        - if: $CI_PIPELINE_SOURCE == "trigger-install-windows"
+          when: always
+        - if: '$CI_COMMIT_TAG'
+          when: always
+        - when: manual
+    needs:
+        - job: push-artifactory
+          artifacts: true
+    script:
+        - python3 poppup.py --install-latest --arch=windows-x64 --where=/usr/local/bin
+        - poppy --version
+
+install-windows-2:
+    tags: [windows-second]
+    stage: install-runners
+    rules:
+        - if: $CI_PIPELINE_SOURCE == "trigger-install-windows"
+          when: always
+        - if: '$CI_COMMIT_TAG'
+          when: always
+        - when: manual
+    needs:
+        - job: push-artifactory
+          artifacts: true
+    script:
+        - python3 poppup.py --install-latest --arch=windows-x64 --where=/usr/local/bin
+        - poppy --version
+
 stages:
     - build
     - install

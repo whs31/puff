@@ -52,14 +52,22 @@ install-alse-1:
     needs:
         - job: push-artifactory
           artifacts: true
+    rules:
+        - if: $CI_PIPELINE_SOURCE == "trigger-install-alse"
+          when: always
+        - when: always
     script:
         - chmod +x ./poppup.py
         - ./poppup.py --install-latest --arch=linux-x64 --where=/local_bin
         - poppy --version
 
-install-alse-1:
+install-alse-2:
     tags: [alse-second]
     stage: install-runners
+    rules:
+        - if: $CI_PIPELINE_SOURCE == "trigger-install-alse"
+          when: always
+        - when: always
     needs:
         - job: push-artifactory
           artifacts: true

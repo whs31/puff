@@ -27,7 +27,7 @@ install-dev:
           artifacts: true
     script:
         - cp ./poppy /usr/bin/
-        - poppy --version
+        - APPIMAGE_EXTRACT_AND_RUN=1 poppy --version
     artifacts:
         paths: 
             - ./poppy
@@ -70,7 +70,7 @@ install-alse-1:
         - pip3 install requests
     script:
         - python3 poppup.py --install-latest --arch=linux-x64 --where=/local_bin
-        - poppy --version
+        - APPIMAGE_EXTRACT_AND_RUN=1 poppy --version
 
 install-alse-2:
     tags: [alse-second]
@@ -88,7 +88,7 @@ install-alse-2:
         - pip3 install requests
     script:
         - python3 poppup.py --install-latest --arch=linux-x64 --where=/local_bin
-        - poppy --version
+        - APPIMAGE_EXTRACT_AND_RUN=1 poppy --version
 
 stages:
     - build

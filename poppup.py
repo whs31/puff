@@ -44,6 +44,9 @@ class Artifactory(object):
 
         r = requests.get(latest_url, auth=(self.credentials.user, self.credentials.token))
         print(f'response status code: {r.status_code}')
+        if r.status_code > 400:
+            print(r.text)
+            os.exit(1)
 
         # save the tar
         with open('poppy-latest.tar.gz', 'wb') as f:

@@ -1,5 +1,5 @@
 use clap::Parser;
-use log::error;
+use log::{error, trace};
 use crate::args::Args;
 
 mod consts;
@@ -56,8 +56,24 @@ fn main() {
     poppy::Poppy::suggest_help()
   }
 
-  poppy::Poppy::new(utils::config::Config::create_or_load()
-    .expect("failed to load config"),
+  let mut config = utils::config::Config::create_or_load()
+    .expect("failed to load config");
+  if let Some(username) = &args.username {
+    config.auth.username = username.clone();
+    trace!("set username to {}", username.clone());
+    config.save()
+      .expect("failed to save config");
+  }
+
+  if let Some(token) = &args.token {
+    config.auth.token = token.clone();
+    trace!("set token to {}", token.clone());
+    config.save()
+      .expect("failed to save config");
+  }
+
+  poppy::Poppy::new(
+    config,
     args
   )
     .map_err(|e| { error!("fatal error in poppy creation: {}", e); std::process::exit(1) } )

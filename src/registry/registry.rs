@@ -10,18 +10,20 @@ pub struct Registry
 {
   pub packages: Vec<RegistryEntry>,
   registry_url: String,
-  registry_path: String
+  registry_path: String,
+  args: crate::args::Args
 }
 
 impl Registry
 {
-  pub fn new(url: &str, path: &str) -> Self
+  pub fn new(url: &str, path: &str, args: crate::args::Args) -> Self
   {
     Self
     {
       packages: vec![],
       registry_url: String::from(url),
-      registry_path: String::from(path)
+      registry_path: String::from(path),
+      args
     }
   }
 
@@ -38,7 +40,9 @@ impl Registry
       registry::git::clone_repository(
         &self.registry_url,
         &self.registry_path,
-        "main" // todo: branch
+        "main", // todo: branch
+        self.args.ci_git_username.clone(),
+        self.args.ci_git_token.clone()
       )?;
     }
 

@@ -31,7 +31,8 @@ impl Poppy
         .cache_dir()
         .join(POPPY_REGISTRY_DIRECTORY_NAME)
         .to_str()
-        .expect("converting registry path to string slice should never fail")
+        .expect("converting registry path to string slice should never fail"),
+      args.clone()
     );
 
     let env = match &args.arch {

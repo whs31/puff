@@ -46,4 +46,10 @@ pub struct Args
   /// Example usage: poppy --manifest-info name
   /// Output: example-package
   #[arg(long, verbatim_doc_comment)] pub manifest_info: Option<String>,
+
+  /// Gitlab-CI username
+  #[arg(long)] pub ci_git_username: Option<String>,
+
+  /// Gitlab-CI token
+  #[arg(long)] pub ci_git_token: Option<String>
 }

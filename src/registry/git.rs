@@ -3,7 +3,7 @@ use git2_credentials::CredentialHandler;
 use indicatif::{ProgressBar, ProgressDrawTarget, ProgressStyle};
 use log::{debug, trace, warn};
 
-pub fn clone_repository(url: &str, target_path: &str, __branch: &str) -> anyhow::Result<()>
+pub fn clone_repository(url: &str, target_path: &str, __branch: &str, username: Option<String>, token: Option<String>) -> anyhow::Result<()>
 {
   trace!("cloning git repository from {} to {}", url, target_path);
 
@@ -53,9 +53,25 @@ pub fn clone_repository(url: &str, target_path: &str, __branch: &str) -> anyhow:
     .download_tags(git2::AutotagOption::All)
     .update_fetchhead(true);
   std::fs::create_dir_all(target_path)?;
+
+  let url_proto = url.split("://").collect::<Vec<&str>>();
+  let url_proto = format!("{}://", url_proto[0]);
+  let url_rest = url.split(&url_proto).collect::<Vec<&str>>()[1];
+  let url_fixed = if let Some(username) = username {
+    if let Some(token) = token {
+      format!("{}{}:{}@{}", url_proto, username, token, url_rest)
+    } else {
+      format!("{}{}@{}", url_proto, username, url_rest)
+    }
+  } else {
+    url.to_string()
+  };
+
+  trace!("finalized url: {url_fixed}");
+
   git2::build::RepoBuilder::new()
     //.branch(branch)
     .fetch_options(fo)
-    .clone(url.as_str(), target_path.as_ref())?;
+    .clone(url_fixed.as_str(), target_path.as_ref())?;
   Ok(())
 }

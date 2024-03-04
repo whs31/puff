@@ -50,7 +50,7 @@ push-artifactory:
           artifacts: true
     script:
         - chmod +x ./poppup.py
-        - ./poppup.py --push --file=./poppy.tar.gz --name=poppy --arch=linux-x64
+        - ./poppup.py --push --file=./poppy.tar.gz --name=poppy --arch=linux-x64 --user gitlab_ci --token $ARTIFACTORY_REFERENCE_KEY
 
 install-alse-1:
     tags: [alse-first]

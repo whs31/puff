@@ -26,6 +26,9 @@ class Artifactory(object):
         print(f'pushing to url: {url}')
         r = requests.put(url, data=file, auth=(self.credentials.user, self.credentials.token))
         print(f'response status code: {r.status_code}')
+        if r.status_code > 400:
+            print(r.text)
+            os.exit(1)
         return r
 
     def install_latest(self, _arch, _where):

@@ -7,6 +7,7 @@ import os
 import platform
 import shutil
 import tarfile
+import sys
 
 class Credentials(object):
     def __init__(self, user, token, token_long=None):
@@ -28,7 +29,7 @@ class Artifactory(object):
         print(f'response status code: {r.status_code}')
         if r.status_code > 400:
             print(r.text)
-            os.exit(1)
+            sys.exit(1)
         return r
 
     def install_latest(self, _arch, _where):
@@ -49,7 +50,7 @@ class Artifactory(object):
         print(f'response status code: {r.status_code}')
         if r.status_code > 400:
             print(r.text)
-            os.exit(1)
+            sys.exit(1)
 
         # save the tar
         with open('poppy-latest.tar.gz', 'wb') as f:
@@ -102,6 +103,7 @@ def main():
     args = parser.parse_args()
 
     print('args: ', args.file, args.name, args.arch, args.where)
+    print(f'ci user: {args.user} \nci token: {args.token}')
 
 
     artifactory = Artifactory(Credentials(args.user, args.token, args.token_long))

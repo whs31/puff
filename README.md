@@ -1,5 +1,7 @@
 ![Header](docs/images/header.png)
 
+
+
 ### Описание
 **Poppy** - это пакетный менеджер для `C`/`C++`.
 - *Язык:* ![Rust](https://img.shields.io/badge/rust-%23000000.svg?style=for-the-badge&logo=rust&logoColor=white)
@@ -88,4 +90,3 @@ fmt = { version = { major = 1, minor = 2, patch = 3 }, distribution = "shared" }
 При возникших проблемах:
 - `poppy --help`
 - Если не помогло, открываем тикет здесь: [**YouTrack**](https://whs31.youtrack.cloud/projects/0-4?isNew=default)
-- 

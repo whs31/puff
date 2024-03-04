@@ -20,6 +20,7 @@ pub fn clone_repository(url: &str, target_path: &str, __branch: &str, username: 
   };
   let mut cb = git2::RemoteCallbacks::new();
   let git_config = git2::Config::open_default()?;
+  let no_fo = &username.is_some();
   let mut ch = CredentialHandler::new(git_config);
   cb.credentials(
     move |url, username, allowed| ch.try_next_credential(url, username, allowed)
@@ -57,7 +58,6 @@ pub fn clone_repository(url: &str, target_path: &str, __branch: &str, username: 
   let url_proto = url.split("://").collect::<Vec<&str>>();
   let url_proto = format!("{}://", url_proto[0]);
   let url_rest = url.split(&url_proto).collect::<Vec<&str>>()[1];
-  let no_fo = &username.is_some();
   let url_fixed = if let Some(username) = username {
     trace!("git username provided: {}", username.yellow());
     if let Some(token) = token {
@@ -73,8 +73,15 @@ pub fn clone_repository(url: &str, target_path: &str, __branch: &str, username: 
   trace!("finalized url: {url_fixed}");
 
   if no_fo.clone() {
-    git2::build::RepoBuilder::new()
-      .clone(url_fixed.clone().as_str(), target_path.as_ref())?;
+    debug!("cloning via cmd line");
+    let output = std::process::Command::new("git")
+      .arg("clone")
+      .arg(url_fixed.clone())
+      .arg(target_path)
+      .output()?;
+    if !output.status.success() {
+      return Err(anyhow::anyhow!("failed to clone repository: {}", String::from_utf8_lossy(&output.stderr)));
+    }
   } else {
     git2::build::RepoBuilder::new()
       //.branch(branch)

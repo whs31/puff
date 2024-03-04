@@ -57,8 +57,11 @@ pub fn clone_repository(url: &str, target_path: &str, __branch: &str, username: 
   let url_proto = url.split("://").collect::<Vec<&str>>();
   let url_proto = format!("{}://", url_proto[0]);
   let url_rest = url.split(&url_proto).collect::<Vec<&str>>()[1];
+  let no_fo = &username.is_some();
   let url_fixed = if let Some(username) = username {
+    trace!("git username provided: {}", username.yellow());
     if let Some(token) = token {
+      trace!("git token provided: ***{}***", token[3..token.len()-3].to_string().yellow());
       format!("{}{}:{}@{}", url_proto, username, token, url_rest)
     } else {
       format!("{}{}@{}", url_proto, username, url_rest)
@@ -69,9 +72,14 @@ pub fn clone_repository(url: &str, target_path: &str, __branch: &str, username: 
 
   trace!("finalized url: {url_fixed}");
 
-  git2::build::RepoBuilder::new()
-    //.branch(branch)
-    .fetch_options(fo)
-    .clone(url_fixed.as_str(), target_path.as_ref())?;
+  if no_fo.clone() {
+    git2::build::RepoBuilder::new()
+      .clone(url_fixed.clone().as_str(), target_path.as_ref())?;
+  } else {
+    git2::build::RepoBuilder::new()
+      //.branch(branch)
+      .fetch_options(fo)
+      .clone(url_fixed.clone().as_str(), target_path.as_ref())?;
+  }
   Ok(())
 }

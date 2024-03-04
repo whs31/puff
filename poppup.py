@@ -103,7 +103,7 @@ def main():
     args = parser.parse_args()
 
     print('args: ', args.file, args.name, args.arch, args.where)
-    print(f'ci user: {args.user} \nci token: {args.token}')
+    print(f'ci user: {args.user} \nci token: ***{args.token[3:12]}***')
 
 
     artifactory = Artifactory(Credentials(args.user, args.token, args.token_long))

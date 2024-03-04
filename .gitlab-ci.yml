@@ -48,9 +48,11 @@ push-artifactory:
     needs:
         - job: package
           artifacts: true
+    before_script:
+        - echo ${ARTIFACTORY_REFERENCE_KEY}
     script:
         - chmod +x ./poppup.py
-        - ./poppup.py --push --file=./poppy.tar.gz --name=poppy --arch=linux-x64 --user=gitlab_ci --token=$ARTIFACTORY_REFERENCE_KEY
+        - ./poppup.py --push --file=./poppy.tar.gz --name=poppy --arch=linux-x64 --user=gitlab_ci --token=${ARTIFACTORY_REFERENCE_KEY}
 
 install-alse-1:
     tags: [alse-first]
@@ -67,7 +69,7 @@ install-alse-1:
     before_script:
         - pip3 install requests
     script:
-        - python3 poppup.py --install-latest --arch=linux-x64 --where=/local_bin --user=gitlab_ci --token=$ARTIFACTORY_REFERENCE_KEY
+        - python3 poppup.py --install-latest --arch=linux-x64 --where=/local_bin --user=gitlab_ci --token=${ARTIFACTORY_REFERENCE_KEY}
         - poppy --version
 
 install-alse-2:
@@ -85,7 +87,7 @@ install-alse-2:
     before_script:
         - pip3 install requests
     script:
-        - python3 poppup.py --install-latest --arch=linux-x64 --where=/local_bin --user=gitlab_ci --token=$ARTIFACTORY_REFERENCE_KEY
+        - python3 poppup.py --install-latest --arch=linux-x64 --where=/local_bin --user=gitlab_ci --token=${ARTIFACTORY_REFERENCE_KEY}
         - poppy --version
 
 install-windows-1:
@@ -101,7 +103,7 @@ install-windows-1:
         - job: push-artifactory
           artifacts: true
     script:
-        - python3 poppup.py --install-latest --arch=windows-x64 --where=/usr/local/bin --user=gitlab_ci --token=$ARTIFACTORY_REFERENCE_KEY
+        - python3 poppup.py --install-latest --arch=windows-x64 --where=/usr/local/bin --user=gitlab_ci --token=${ARTIFACTORY_REFERENCE_KEY}
         - poppy --version
 
 install-windows-2:
@@ -117,7 +119,7 @@ install-windows-2:
         - job: push-artifactory
           artifacts: true
     script:
-        - python3 poppup.py --install-latest --arch=windows-x64 --where=/usr/local/bin --user=gitlab_ci --token=$ARTIFACTORY_REFERENCE_KEY
+        - python3 poppup.py --install-latest --arch=windows-x64 --where=/usr/local/bin --user=gitlab_ci --token=${ARTIFACTORY_REFERENCE_KEY}
         - poppy --version
 
 stages:

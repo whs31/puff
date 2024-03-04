@@ -16,7 +16,8 @@ pub struct ConfigRemote
   pub registry_url: String,
   pub ci_url: String,
   pub artifactory_url: String,
-  pub artifactory_api_url: String
+  pub artifactory_api_url: String,
+  pub artifactory_aql_url: String
 }
 
 #[derive(Debug, Default, serde::Deserialize, serde::Serialize)]
@@ -40,10 +41,11 @@ impl Default for ConfigRemote
 {
   fn default() -> Self {
     Self {
-      registry_url: String::from("http://uav.radar-mms.com/gitlab/test/essentials/poppy/poppy-registry.git"),
-      ci_url: String::from("http://uav.radar-mms.com/gitlab/test/essentials/ci.git"),
-      artifactory_url: String::from("http://uav.radar-mms.com/artifactory/poppy-cxx-repo/radar/{name}/{name}-{major}.{minor}.{patch}-{arch}-{distribution}.tar.gz"),
-      artifactory_api_url: String::from("http://uav.radar-mms.com/artifactory/api/storage/poppy-cxx-repo/radar/{name}/{name}-{major}.{minor}.{patch}-{arch}-{distribution}.tar.gz")
+      registry_url: String::from("http://213.170.107.251/gitlab/test/essentials/poppy/poppy-registry.git"),
+      ci_url: String::from("http://213.170.107.251/gitlab/test/essentials/ci.git"),
+      artifactory_url: String::from("http://213.170.107.251/artifactory/poppy-cxx-repo/radar/{name}/{name}-{major}.{minor}.{patch}-{arch}-{distribution}.tar.gz"),
+      artifactory_api_url: String::from("http://213.170.107.251/artifactory/api/storage/poppy-cxx-repo/radar/{name}/{name}-{major}.{minor}.{patch}-{arch}-{distribution}.tar.gz"),
+      artifactory_aql_url: String::from("http://213.170.107.251/artifactory/api/search/aql")
     }
   }
 }

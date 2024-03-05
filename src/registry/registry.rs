@@ -56,6 +56,25 @@ impl Registry
     Ok(())
   }
 
+  pub fn sync_aql(&mut self, lazy: bool) -> anyhow::Result<&mut Self>
+  {
+    info!("syncing with remote repository {}", "via aql".green().bold());
+    debug!("syncing into cache ({})", &self.registry_path.dimmed());
+    std::fs::create_dir_all(Path::new(&self.registry_path).parent().unwrap())?;
+
+    if lazy {
+      warn!("lazy sync is enabled. updating remote registry will not be performed unless cached registry is broken.");
+      if Path::new(&self.registry_path).exists() {
+        warn!("older registry found. skipping aql sync");
+        return Ok(self);
+      }
+    }
+
+    
+
+    Ok(self)
+  }
+
   pub fn contains(&self, dependency: &Dependency) -> bool
   {
     self.packages.iter().any(|x| {

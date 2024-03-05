@@ -58,5 +58,8 @@ pub struct Args
   ///
   /// Example usage: poppy --install-path
   /// Output: C:\\user\\.poppy\\dependencies (Windows) or /home/user/.poppy/dependencies (Linux)
-  #[arg(long, verbatim_doc_comment)] pub install_path: bool
+  #[arg(long, verbatim_doc_comment)] pub install_path: bool,
+
+  /// Force!
+  #[arg(long)] pub force: bool
 }

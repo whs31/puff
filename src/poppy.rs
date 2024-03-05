@@ -249,7 +249,8 @@ impl Poppy
         )?
       )?.as_slice(),
       config.auth.username.as_str(),
-      config.auth.token.as_str()
+      config.auth.token.as_str(),
+      args.force
     )?;
 
     info!("pushing done!");

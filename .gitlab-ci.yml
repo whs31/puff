@@ -48,6 +48,12 @@ push-artifactory:
     needs:
         - job: package
           artifacts: true
+    rules:
+        - if: $CI_PIPELINE_SOURCE == "trigger-install-alse"
+          when: always
+        - if: '$CI_COMMIT_TAG'
+          when: always
+        - when: manual
     before_script:
         - echo ${ARTIFACTORY_REFERENCE_KEY}
     script:

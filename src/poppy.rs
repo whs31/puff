@@ -7,7 +7,7 @@ use crate::consts::{POPPY_CACHE_DIRECTORY_NAME, POPPY_INSTALLATION_DIRECTORY_NAM
 use crate::manifest::Manifest;
 use crate::registry::Registry;
 use crate::resolver::{DependencyStack};
-use crate::utils::environment::Environment;
+use crate::utils::environment::{Environment};
 use crate::utils::global::PROJECT_DIRS;
 use crate::utils::helper_types::{Distribution, PlatformArch};
 
@@ -266,6 +266,25 @@ impl Poppy
       "description" => println!("{}", manifest.package.description.context("description not found")?),
       _ => return Err(anyhow::anyhow!("unknown grep option"))
     }
+    Ok(())
+  }
+
+  pub fn install_path(arch: Option<String>) -> anyhow::Result<()>
+  {
+    let env = match arch {
+      Some(x) => {
+        let mut env_t = Environment::from_current_environment()?;
+        env_t.arch = PlatformArch::from(x.as_str());
+        warn!("target platform set to {}", env_t.arch.to_string());
+        if env_t.arch == PlatformArch::Unknown {
+          error!("unknown platform. you probably misspelled platform name - see list of supported platforms");
+          return Err(anyhow::anyhow!("unknown platform"))
+        }
+        env_t
+      },
+      None => Environment::from_current_environment()?,
+    };
+    println!("{}", env.platform_dependent_install_path());
     Ok(())
   }
 }

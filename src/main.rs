@@ -17,7 +17,8 @@ fn main() {
     std::process::exit(0);
   }
 
-  let level = match args.manifest_info.is_some() {
+  let quiet = args.manifest_info.is_some() || args.install_path;
+  let level = match quiet {
     true => "info",
     false => "trace"
   };
@@ -39,6 +40,13 @@ fn main() {
         std::process::exit(1)
       }
     }
+  }
+
+  if args.install_path {
+    poppy::Poppy::install_path(args.arch)
+      .map_err(|e| { error!("failed to get install path: {}", e); std::process::exit(1) } )
+      .unwrap();
+    std::process::exit(0);
   }
 
   if args.push.is_some() {

@@ -51,5 +51,12 @@ pub struct Args
   #[arg(long)] pub ci_git_username: Option<String>,
 
   /// Gitlab-CI token
-  #[arg(long)] pub ci_git_token: Option<String>
+  #[arg(long)] pub ci_git_token: Option<String>,
+
+  /// Returns absolute path to dependencies directory of current manifest
+  /// Path string will be different for each platform (win32, linux)
+  ///
+  /// Example usage: poppy --install-path
+  /// Output: C:\\user\\.poppy\\dependencies (Windows) or /home/user/.poppy/dependencies (Linux)
+  #[arg(long, verbatim_doc_comment)] pub install_path: bool
 }

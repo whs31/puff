@@ -16,6 +16,7 @@ build:
     artifacts:
         paths:
             - ./poppy
+        expire_in: 1 hour
 
 install-dev:
     tags: [dev-utils]
@@ -29,6 +30,7 @@ install-dev:
     artifacts:
         paths: 
             - ./poppy
+        expire_in: 1 hour
 
 package:
     tags: [dev-utils]
@@ -41,6 +43,7 @@ package:
     artifacts:
         paths:
             - ./poppy.tar.gz
+        expire_in: 1 hour
 
 push-artifactory:
     tags: [dev-utils]

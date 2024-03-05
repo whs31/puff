@@ -3,14 +3,14 @@ use colored::Colorize;
 use log::{debug, trace};
 use crate::utils::global::PROJECT_DIRS;
 
-#[derive(Debug, serde::Deserialize, serde::Serialize)]
+#[derive(Debug, serde::Deserialize, serde::Serialize, Clone)]
 pub struct Config
 {
   pub remotes: ConfigRemote,
   pub auth: ConfigAuth
 }
 
-#[derive(Debug, serde::Deserialize, serde::Serialize)]
+#[derive(Debug, serde::Deserialize, serde::Serialize, Clone)]
 pub struct ConfigRemote
 {
   pub registry_url: String,
@@ -20,7 +20,7 @@ pub struct ConfigRemote
   pub artifactory_aql_url: String
 }
 
-#[derive(Debug, Default, serde::Deserialize, serde::Serialize)]
+#[derive(Debug, Default, serde::Deserialize, serde::Serialize, Clone)]
 pub struct ConfigAuth
 {
   pub username: String,

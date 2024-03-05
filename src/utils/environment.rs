@@ -3,6 +3,7 @@ use log::trace;
 use crate::consts::POPPY_INSTALLATION_DIRECTORY_NAME;
 use crate::utils::helper_types::{PlatformArch, Version};
 
+#[derive(Debug, Clone)]
 pub struct Environment
 {
   pub cmake_version: Version,

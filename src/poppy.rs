@@ -1,21 +1,20 @@
-use std::collections::HashMap;
-use std::path::Path;
 use anyhow::{Context, ensure};
 use colored::Colorize;
-use log::{debug, error, info, trace, warn};
+use log::{debug, error, info, warn};
 use crate::consts::{POPPY_CACHE_DIRECTORY_NAME, POPPY_INSTALLATION_DIRECTORY_NAME, POPPY_REGISTRY_DIRECTORY_NAME};
 use crate::manifest::Manifest;
 use crate::registry::Registry;
 use crate::resolver::{DependencyStack};
 use crate::utils::environment::{Environment};
 use crate::utils::global::PROJECT_DIRS;
-use crate::utils::helper_types::{Distribution, PlatformArch};
+use crate::utils::helper_types::{PlatformArch};
 
 pub struct Poppy
 {
   pub config: crate::utils::Config,
   pub registry: Registry,
   pub resolver: DependencyStack,
+  pub artifactory: crate::artifactory::Artifactory,
   args: crate::Args,
   env: Environment
 }
@@ -65,9 +64,10 @@ impl Poppy
     )?;
 
     Ok(Self {
-      config,
+      config: config.clone(),
       registry,
       resolver,
+      artifactory: crate::artifactory::Artifactory::new(&config, &args, &env),
       args,
       env
     })
@@ -88,6 +88,13 @@ impl Poppy
     if self.config.auth.username.is_empty() || self.config.auth.token.is_empty() {
       warn!("no username or token provided for artifactory oauth. please provide using --username and --token flags or enter credentials interactively");
       self.input_oauth()?;
+    }
+
+    if args.push.is_some() {
+      ensure!(self.args.push.as_ref().is_some() && !self.args.push.as_ref().unwrap().is_empty(), "push target cannot be empty");
+      self.artifactory
+        .push(&Manifest::from_pwd()?, args.push.as_ref().unwrap().as_str())?;
+      return Ok(());
     }
 
     self
@@ -202,59 +209,6 @@ impl Poppy
       Err(e) => error!("failed to purge cache folder: {}", e)
     }
     info!("done!");
-  }
-
-  pub fn push(config: crate::utils::Config, args: crate::Args) -> anyhow::Result<()>
-  {
-    debug!("pushing!");
-
-    ensure!(args.push.as_ref().is_some() && !args.push.as_ref().unwrap().is_empty(), "push target cannot be empty");
-    ensure!(args.arch.as_ref().is_some() && !args.arch.as_ref().unwrap().is_empty(), "push arch cannot be empty");
-    ensure!(args.distribution.as_ref().is_some() && !args.distribution.as_ref().unwrap().is_empty(), "push distribution cannot be empty");
-    ensure!(!config.auth.username.is_empty() && !config.auth.token.is_empty(),
-      "no username or token provided for artifactory oauth. please provide using --username and \
-      --token flags or enter credentials interactively via poppy --sync");
-
-    let arch = PlatformArch::from(args.arch.unwrap().as_str());
-    let distribution = Distribution::from(args.distribution.unwrap().as_str());
-    let push_target = args.push.context("empty push target!")?;
-
-    trace!("artifactory base url: {}", &config.remotes.artifactory_url);
-
-    let manifest = Manifest::from_pwd()?;
-
-    debug!("package name: {}", manifest.package.name.yellow().bold());
-    debug!("package version: {}", manifest.package.version.to_string().cyan().bold());
-    debug!("package tarball: {}", &push_target.purple().bold());
-    debug!("arch: {}", &arch.to_string().green().bold());
-    debug!("distribution: {}", &distribution.to_string().magenta().bold());
-
-    let mut fmt: HashMap<String, String> = HashMap::new();
-    fmt.insert("name".to_string(), manifest.package.name.clone());
-    fmt.insert("major".to_string(), manifest.package.version.clone().major.to_string());
-    fmt.insert("minor".to_string(), manifest.package.version.clone().minor.to_string());
-    fmt.insert("patch".to_string(), manifest.package.version.clone().patch.to_string());
-    fmt.insert("arch".to_string(), arch.clone().to_string());
-    fmt.insert("distribution".to_string(), distribution.clone().to_string());
-
-    let url = strfmt::strfmt(&config.remotes.artifactory_url, &fmt)
-      .context("failed to format artifactory url")?;
-    //debug!("artifactory prepared url: {}", url);
-
-    crate::resolver::push::push_to_artifactory(
-      url.as_str(),
-      crate::resolver::push::tar_to_binary(
-        Path::new(push_target.as_str()).to_str().context(
-          "failed to convert push target to string"
-        )?
-      )?.as_slice(),
-      config.auth.username.as_str(),
-      config.auth.token.as_str(),
-      args.force
-    )?;
-
-    info!("pushing done!");
-    Ok(())
   }
 
   pub fn manifest_info(what: &str) -> anyhow::Result<()>

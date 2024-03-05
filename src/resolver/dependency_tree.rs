@@ -1,7 +1,10 @@
+use std::cell::RefCell;
 use std::path::{MAIN_SEPARATOR, Path};
+use std::rc::Rc;
 use anyhow::Context;
 use colored::Colorize;
 use log::{debug, error, info, trace, warn};
+use crate::artifactory::Artifactory;
 use crate::manifest::Manifest;
 use crate::registry::Registry;
 use crate::resolver::{Cache, Dependency};
@@ -52,24 +55,24 @@ impl DependencyStackItem {
 
   pub fn unpack(&self, to: &str) -> anyhow::Result<()>
   {
-    crate::resolver::pull::unpack_to(self.archive_path.as_str(), to)
+    crate::artifactory::unpack_to(self.archive_path.as_str(), to)
       .context("failed to unpack dependency archive")
   }
 }
 
 impl DependencyStack
 {
-  pub fn new(cache_path: &str, target_folder: &str, artifactory_url: &str, artifactory_api_url: &str, oauth: (&str, &str)) -> anyhow::Result<Self>
+  pub fn new(cache_path: &str, target_folder: &str, artifactory: Rc<Artifactory>) -> anyhow::Result<Self>
   {
     Ok(Self
     {
-      cache: Cache::new(cache_path, artifactory_url, artifactory_api_url, oauth)?,
+      cache: Cache::new(cache_path, artifactory)?,
       target_folder: String::from(target_folder),
       stack: Vec::new()
     })
   }
 
-  pub fn resolve(&mut self, reg: &Registry, arch: PlatformArch) -> anyhow::Result<&mut Self>
+  pub fn resolve(&mut self, reg: Rc<RefCell<Registry>>, arch: PlatformArch) -> anyhow::Result<&mut Self>
   {
     let manifest = Manifest::from_pwd()?;
     manifest.pretty_print();
@@ -100,7 +103,7 @@ impl DependencyStack
     Ok(self)
   }
 
-  fn resolve_recursively(&self, manifest: Manifest, reg: &Registry, arch: PlatformArch) -> anyhow::Result<Vec<DependencyStackItem>>
+  fn resolve_recursively(&self, manifest: Manifest, reg: Rc<RefCell<Registry>>, arch: PlatformArch) -> anyhow::Result<Vec<DependencyStackItem>>
   {
     debug!("resolving dependencies for package {}", &manifest.package.name.magenta());
     if manifest.dependencies.is_none() || manifest.dependencies.as_ref().unwrap().is_empty() {
@@ -129,7 +132,7 @@ impl DependencyStack
         &dep.arch.to_string().blue()
       );
       trace!("resolving direct dependency {}", &dep.name.yellow());
-      if !reg.contains(&dep) {
+      if !reg.borrow().contains(&dep) {
         error!("dependency {name_f} not found in registry");
         error!("try updating local registry with poppy --sync or check manifest file");
         return Err(anyhow::anyhow!("dependency not found in registry"))
@@ -150,7 +153,7 @@ impl DependencyStack
               .to_str()
               .context("failed to convert path to string")?
           )?,
-          reg,
+          reg.clone(),
           arch
         )?
       );

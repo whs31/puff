@@ -1,7 +1,9 @@
 use std::path::Path;
+use std::rc::Rc;
 use colored::Colorize;
 use log::{debug, info, trace, warn};
 use walkdir::WalkDir;
+use crate::args::Args;
 use crate::registry;
 use crate::registry::entry::{RegistryEntry, RegistryEntryRaw};
 use crate::resolver::Dependency;
@@ -11,12 +13,12 @@ pub struct Registry
   pub packages: Vec<RegistryEntry>,
   registry_url: String,
   registry_path: String,
-  args: crate::args::Args
+  args: Rc<Args>
 }
 
 impl Registry
 {
-  pub fn new(url: &str, path: &str, args: crate::args::Args) -> Self
+  pub fn new(url: &str, path: &str, args: Rc<Args>) -> Self
   {
     Self
     {

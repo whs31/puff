@@ -1,31 +1,36 @@
+use std::cell::RefCell;
+use std::rc::Rc;
 use anyhow::{Context, ensure};
 use colored::Colorize;
 use log::{debug, error, info, warn};
+use crate::args::Args;
+use crate::artifactory::Artifactory;
 use crate::consts::{POPPY_CACHE_DIRECTORY_NAME, POPPY_INSTALLATION_DIRECTORY_NAME, POPPY_REGISTRY_DIRECTORY_NAME};
 use crate::manifest::Manifest;
 use crate::registry::Registry;
 use crate::resolver::{DependencyStack};
+use crate::utils::Config;
 use crate::utils::environment::{Environment};
 use crate::utils::global::PROJECT_DIRS;
 use crate::utils::helper_types::{PlatformArch};
 
 pub struct Poppy
 {
-  pub config: crate::utils::Config,
-  pub registry: Registry,
-  pub resolver: DependencyStack,
-  pub artifactory: crate::artifactory::Artifactory,
-  args: crate::Args,
-  env: Environment
+  pub config: Rc<RefCell<Config>>,
+  pub registry: Rc<RefCell<Registry>>,
+  pub resolver: Rc<RefCell<DependencyStack>>,
+  pub artifactory: Rc<Artifactory>,
+  args: Rc<Args>,
+  env: Rc<Environment>
 }
 
 impl Poppy
 {
-  pub fn new(config: crate::utils::Config, args: crate::Args) -> anyhow::Result<Self>
+  pub fn new(config: Rc<RefCell<Config>>, args: Rc<Args>) -> anyhow::Result<Self>
   {
     let dirs = PROJECT_DIRS.lock().unwrap();
     let registry = Registry::new(
-      config.remotes.registry_url.as_str(),
+      config.borrow().remotes.registry_url.as_str(),
       dirs
         .cache_dir()
         .join(POPPY_REGISTRY_DIRECTORY_NAME)
@@ -33,6 +38,7 @@ impl Poppy
         .expect("converting registry path to string slice should never fail"),
       args.clone()
     );
+    let registry = Rc::new(RefCell::new(registry));
 
     let env = match &args.arch {
       Some(x) => {
@@ -47,6 +53,8 @@ impl Poppy
       },
       None => Environment::from_current_environment()?,
     };
+    let env = Rc::new(env);
+    let artifactory = Rc::new(Artifactory::new(config.clone(), args.clone(), env.clone()));
     let resolver = DependencyStack::new(
       dirs
         .cache_dir()
@@ -58,16 +66,15 @@ impl Poppy
         .join(POPPY_INSTALLATION_DIRECTORY_NAME)
         .to_str()
         .context("failed to convert path to string")?,
-      config.remotes.artifactory_url.as_str(),
-      config.remotes.artifactory_api_url.as_str(),
-      (config.auth.username.as_str(), config.auth.token.as_str())
+      artifactory.clone()
     )?;
+    let resolver = Rc::new(RefCell::new(resolver));
 
     Ok(Self {
       config: config.clone(),
       registry,
       resolver,
-      artifactory: crate::artifactory::Artifactory::new(&config, &args, &env),
+      artifactory,
       args,
       env
     })
@@ -85,7 +92,7 @@ impl Poppy
       self.setup_oauth(args.username.as_ref().unwrap(), args.token.as_ref().unwrap())?;
     }
 
-    if self.config.auth.username.is_empty() || self.config.auth.token.is_empty() {
+    if self.config.borrow().auth.username.is_empty() || self.config.borrow().auth.token.is_empty() {
       warn!("no username or token provided for artifactory oauth. please provide using --username and --token flags or enter credentials interactively");
       self.input_oauth()?;
     }
@@ -100,6 +107,7 @@ impl Poppy
     self
       .print_environment()
       .sync(!args.lazy)?
+      .fresh(args.fresh)?
       .install(!args.install)?;
     Ok(())
   }
@@ -109,9 +117,9 @@ impl Poppy
     info!("setting up artifactory oauth for {}", username.bright_yellow());
     ensure!(!username.is_empty(), "username cannot be empty");
     ensure!(!token.is_empty(), "token cannot be empty");
-    self.config.auth.username = String::from(username);
-    self.config.auth.token = String::from(token);
-    self.config.save()?;
+    self.config.borrow_mut().auth.username = String::from(username);
+    self.config.borrow_mut().auth.token = String::from(token);
+    self.config.borrow().save()?;
     Ok(())
   }
 
@@ -136,7 +144,7 @@ impl Poppy
   }
 
   fn sync(&mut self, reclone: bool) -> anyhow::Result<&mut Self>  {
-    self.registry.sync(reclone)?;
+    self.registry.borrow_mut().sync(reclone)?;
     Ok(self)
   }
 
@@ -147,9 +155,38 @@ impl Poppy
       return Ok(self);
     }
     self.resolver
-      .resolve(&self.registry, self.env.arch.clone())?
+      .borrow_mut()
+      .resolve(self.registry.clone(), self.env.arch.clone())?
       .install_dependencies()?;
+    crate::utils::emplace::add_gitignore(
+      std::env::current_dir()?
+        .join(POPPY_INSTALLATION_DIRECTORY_NAME)
+        .to_str()
+        .unwrap(),
+    )?;
     info!("install completed successfully");
+    Ok(self)
+  }
+
+  pub fn clean() -> anyhow::Result<()>
+  {
+    debug!("cleaning up installation directory");
+    let path = std::env::current_dir()
+      .context("failed to get current directory")?
+      .join(POPPY_INSTALLATION_DIRECTORY_NAME)
+      .into_os_string()
+      .into_string()
+      .unwrap();
+
+    if std::fs::remove_dir_all(path.as_str()).is_err() {
+      warn!("failed to remove directory: {}", path.as_str());
+    }
+    Ok(())
+  }
+
+  pub fn fresh(&mut self, clean: bool) -> anyhow::Result<&mut Self>
+  {
+    if clean { Self::clean()?; }
     Ok(self)
   }
 

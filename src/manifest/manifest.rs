@@ -141,7 +141,7 @@ impl Manifest {
     //   );
     // std::fs::create_dir_all(tmp_dir_path.parent().unwrap())?;
 
-    crate::resolver::pull::unpack_to(
+    crate::artifactory::unpack_to(
       archive_path,
       tmp_dir_path.to_str().context("failed to convert path to str")?
     )?;

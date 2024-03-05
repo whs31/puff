@@ -1,29 +1,27 @@
 use std::path::PathBuf;
+use std::rc::Rc;
 use anyhow::Context;
 use colored::Colorize;
 use log::trace;
+use crate::artifactory::{Artifactory, SaveAs};
 use crate::resolver::Dependency;
 
 pub struct Cache
 {
   path: PathBuf,
-  artifactory_url: String,
-  artifactory_api_url: String,
-  oauth: (String, String)
+  artifactory: Rc<Artifactory>
 }
 
 impl Cache
 {
-  pub fn new(path: &str, artifactory_url: &str, artifactory_api_url: &str, oauth: (&str, &str)) -> anyhow::Result<Self>
+  pub fn new(path: &str, artifactory: Rc<Artifactory>) -> anyhow::Result<Self>
   {
     if !PathBuf::from(path).exists() {
       std::fs::create_dir_all(path)?
     }
     Ok(Self {
       path: PathBuf::from(path),
-      artifactory_url: artifactory_url.to_string(),
-      artifactory_api_url: artifactory_api_url.to_string(),
-      oauth: (oauth.0.to_string(), oauth.1.to_string())
+      artifactory,
     })
   }
 
@@ -45,23 +43,16 @@ impl Cache
       )
     }
 
-    let package = crate::resolver::pull::pull_from_artifactory(
-      &dependency,
-      &self.artifactory_url,
-      &self.artifactory_api_url,
-      self.oauth.0.as_str(),
-      self.oauth.1.as_str()
-    )?;
-
-    crate::resolver::pull::save_to(
-      &self.path
-        .join(&dependency.name)
-        .join(&tar_name)
-        .as_path()
-        .to_str()
-        .context("path conversion failed")?,
-      &package
-    )?;
+    self.artifactory
+      .pull(dependency)?
+      .save_as(
+        &self.path
+          .join(&dependency.name)
+          .join(&tar_name)
+          .as_path()
+          .to_str()
+          .context("path conversion failed")?
+      )?;
 
     Ok(self.path
       .join(&dependency.name)

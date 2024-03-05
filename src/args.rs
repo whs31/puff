@@ -61,5 +61,11 @@ pub struct Args
   #[arg(long, verbatim_doc_comment)] pub install_path: bool,
 
   /// Force!
-  #[arg(long)] pub force: bool
+  #[arg(long)] pub force: bool,
+
+  /// Clean dependencies folder and exit
+  #[arg(long)] pub clean: bool,
+
+  /// Clean dependencies folder and continue fresh installation
+  #[arg(short, long)] pub fresh: bool,
 }

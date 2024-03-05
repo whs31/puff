@@ -1,3 +1,5 @@
+use std::cell::RefCell;
+use std::rc::Rc;
 use clap::Parser;
 use log::{error, trace};
 use crate::args::Args;
@@ -30,6 +32,13 @@ fn main() {
 
   if args.purge {
     poppy::Poppy::purge(args.cache_only);
+    std::process::exit(0);
+  }
+
+  if args.clean {
+    poppy::Poppy::clean()
+      .map_err(|e| { error!("failed to clean: {}", e); std::process::exit(1) } )
+      .unwrap();
     std::process::exit(0);
   }
 
@@ -76,8 +85,8 @@ fn main() {
   }
 
   poppy::Poppy::new(
-    config,
-    args
+    Rc::new(RefCell::new(config)),
+    Rc::new(args)
   )
     .map_err(|e| { error!("fatal error in poppy creation: {}", e); std::process::exit(1) } )
     .unwrap()

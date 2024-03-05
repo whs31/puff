@@ -29,17 +29,6 @@ impl Poppy
   pub fn new(config: Rc<RefCell<Config>>, args: Rc<Args>) -> anyhow::Result<Self>
   {
     let dirs = PROJECT_DIRS.lock().unwrap();
-    let registry = Registry::new(
-      config.clone(),
-      dirs
-        .cache_dir()
-        .join(POPPY_REGISTRY_DIRECTORY_NAME)
-        .to_str()
-        .expect("converting registry path to string slice should never fail"),
-      args.clone()
-    );
-    let registry = Rc::new(RefCell::new(registry));
-
     let env = match &args.arch {
       Some(x) => {
         let mut env_t = Environment::from_current_environment()?;
@@ -55,6 +44,18 @@ impl Poppy
     };
     let env = Rc::new(env);
     let artifactory = Rc::new(Artifactory::new(config.clone(), args.clone(), env.clone()));
+    let registry = Registry::new(
+      config.clone(),
+      artifactory.clone(),
+      dirs
+        .cache_dir()
+        .join(POPPY_REGISTRY_DIRECTORY_NAME)
+        .to_str()
+        .expect("converting registry path to string slice should never fail"),
+      args.clone()
+    );
+    let registry = Rc::new(RefCell::new(registry));
+
     let resolver = DependencyStack::new(
       dirs
         .cache_dir()

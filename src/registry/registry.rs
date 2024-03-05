@@ -5,6 +5,7 @@ use colored::Colorize;
 use log::{debug, info, trace, warn};
 use walkdir::WalkDir;
 use crate::args::Args;
+use crate::artifactory::Artifactory;
 use crate::registry;
 use crate::registry::entry::{RegistryEntry, RegistryEntryRaw};
 use crate::resolver::Dependency;
@@ -14,18 +15,20 @@ pub struct Registry
 {
   pub packages: Vec<RegistryEntry>,
   config: Rc<RefCell<Config>>,
+  artifactory: Rc<Artifactory>,
   registry_path: String,
   args: Rc<Args>
 }
 
 impl Registry
 {
-  pub fn new(config: Rc<RefCell<Config>>, path: &str, args: Rc<Args>) -> Self
+  pub fn new(config: Rc<RefCell<Config>>, artifactory: Rc<Artifactory>, path: &str, args: Rc<Args>) -> Self
   {
     Self
     {
       packages: vec![],
       config,
+      artifactory,
       registry_path: String::from(path),
       args
     }
@@ -50,6 +53,7 @@ impl Registry
       )?;
     }
 
+    self.sync_aql(false)?; // todo
     self.fetch_local_cache()?;
 
     info!("sync completed");
@@ -70,7 +74,10 @@ impl Registry
       }
     }
 
-    
+    let raw = self.artifactory.query(r#"items.find({"repo": "poppy-cxx-repo", "name": {"$match": "*"}}).sort({"$desc": ["created"]})"#)?;
+    let json: serde_json::Value = serde_json::from_str(raw.as_str())?;
+    let mut packages = Vec::new();
+    // todo
 
     Ok(self)
   }

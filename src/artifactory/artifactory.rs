@@ -187,6 +187,22 @@ impl Artifactory
     }
     Ok(data)
   }
+
+  #[tokio::main]
+  pub async fn query(&self, query: &str) -> anyhow::Result<String>
+  {
+    let client = reqwest::Client::builder()
+      .build()?;
+    trace!("querying artifactory to {}", self.config.borrow().remotes.artifactory_aql_url.as_str().dimmed());
+    let result = client
+      .post(self.config.borrow().remotes.artifactory_aql_url.as_str())
+      .basic_auth(self.config.borrow().auth.username.as_str(), Some(self.config.borrow().auth.token.as_str()))
+      .body(String::from(query))
+      .send()
+      .await?;
+    trace!("query response status code: {}", result.status());
+    Ok(result.text().await?)
+  }
 }
 
 fn save_to(path: &str, data: &[u8]) -> anyhow::Result<()> {

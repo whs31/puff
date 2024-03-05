@@ -41,7 +41,13 @@ def main():
     r = artifactory.query(r"""
 items.find({"repo": "poppy-cxx-repo", "name": {"$match": "*"}}).sort({"$desc": ["created"]})
     """)
-    print(r.text)
+    names = []
+    for item in r.json()['results']:
+        names.append(item['name'])
+    for name in names:
+        print(name)
+    # print(r.text)
+
 
 if __name__ == '__main__':
     main()

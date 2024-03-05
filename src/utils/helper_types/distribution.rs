@@ -10,6 +10,8 @@ pub enum Distribution
   Shared,
   #[serde(rename = "sources")]
   Sources,
+  #[serde(rename = "executable")]
+  Executable,
   #[serde(rename = "???")]
   Unknown
 }
@@ -31,6 +33,7 @@ impl From<&str> for Distribution
       "static" | "static-lib" => Self::Static,
       "shared" | "dynamic" | "dynamic-lib" => Self::Shared,
       "sources" | "src" | "source" => Self::Sources,
+      "executable" | "bin" | "binaries" => Self::Executable,
       _ => Self::Unknown
     }
   }
@@ -53,6 +56,7 @@ impl Display for Distribution
       Self::Static => "static",
       Self::Shared => "shared",
       Self::Sources => "sources",
+      Self::Executable => "executable",
       _ => "unknown"
     })
   }

@@ -75,9 +75,14 @@ impl Registry
     }
 
     let raw = self.artifactory.query(r#"items.find({"repo": "poppy-cxx-repo", "name": {"$match": "*"}}).sort({"$desc": ["created"]})"#)?;
-    let parsed: crate::artifactory::query::PackageQueryResponse = serde_json::from_str(raw);
+    let parsed: crate::artifactory::query::PackageQueryResponse = serde_json::from_str(&raw)?;
 
-    // todo
+    for entry in parsed.results
+    {
+      let y = Dependency::from_package_name(entry.name.as_str())?;
+      trace!("found package: {}/{}/{}@{}", y.name, y.arch, y.distribution, y.version);
+      // todo: to registry entry
+    }
 
     Ok(self)
   }

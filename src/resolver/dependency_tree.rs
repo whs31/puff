@@ -165,6 +165,7 @@ impl DependencyStack
   pub fn install_dependencies(&self) -> anyhow::Result<()>
   {
     debug!("install folder: {}", &self.target_folder);
+    std::fs::create_dir_all(&self.target_folder)?;
     self.stack
       .iter()
       .try_for_each(|d| d.install(self.target_folder.as_str()))

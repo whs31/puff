@@ -30,7 +30,7 @@ impl Poppy
   {
     let dirs = PROJECT_DIRS.lock().unwrap();
     let registry = Registry::new(
-      config.borrow().remotes.registry_url.as_str(),
+      config.clone(),
       dirs
         .cache_dir()
         .join(POPPY_REGISTRY_DIRECTORY_NAME)

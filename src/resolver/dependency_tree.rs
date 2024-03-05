@@ -105,9 +105,9 @@ impl DependencyStack
 
   fn resolve_recursively(&self, manifest: Manifest, reg: Rc<RefCell<Registry>>, arch: PlatformArch) -> anyhow::Result<Vec<DependencyStackItem>>
   {
-    debug!("resolving dependencies for package {}", &manifest.package.name.magenta());
+    trace!("resolving dependencies for package {}", &manifest.package.name.magenta());
     if manifest.dependencies.is_none() || manifest.dependencies.as_ref().unwrap().is_empty() {
-      debug!("{} has no direct dependencies!", &manifest.package.name.magenta());
+      trace!("{} has no direct dependencies!", &manifest.package.name.magenta());
       return Ok(Vec::new())
     }
 
@@ -137,7 +137,7 @@ impl DependencyStack
         error!("try updating local registry with poppy --sync or check manifest file");
         return Err(anyhow::anyhow!("dependency not found in registry"))
       }
-      debug!("found {name_f} in registry");
+      trace!("found {name_f} in registry");
       let archive = self.cache.get_or_download(&dep)?;
       res.push(DependencyStackItem {
         dependency: dep,

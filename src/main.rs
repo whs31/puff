@@ -23,7 +23,10 @@ fn main() {
   let quiet = args.manifest_info.is_some() || args.install_path;
   let level = match quiet {
     true => "info",
-    false => "trace"
+    false => match args.verbose {
+      true => "trace",
+      false => "debug",
+    }
   };
   utils::cli::init_cli_logger(level)
     .map_err(|e| eprintln!("failed to init cli logger. this is critical error and should never happen ({})", e) )

@@ -1,3 +1,4 @@
+use std::cell::RefCell;
 use std::path::Path;
 use std::rc::Rc;
 use colored::Colorize;
@@ -7,23 +8,24 @@ use crate::args::Args;
 use crate::registry;
 use crate::registry::entry::{RegistryEntry, RegistryEntryRaw};
 use crate::resolver::Dependency;
+use crate::utils::Config;
 
 pub struct Registry
 {
   pub packages: Vec<RegistryEntry>,
-  registry_url: String,
+  config: Rc<RefCell<Config>>,
   registry_path: String,
   args: Rc<Args>
 }
 
 impl Registry
 {
-  pub fn new(url: &str, path: &str, args: Rc<Args>) -> Self
+  pub fn new(config: Rc<RefCell<Config>>, path: &str, args: Rc<Args>) -> Self
   {
     Self
     {
       packages: vec![],
-      registry_url: String::from(url),
+      config,
       registry_path: String::from(path),
       args
     }
@@ -40,7 +42,7 @@ impl Registry
     }
     if reclone || !std::path::Path::new(&self.registry_path).exists() {
       registry::git::clone_repository(
-        &self.registry_url,
+        &self.config.borrow().remotes.registry_url,
         &self.registry_path,
         "main", // todo: branch
         self.args.ci_git_username.clone(),

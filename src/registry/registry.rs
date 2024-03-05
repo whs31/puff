@@ -75,8 +75,8 @@ impl Registry
     }
 
     let raw = self.artifactory.query(r#"items.find({"repo": "poppy-cxx-repo", "name": {"$match": "*"}}).sort({"$desc": ["created"]})"#)?;
-    let json: serde_json::Value = serde_json::from_str(raw.as_str())?;
-    let mut packages = Vec::new();
+    let parsed: crate::artifactory::query::PackageQueryResponse = serde_json::from_str(raw);
+
     // todo
 
     Ok(self)

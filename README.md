@@ -189,10 +189,3 @@ fmt = { version = { major = 1, minor = 2, patch = 3 }, distribution = "shared" }
 При возникших проблемах:
 - `poppy --help`
 - Если не помогло, открываем тикет здесь: [**YouTrack**](https://whs31.youtrack.cloud/projects/0-4?isNew=default)
-
-### CI/CD
-Вызов из раннера осуществляется следующими командами:
-```shell
-poppy --purge
-poppy --sync --install --username gitlab_ci --token ${ARTIFACTORY_REFERENCE_KEY} --ci-git-username gitlab-ci-token --ci-git-token ${CI_JOB_TOKEN}
-```

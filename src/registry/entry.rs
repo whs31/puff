@@ -65,12 +65,24 @@ impl RegistryEntry
   pub fn pretty_format(&self) -> String
   {
     let mut str_t = format!("{:<12}: ", self.name.yellow().bold());
+    let mut flag = false;
+    let largest_version = self.versions
+      .keys()
+      .max();
     for (v, dist) in &self.versions
     {
-      str_t = format!("{} {:<8}",
-        str_t,
-        v.to_string().green().bold()
-      );
+      if !flag {
+        if v != largest_version.unwrap() {
+          continue;
+        }
+        str_t = format!("{} {:<8}",
+          str_t,
+          v.to_string().green().bold()
+        );
+        flag = true;
+      } else {
+        continue;
+      }
 
       for (d, platforms) in dist
       {
@@ -87,6 +99,12 @@ impl RegistryEntry
         }
         str_t = format!("{} ", str_t);
       }
+    }
+    if self.versions.len() > 1 {
+      str_t = format!("{}and {} other versions",
+        str_t,
+        format!("{}", self.versions.len() - 1).magenta().bold()
+      );
     }
     str_t
   }

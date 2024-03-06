@@ -1,6 +1,8 @@
 use std::cell::RefCell;
+use std::collections::HashMap;
 use std::path::Path;
 use std::rc::Rc;
+use anyhow::Context;
 use colored::Colorize;
 use log::{debug, info, trace, warn};
 use walkdir::WalkDir;
@@ -34,32 +36,6 @@ impl Registry
     }
   }
 
-  pub fn sync(&mut self, reclone: bool) -> anyhow::Result<()>
-  {
-    info!("syncing with remote repository");
-    debug!("syncing into cache ({})", &self.registry_path.dimmed());
-    std::fs::create_dir_all(Path::new(&self.registry_path).parent().unwrap())?;
-
-    if !reclone {
-      warn!("lazy sync is enabled. updating remote registry will not be performed unless cached registry is broken.");
-    }
-    if reclone || !std::path::Path::new(&self.registry_path).exists() {
-      registry::git::clone_repository(
-        &self.config.borrow().remotes.registry_url,
-        &self.registry_path,
-        "main", // todo: branch
-        self.args.ci_git_username.clone(),
-        self.args.ci_git_token.clone()
-      )?;
-    }
-
-    self.sync_aql(false)?; // todo
-    self.fetch_local_cache()?;
-
-    info!("sync completed");
-    Ok(())
-  }
-
   pub fn sync_aql(&mut self, lazy: bool) -> anyhow::Result<&mut Self>
   {
     info!("syncing with remote repository {}", "via aql".green().bold());
@@ -70,7 +46,8 @@ impl Registry
       warn!("lazy sync is enabled. updating remote registry will not be performed unless cached registry is broken.");
       if Path::new(&self.registry_path).exists() {
         warn!("older registry found. skipping aql sync");
-        return Ok(self);
+        // todo: cache registry
+        //return Ok(self);
       }
     }
 
@@ -80,9 +57,65 @@ impl Registry
     for entry in parsed.results
     {
       let y = Dependency::from_package_name(entry.name.as_str())?;
-      trace!("found package: {}/{}/{}@{}", y.name, y.arch, y.distribution, y.version);
-      // todo: to registry entry
+      // trace!("found package: {}/{}/{}@{}", y.name, y.arch, y.distribution, y.version);
+      if self.packages
+        .iter()
+        .any(|x| x.name == y.name)
+      {
+        let reg_entry = self.packages
+          .iter_mut()
+          .find(|x| x.name == y.name)
+          .context("weird things happened...")?;
+        if reg_entry.versions
+          .contains_key(&y.version)
+        {
+          if reg_entry.versions
+            .get_mut(&y.version)
+            .unwrap()
+            .contains_key(&y.distribution)
+          {
+            if reg_entry.versions
+              .get_mut(&y.version)
+              .unwrap()
+              .get_mut(&y.distribution)
+              .unwrap()
+              .contains(&y.arch)
+            {
+              trace!("duplicate package: {}/{}/{}@{}", y.name, y.arch, y.distribution, y.version);
+              continue;
+            }
+
+            reg_entry.versions
+              .get_mut(&y.version)
+              .unwrap()
+              .get_mut(&y.distribution)
+              .unwrap()
+              .push(y.arch);
+          } else {
+            reg_entry.versions
+              .get_mut(&y.version)
+              .unwrap()
+              .insert(y.distribution, vec![y.arch]);
+          }
+        } else {
+          reg_entry.versions
+            .insert(y.version, HashMap::from([(y.distribution, vec![y.arch])]));
+        }
+      } else {
+        let reg_entry = RegistryEntry {
+          name: y.name,
+          versions: HashMap::from([(y.version, HashMap::from([(y.distribution, vec![y.arch])]))]),
+        };
+        self.packages.push(reg_entry);
+      }
     }
+
+    for entry in &self.packages
+    {
+      debug!("found package: {}", &entry.pretty_format());
+    }
+
+    info!("sync done (found {} packages)", self.packages.len());
 
     Ok(self)
   }
@@ -95,46 +128,5 @@ impl Registry
         && x.versions[&dependency.version].contains_key(&dependency.distribution)
         && x.versions[&dependency.version][&dependency.distribution].contains(&dependency.arch)
     })
-  }
-
-  fn fetch_local_cache(&mut self) -> anyhow::Result<()>
-  {
-    debug!("fetching registry cache");
-    let yamls = self.collect_yamls()?
-      .into_iter()
-      .map(|y| Self::parse_yaml(&y))
-      .collect::<Result<Vec<_>, _>>()?;
-    self.packages = yamls;
-    for entry in &self.packages
-    {
-      debug!("found package: {}", &entry.pretty_format());
-    }
-    Ok(())
-  }
-
-  fn collect_yamls(&self) -> anyhow::Result<Vec<String>>
-  {
-    trace!("collecting yamls");
-    let mut yamls = vec![];
-    for entry in WalkDir::new(self.registry_path.as_str())
-      .into_iter()
-      .filter_map(|e| e.ok())
-      .filter(|e| e.file_type().is_file()
-        && e.path().extension().is_some()
-        && e.path().extension().unwrap() == "yml"
-        && !e.path().file_name().unwrap().to_str().unwrap().starts_with(".")
-      )
-    {
-      let content = std::fs::read_to_string(entry.path())?;
-      yamls.push(content);
-    }
-    trace!("found {} yamls!", yamls.len());
-    Ok(yamls)
-  }
-
-  fn parse_yaml(yaml: &str) -> anyhow::Result<RegistryEntry>
-  {
-    let entry: RegistryEntryRaw = serde_yaml::from_str(yaml)?;
-    Ok(entry.try_into()?)
   }
 }

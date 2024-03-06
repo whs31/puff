@@ -145,7 +145,7 @@ impl Poppy
   }
 
   fn sync(&mut self, reclone: bool) -> anyhow::Result<&mut Self>  {
-    self.registry.borrow_mut().sync(reclone)?;
+    self.registry.borrow_mut().sync_aql(!reclone)?;
     Ok(self)
   }
 

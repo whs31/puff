@@ -136,8 +136,10 @@ test
 ### Использование
 `Poppy` использует manifest-файлы для разрешения зависимостей. 
 
-В существующем или новом проекте рядом с `CMakeLists.txt` нужно создать файл с именем:
+В существующем или новом проекте рядом с `CMakeLists.txt` нужно создать файл с одним из следующих имен (**можно выбрать какое нравится больше**):
 - `poppy-manifest.toml`
+- `poppy.toml`
+- `pppm.toml`
 
 В этом файле будет находится описание пакета: имя, версии и зависимости. В каждом пакете обязательно должен быть manifest-файл.
 
@@ -145,7 +147,9 @@ test
 ```toml
 [package]
 name = "test"
-authors = ["whs31 <whs31@github.io>"]
+authors = [
+  "whs31 <whs31@github.io>"
+]
 description = "This is an example manifest"
 
 [package.version]
@@ -165,7 +169,7 @@ fmt = { version = { major = 1, minor = 2, patch = 3 }, distribution = "shared" }
 
 #### Как узнать какие библиотеки доступны?
 Для этого можно написать команду `poppy --sync`, которая выдаст список библиотек в реестре `poppy`:
-![img.png](img.png)
+![img.png](docs/images/img_2.png)
 
 #### Poppy требует авторизацию в артифактори! Что делать?
 Необходимо написать следующие команды:

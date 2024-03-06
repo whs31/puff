@@ -43,6 +43,8 @@ impl Default for ManifestPackage
 }
 
 impl Manifest {
+  #[allow(dead_code)]
+  #[deprecated(note = "copy-paste instead")]
   pub fn from_cli_input() -> anyhow::Result<Self>
   {
     info!("enter package name:");
@@ -150,6 +152,7 @@ impl Manifest {
     )
   }
 
+  #[allow(dead_code)]
   pub fn save(&self) -> anyhow::Result<()>
   {
     let path = std::env::current_dir()?

@@ -2,8 +2,8 @@ use std::cell::RefCell;
 use std::rc::Rc;
 use anyhow::{Context, ensure};
 use colored::Colorize;
-use log::{debug, error, info, warn};
-use crate::args::{Args, Commands};
+use log::{debug, error, info, trace, warn};
+use crate::args::{Args, Commands, InstallArgs, PurgeArgs};
 use crate::artifactory::Artifactory;
 use crate::consts::{POPPY_CACHE_DIRECTORY_NAME, POPPY_INSTALLATION_DIRECTORY_NAME, POPPY_REGISTRY_DIRECTORY_NAME};
 use crate::manifest::Manifest;
@@ -84,10 +84,6 @@ impl Poppy
   pub fn run(&mut self) -> anyhow::Result<()>
   {
     let args = self.args.clone();
-    if args.create {
-      self.create_manifest()?;
-      return Ok(());
-    }
 
     if args.username.is_some() && args.token.is_some() {
       self.setup_oauth(args.username.as_ref().unwrap(), args.token.as_ref().unwrap())?;
@@ -99,10 +95,10 @@ impl Poppy
     }
 
     match args.command.as_ref().context("command not found")? {
-      Commands::Push { name: n } => {
-        ensure!(n.is_some(), "name is required for push command");
+      Commands::Push(x) => {
+        ensure!(x.name.is_some(), "name is required for push command");
         self.artifactory
-          .push(&Manifest::from_pwd()?, n.as_ref().unwrap())?;
+          .push(&Manifest::from_pwd()?, x.name.as_ref().unwrap())?;
         return Ok(());
       }
       _ => {}
@@ -110,8 +106,8 @@ impl Poppy
 
     self
       .print_environment()
-      .sync(!args.lazy)?
-      .fresh(args.fresh)?
+      .sync(!matches!(args.command, Some(Commands::Install(InstallArgs { lazy: true, .. }))))?
+      .fresh(matches!(args.command, Some(Commands::Install(InstallArgs { fresh: true, .. }))))?
       .install()?;
     Ok(())
   }
@@ -190,15 +186,6 @@ impl Poppy
     Ok(self)
   }
 
-  fn create_manifest(&self) -> anyhow::Result<()>
-  {
-    info!("creating new manifest in current working folder");
-    Manifest::from_cli_input()?
-      .save()?;
-    info!("manifest created successfully");
-    Ok(())
-  }
-
   pub fn version()
   {
     println!("{}", crate::utils::ascii::POPPY_ASCII_ART.yellow().bold());
@@ -219,24 +206,28 @@ impl Poppy
     println!("copyright {}", "whs31 @ radar-mms (c) 2024".blue().bold());
   }
 
-  pub fn purge(cache_only: bool)
+  pub fn purge(args: &PurgeArgs)
   {
-    match cache_only {
-      true => warn!("purging cache folder only"),
-      false => warn!("purging config and cache folders")
+    if !args.all && !args.config && !args.cache {
+      error!("nothing to purge. use --all, --config or --cache to purge");
+      std::process::exit(1);
     }
     let dirs = PROJECT_DIRS.lock().unwrap();
     let config_folder = dirs.config_dir();
     let cache_folder = dirs.cache_dir();
-    if !cache_only {
-      match std::fs::remove_dir_all(config_folder) {
-        Ok(_) => debug!("purged config folder successfully"),
-        Err(e) => error!("failed to purge config folder: {}", e)
+    if args.cache || args.all {
+      warn!("purging cache folder");
+      match std::fs::remove_dir_all(cache_folder) {
+        Ok(_) => debug!("purged cache folder successfully"),
+        Err(e) => trace!("failed to purge cache folder: {}", e)
       }
     }
-    match std::fs::remove_dir_all(cache_folder) {
-      Ok(_) => debug!("purged cache folder successfully"),
-      Err(e) => error!("failed to purge cache folder: {}", e)
+    if args.config || args.all {
+      warn!("purging config folder");
+      match std::fs::remove_dir_all(config_folder) {
+        Ok(_) => debug!("purged config folder successfully"),
+        Err(e) => trace!("failed to purge config folder: {}", e)
+      }
     }
     info!("done!");
   }

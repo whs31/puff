@@ -10,35 +10,14 @@ pub struct Args
   /// Print poppy version
   #[arg(long)] pub version: bool,
 
-  /// Sync remote registry
-  #[arg(short, long)] pub sync: bool,
-
   /// Override platform arch (default: native)
   #[arg(long)] pub arch: Option<String>,
-
-  /// Perform operations in lazy mode (no implicit git clone/downloading)
-  #[arg(short, long)] pub lazy: bool,
-
-  /// Create and configure manifest in current working folder
-  #[arg(long)] pub create: bool,
-
-  /// Specify for purge to clear only cache
-  #[arg(long)] pub cache_only: bool,
 
   /// Set username for artifactory OAuth. Use --token to set token.
   #[arg(long)] pub username: Option<String>,
 
   /// Set token for artifactory OAuth. Use --username to set username.
   #[arg(long)] pub token: Option<String>,
-
-  /// Specify distribution to push to artifactory
-  #[arg(long)] pub distribution: Option<String>,
-
-  /// Force!
-  #[arg(long)] pub force: bool,
-
-  /// Clean dependencies folder and continue fresh installation
-  #[arg(short, long)] pub fresh: bool,
 
   /// Verbose output
   #[arg(short, long)] pub verbose: bool,
@@ -48,17 +27,56 @@ pub struct Args
 pub enum Commands
 {
   /// Install dependencies from manifest in current working folder
-  Install,
+  Install(InstallArgs),
 
   /// Push file to artifactory
-  Push { name: Option<String> },
+  Push(PushArgs),
 
   /// Clean dependencies folder
   Clean,
 
-  /// Purge cache and config folders
-  Purge,
+  /// Purge cache and config folders. Specify --cache to clear only cache or --all to clear all entries
+  Purge(PurgeArgs),
 
   /// Get specified field from manifest in current working folder
   Parse { what: Option<String> },
+}
+
+#[derive(clap::Args, Debug, Clone)]
+pub struct PurgeArgs
+{
+  /// Specify for purge to clear only cache
+  #[arg(long)] pub cache: bool,
+
+  /// Specify for purge to clear only config
+  #[arg(long)] pub config: bool,
+
+  /// Specify for purge to clear all (config + cache)
+  #[arg(long)] pub all: bool
+}
+
+#[derive(clap::Args, Debug, Clone)]
+pub struct InstallArgs
+{
+  /// Perform installation in lazy mode (no implicit git clone/downloading)
+  #[arg(short, long)] pub lazy: bool,
+
+  /// Sync remote registry
+  #[arg(short, long)] pub sync: bool,
+
+  /// Clean dependencies folder and continue fresh installation
+  #[arg(short, long)] pub fresh: bool,
+}
+
+#[derive(clap::Args, Debug, Clone)]
+pub struct PushArgs
+{
+  /// File to push to artifactory
+  pub name: Option<String>,
+
+  /// Force push (override existing package on artifactory)
+  #[arg(short, long)] pub force: bool,
+
+  /// Specify distribution to push to artifactory
+  #[arg(short, long)] pub distribution: Option<String>,
 }

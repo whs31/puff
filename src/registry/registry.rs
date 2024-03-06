@@ -113,6 +113,11 @@ impl Registry
       debug!("found package: {}", &entry.pretty_format());
     }
 
+    let serialized = serde_yaml::to_string(&self.packages)?;
+    std::fs::create_dir_all(Path::new(&self.registry_path))?;
+    std::fs::write(Path::new(&self.registry_path).join("registry.yml"), serialized)?;
+    trace!("wrote registry to cache ({})", &self.registry_path.dimmed());
+
     info!("sync done (found {} packages)", self.packages.len());
 
     Ok(self)

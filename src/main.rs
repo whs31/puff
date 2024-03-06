@@ -35,15 +35,15 @@ fn main() {
 
   match args.command
   {
-    Some(Commands::Install) | Some(Commands::Push { .. }) => {}
+    Some(Commands::Install { .. }) | Some(Commands::Push { .. }) => {}
     Some(Commands::Clean) => {
       poppy::Poppy::clean()
         .map_err(|e| { error!("failed to clean: {}", e); std::process::exit(1) } )
         .unwrap();
       std::process::exit(0);
     }
-    Some(Commands::Purge) => {
-      poppy::Poppy::purge(args.cache_only);
+    Some(Commands::Purge(a)) => {
+      poppy::Poppy::purge(&a);
       std::process::exit(0);
     },
     Some(Commands::Parse { what }) => {

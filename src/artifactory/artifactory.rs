@@ -7,7 +7,7 @@ use colored::Colorize;
 use indicatif::{ProgressBar, ProgressDrawTarget, ProgressStyle};
 use futures_util::stream::StreamExt;
 use log::{debug, info, trace, warn};
-use crate::args::{Args, Commands};
+use crate::args::{Args, Commands, PushArgs};
 use crate::manifest::Manifest;
 use crate::resolver::Dependency;
 use crate::utils::Config;
@@ -33,7 +33,6 @@ impl Artifactory
   {
     debug!("pushing!");
     ensure!(self.args.arch.as_ref().is_some() && !self.args.arch.as_ref().unwrap().is_empty(), "push arch cannot be empty");
-    ensure!(self.args.distribution.as_ref().is_some() && !self.args.distribution.as_ref().unwrap().is_empty(), "push distribution cannot be empty");
     ensure!(!self.config.borrow().auth.username.is_empty() && !self.config.borrow().auth.token.is_empty(),
       "no username or token provided for artifactory oauth. please provide using --username and \
       --token flags or enter credentials interactively via poppy --sync");
@@ -43,13 +42,16 @@ impl Artifactory
       .unwrap()
       .as_str()
     );
-    let distribution = Distribution::from(self.args.distribution
-      .clone()
-      .unwrap()
-      .as_str()
+    let distribution = Distribution::from(
+      match &self.args.command
+      {
+        Some(Commands::Push(arg)) => arg.distribution.as_ref().context("distribution cannot be empty")?.as_str(),
+        _ => "unknown"
+      }
     );
+    ensure!(!matches!(distribution, Distribution::Unknown), "unknown distribution");
     let push_target = match self.args.command.as_ref().context("command not found")? {
-      Commands::Push { name: n } => n.as_ref().context("push target cannot be empty")?,
+      Commands::Push(arg) => arg.name.as_ref().context("push target cannot be empty")?,
       _ => std::process::exit(1)
     };
 
@@ -74,7 +76,8 @@ impl Artifactory
 
     let data = std::fs::read(data_path)?;
 
-    if self.args.force.clone() { warn!("force pushing. this can be dangerous!"); }
+    let force_push = matches!(self.args.command, Some(Commands::Push(PushArgs { force: true, .. }, ..)));
+    if force_push { warn!("force pushing. this can be dangerous!"); }
     trace!("pushing {} kb to {}", data.len() / 1024, url);
     trace!("username: {}", self.config.borrow().auth.username.as_str());
     trace!("token: {}", self.config.borrow().auth.token.as_str());
@@ -89,7 +92,7 @@ impl Artifactory
 
     if exists.status() != 404 {
       info!("file already exists on artifactory");
-      if !self.args.force {
+      if !force_push {
         debug!("skipping push");
         return Ok(());
       }

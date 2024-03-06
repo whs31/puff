@@ -1,7 +1,9 @@
 use std::collections::HashMap;
 use colored::Colorize;
+use serde::{Deserialize, Serialize};
 use crate::utils::helper_types::{Distribution, PlatformArch, Version};
 
+#[derive(Debug, Serialize, Deserialize)]
 pub struct RegistryEntry
 {
   pub name: String,

@@ -10,6 +10,7 @@ use crate::artifactory::Artifactory;
 use crate::registry::entry::RegistryEntry;
 use crate::resolver::Dependency;
 use crate::utils::Config;
+use crate::utils::helper_types::Version;
 
 pub struct Registry
 {
@@ -131,5 +132,24 @@ impl Registry
         && x.versions[&dependency.version].contains_key(&dependency.distribution)
         && x.versions[&dependency.version][&dependency.distribution].contains(&dependency.arch)
     })
+  }
+
+  pub fn latest_poppy_version(&self) -> anyhow::Result<Version>
+  {
+    let mut versions = self
+      .packages
+      .iter()
+      .filter(|x| x.name == "poppy")
+      .map(|x| x.versions.keys().collect::<Vec<_>>())
+      .flatten()
+      .collect::<Vec<_>>();
+
+    versions.sort();
+    versions.reverse();
+    let latest = versions
+      .first()
+      .context("no versions found")?
+      .to_string();
+    Ok(Version::try_from(latest)?)
   }
 }

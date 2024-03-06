@@ -8,11 +8,11 @@ use crate::artifactory::Artifactory;
 use crate::consts::{POPPY_CACHE_DIRECTORY_NAME, POPPY_INSTALLATION_DIRECTORY_NAME, POPPY_REGISTRY_DIRECTORY_NAME};
 use crate::manifest::Manifest;
 use crate::registry::Registry;
-use crate::resolver::{DependencyStack};
-use crate::utils::Config;
+use crate::resolver::{Dependency, DependencyStack};
+use crate::utils::{Config, locate_install};
 use crate::utils::environment::{Environment};
 use crate::utils::global::PROJECT_DIRS;
-use crate::utils::helper_types::{PlatformArch};
+use crate::utils::helper_types::{Distribution, PlatformArch, Version};
 
 pub struct Poppy
 {
@@ -111,6 +111,7 @@ impl Poppy
     self
       .print_environment()
       .sync(!matches!(args.command, Some(Commands::Install(InstallArgs { lazy: true, .. }))))?
+      .check_for_updates()?
       .fresh(matches!(args.command, Some(Commands::Install(InstallArgs { fresh: true, .. }))))?
       .install()?;
     Ok(())
@@ -237,6 +238,32 @@ impl Poppy
       }
     }
     info!("done!");
+  }
+
+  pub fn check_for_updates(&mut self) -> anyhow::Result<&mut Self>
+  {
+    let latest = self.registry.borrow().latest_poppy_version()?;
+    let current = Version::try_from(crate::consts::POPPY_VERSION)?;
+    debug!("poppy is installed in {}", locate_install::locate_poppy()?.dimmed());
+    if current < latest {
+      warn!("new version available: {}", latest.to_string().green().bold());
+      warn!("please update via poppup.py");
+      let _path = locate_install::locate_poppy()?;
+      let _dependency = Dependency::new(String::from("poppy"), latest, Distribution::Executable, PlatformArch::Linux64);
+      // let res = self.artifactory
+      //   .pull(&dependency);
+      // match res {
+      //   Ok(_) => debug!("downloaded new version of poppy"),
+      //   Err(e) => {
+      //     error!("failed to download new version of poppy: {}", e);
+      //     warn!("installation will be continued, but it may not work properly");
+      //     return Ok(self);
+      //   }
+      // }
+    } else {
+      debug!("current installation is up to date! (latest: {})", latest.to_string().green());
+    }
+    Ok(self)
   }
 
   pub fn manifest_info(what: &str) -> anyhow::Result<()>

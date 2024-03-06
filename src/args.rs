@@ -10,14 +10,11 @@ pub struct Args
   /// Print poppy version
   #[arg(long)] pub version: bool,
 
-  /// Override platform arch (default: native)
-  #[arg(long)] pub arch: Option<String>,
-
   /// Set username for artifactory OAuth. Use --token to set token.
-  #[arg(long)] pub username: Option<String>,
+  #[arg(short, long)] pub username: Option<String>,
 
   /// Set token for artifactory OAuth. Use --username to set username.
-  #[arg(long)] pub token: Option<String>,
+  #[arg(short, long)] pub token: Option<String>,
 
   /// Verbose output
   #[arg(short, long)] pub verbose: bool,
@@ -66,17 +63,23 @@ pub struct InstallArgs
 
   /// Clean dependencies folder and continue fresh installation
   #[arg(short, long)] pub fresh: bool,
+
+  /// Override platform arch (default: native)
+  #[arg(short, long)] pub arch: Option<String>,
 }
 
 #[derive(clap::Args, Debug, Clone)]
 pub struct PushArgs
 {
-  /// File to push to artifactory
+  /// REQUIRED: File to push to artifactory
   pub name: Option<String>,
 
   /// Force push (override existing package on artifactory)
   #[arg(short, long)] pub force: bool,
 
-  /// Specify distribution to push to artifactory
+  /// REQUIRED: Specify distribution to push to artifactory
   #[arg(short, long)] pub distribution: Option<String>,
+
+  /// REQUIRED: Specify platform arch to push to artifactory
+  #[arg(short, long)] pub arch: Option<String>,
 }

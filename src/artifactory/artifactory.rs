@@ -32,16 +32,16 @@ impl Artifactory
   pub fn push(&self, manifest: &Manifest, data_path: &str) -> anyhow::Result<()>
   {
     debug!("pushing!");
-    ensure!(self.args.arch.as_ref().is_some() && !self.args.arch.as_ref().unwrap().is_empty(), "push arch cannot be empty");
+    let arch = match &self.args.command
+    {
+      Some(Commands::Push(arg)) => arg.arch.as_ref().context("arch cannot be empty")?.clone(),
+      _ => return Err(anyhow::anyhow!("arch not specified"))
+    };
     ensure!(!self.config.borrow().auth.username.is_empty() && !self.config.borrow().auth.token.is_empty(),
       "no username or token provided for artifactory oauth. please provide using --username and \
       --token flags or enter credentials interactively via poppy --sync");
 
-    let arch = PlatformArch::from(self.args.arch
-      .clone()
-      .unwrap()
-      .as_str()
-    );
+    let arch = PlatformArch::from(arch.as_str());
     let distribution = Distribution::from(
       match &self.args.command
       {

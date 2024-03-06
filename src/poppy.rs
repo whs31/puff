@@ -29,7 +29,11 @@ impl Poppy
   pub fn new(config: Rc<RefCell<Config>>, args: Rc<Args>) -> anyhow::Result<Self>
   {
     let dirs = PROJECT_DIRS.lock().unwrap();
-    let env = match &args.arch {
+    let arch = match &args.command {
+      Some(Commands::Install(InstallArgs { arch, .. })) => arch.clone(),
+      _ => None
+    };
+    let env = match arch {
       Some(x) => {
         let mut env_t = Environment::from_current_environment()?;
         env_t.arch = PlatformArch::from(x.as_str());

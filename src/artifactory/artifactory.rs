@@ -7,7 +7,7 @@ use colored::Colorize;
 use indicatif::{ProgressBar, ProgressDrawTarget, ProgressStyle};
 use futures_util::stream::StreamExt;
 use log::{debug, info, trace, warn};
-use crate::args::Args;
+use crate::args::{Args, Commands};
 use crate::manifest::Manifest;
 use crate::resolver::Dependency;
 use crate::utils::Config;
@@ -32,7 +32,6 @@ impl Artifactory
   pub fn push(&self, manifest: &Manifest, data_path: &str) -> anyhow::Result<()>
   {
     debug!("pushing!");
-    ensure!(self.args.push.as_ref().is_some() && !self.args.push.as_ref().unwrap().is_empty(), "push target cannot be empty");
     ensure!(self.args.arch.as_ref().is_some() && !self.args.arch.as_ref().unwrap().is_empty(), "push arch cannot be empty");
     ensure!(self.args.distribution.as_ref().is_some() && !self.args.distribution.as_ref().unwrap().is_empty(), "push distribution cannot be empty");
     ensure!(!self.config.borrow().auth.username.is_empty() && !self.config.borrow().auth.token.is_empty(),
@@ -49,9 +48,10 @@ impl Artifactory
       .unwrap()
       .as_str()
     );
-    let push_target = self.args.push
-      .clone()
-      .context("empty push target!")?;
+    let push_target = match self.args.command.as_ref().context("command not found")? {
+      Commands::Push { name: n } => n.as_ref().context("push target cannot be empty")?,
+      _ => std::process::exit(1)
+    };
 
     trace!("artifactory base url: {}", &self.config.borrow().remotes.artifactory_url);
 

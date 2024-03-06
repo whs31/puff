@@ -1,11 +1,14 @@
 #[derive(clap::Parser, Debug, Clone)]
+#[command(name = "poppy")]
+#[command(about = "poppy - a tool for managing c/c++ packages", long_about = None)]
+#[command(color = clap::ColorChoice::Auto)]
 pub struct Args
 {
+  #[command(subcommand)]
+  pub command: Option<Commands>,
+
   /// Print poppy version
   #[arg(long)] pub version: bool,
-
-  /// Install dependencies from manifest in current working folder
-  #[arg(short, long)] pub install: bool,
 
   /// Sync remote registry
   #[arg(short, long)] pub sync: bool,
@@ -19,9 +22,6 @@ pub struct Args
   /// Create and configure manifest in current working folder
   #[arg(long)] pub create: bool,
 
-  /// Clear config, cache and registry folders
-  #[arg(long)] pub purge: bool,
-
   /// Specify for purge to clear only cache
   #[arg(long)] pub cache_only: bool,
 
@@ -31,38 +31,34 @@ pub struct Args
   /// Set token for artifactory OAuth. Use --username to set username.
   #[arg(long)] pub token: Option<String>,
 
-  /// Push file to artifactory
-  #[arg(long)] pub push: Option<String>,
-
   /// Specify distribution to push to artifactory
   #[arg(long)] pub distribution: Option<String>,
 
-  /// Get specified field from manifest in current working folder
-  /// Allowed values:
-  ///   - name
-  ///   - version
-  ///   - authors
-  ///   - description
-  /// Example usage: poppy --manifest-info name
-  /// Output: example-package
-  #[arg(long, verbatim_doc_comment)] pub manifest_info: Option<String>,
-
-  /// Returns absolute path to dependencies directory of current manifest
-  /// Path string will be different for each platform (win32, linux)
-  ///
-  /// Example usage: poppy --install-path
-  /// Output: C:\\user\\.poppy\\dependencies (Windows) or /home/user/.poppy/dependencies (Linux)
-  #[arg(long, verbatim_doc_comment)] pub install_path: bool,
-
   /// Force!
   #[arg(long)] pub force: bool,
-
-  /// Clean dependencies folder and exit
-  #[arg(long)] pub clean: bool,
 
   /// Clean dependencies folder and continue fresh installation
   #[arg(short, long)] pub fresh: bool,
 
   /// Verbose output
   #[arg(short, long)] pub verbose: bool,
+}
+
+#[derive(clap::Subcommand, Debug, Clone)]
+pub enum Commands
+{
+  /// Install dependencies from manifest in current working folder
+  Install,
+
+  /// Push file to artifactory
+  Push { name: Option<String> },
+
+  /// Clean dependencies folder
+  Clean,
+
+  /// Purge cache and config folders
+  Purge,
+
+  /// Get specified field from manifest in current working folder
+  Parse { what: Option<String> },
 }

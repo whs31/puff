@@ -3,7 +3,7 @@ use std::rc::Rc;
 use anyhow::{Context, ensure};
 use colored::Colorize;
 use log::{debug, error, info, warn};
-use crate::args::Args;
+use crate::args::{Args, Commands};
 use crate::artifactory::Artifactory;
 use crate::consts::{POPPY_CACHE_DIRECTORY_NAME, POPPY_INSTALLATION_DIRECTORY_NAME, POPPY_REGISTRY_DIRECTORY_NAME};
 use crate::manifest::Manifest;
@@ -98,18 +98,21 @@ impl Poppy
       self.input_oauth()?;
     }
 
-    if args.push.is_some() {
-      ensure!(self.args.push.as_ref().is_some() && !self.args.push.as_ref().unwrap().is_empty(), "push target cannot be empty");
-      self.artifactory
-        .push(&Manifest::from_pwd()?, args.push.as_ref().unwrap().as_str())?;
-      return Ok(());
+    match args.command.as_ref().context("command not found")? {
+      Commands::Push { name: n } => {
+        ensure!(n.is_some(), "name is required for push command");
+        self.artifactory
+          .push(&Manifest::from_pwd()?, n.as_ref().unwrap())?;
+        return Ok(());
+      }
+      _ => {}
     }
 
     self
       .print_environment()
       .sync(!args.lazy)?
       .fresh(args.fresh)?
-      .install(!args.install)?;
+      .install()?;
     Ok(())
   }
 
@@ -149,12 +152,8 @@ impl Poppy
     Ok(self)
   }
 
-  fn install(&mut self, skip_install: bool) -> anyhow::Result<&mut Self>
+  fn install(&mut self) -> anyhow::Result<&mut Self>
   {
-    if skip_install {
-      warn!("install will be skipped. see --help for more info");
-      return Ok(self);
-    }
     self.resolver
       .borrow_mut()
       .resolve(self.registry.clone(), self.env.arch.clone())?
@@ -220,13 +219,6 @@ impl Poppy
     println!("copyright {}", "whs31 @ radar-mms (c) 2024".blue().bold());
   }
 
-  pub fn suggest_help()
-  {
-    error!("incorrect usage. see --help for help!");
-    error!("this is unrecoverable error. poppy will shutdown");
-    std::process::exit(1);
-  }
-
   pub fn purge(cache_only: bool)
   {
     match cache_only {
@@ -257,12 +249,13 @@ impl Poppy
       "version" => println!("{}", manifest.package.version),
       "authors" => println!("{}", manifest.package.authors.context("authors not found")?.join(",")),
       "description" => println!("{}", manifest.package.description.context("description not found")?),
+      "wd" => println!("{}", Self::install_path(None)?),
       _ => return Err(anyhow::anyhow!("unknown grep option"))
     }
     Ok(())
   }
 
-  pub fn install_path(arch: Option<String>) -> anyhow::Result<()>
+  pub fn install_path(arch: Option<String>) -> anyhow::Result<String>
   {
     let env = match arch {
       Some(x) => {
@@ -277,7 +270,6 @@ impl Poppy
       },
       None => Environment::from_current_environment()?,
     };
-    println!("{}", env.platform_dependent_install_path());
-    Ok(())
+    Ok(env.platform_dependent_install_path())
   }
 }

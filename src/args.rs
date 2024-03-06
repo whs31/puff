@@ -47,12 +47,6 @@ pub struct Args
   /// Output: example-package
   #[arg(long, verbatim_doc_comment)] pub manifest_info: Option<String>,
 
-  /// Gitlab-CI username
-  #[arg(long)] pub ci_git_username: Option<String>,
-
-  /// Gitlab-CI token
-  #[arg(long)] pub ci_git_token: Option<String>,
-
   /// Returns absolute path to dependencies directory of current manifest
   /// Path string will be different for each platform (win32, linux)
   ///

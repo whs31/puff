@@ -1,6 +1,10 @@
 pub const POPPY_NAME: &str = "poppy";
 pub const POPPY_VERSION: &str = env!("CARGO_PKG_VERSION");
-pub const POPPY_MANIFEST_NAME: &str = "poppy-manifest.toml";
+pub const POPPY_MANIFEST_NAMES: [&str; 3] = [
+  "poppy-manifest.toml",
+  "poppy.toml",
+  "pppm.toml"
+];
 #[allow(dead_code)] pub const POPPY_EXTENSIONS_DIRECTORY_NAME: &str = ".poppy";
 
 /*

@@ -3,7 +3,7 @@ use std::path::PathBuf;
 use anyhow::Context;
 use colored::Colorize;
 use log::{debug, info, trace};
-use crate::consts::POPPY_MANIFEST_NAME;
+use crate::consts::POPPY_MANIFEST_NAMES;
 use crate::utils::helper_types::{Distribution, Version};
 
 #[derive(Debug, Clone, Default, serde::Deserialize, serde::Serialize)]
@@ -112,11 +112,17 @@ impl Manifest {
 
   pub fn from_pwd() -> anyhow::Result<Self>
   {
-    let path = std::env::current_dir()?
-      .join(POPPY_MANIFEST_NAME);
-    anyhow::ensure!(path.exists(), "manifest not found in pwd");
+    let manifest_name = POPPY_MANIFEST_NAMES
+      .iter()
+      .find(|x| std::env::current_dir().unwrap().join(x).exists())
+      .context("no manifest found in pwd")?
+      .to_string();
 
-    Self::from_path(path.to_str().context("failed to convert path to str")?)
+    Self::from_path(std::env::current_dir()?
+      .join(manifest_name)
+      .to_str()
+      .unwrap()
+    )
   }
 
   pub fn from_path(path: &str) -> anyhow::Result<Self>
@@ -134,21 +140,28 @@ impl Manifest {
     let tmp_dir = tempfile::tempdir()?;
     let tmp_dir_path = tmp_dir.path();
 
-    // unpack to tmp dir (test)
-    // let tmp_dir = "/home/radar/tmptmp";
-    // let tmp_dir_path = Path::new(tmp_dir)
-    //   .join(archive_path.split("/")
-    //     .last()
-    //     .context("failed to get filename for tar.gz")?
-    //   );
-    // std::fs::create_dir_all(tmp_dir_path.parent().unwrap())?;
+    /*
+      unpack to tmp dir (test)
+     * let tmp_dir = "/home/radar/tmptmp";
+     * let tmp_dir_path = Path::new(tmp_dir)
+     *   .join(archive_path.split("/")
+     *     .last()
+     *     .context("failed to get filename for tar.gz")?
+     *   );
+     * std::fs::create_dir_all(tmp_dir_path.parent().unwrap())?;
+    */
 
     crate::artifactory::unpack_to(
       archive_path,
       tmp_dir_path.to_str().context("failed to convert path to str")?
     )?;
+    let manifest_name = POPPY_MANIFEST_NAMES
+      .iter()
+      .find(|x| tmp_dir_path.join(x).exists())
+      .context("no manifest found in pwd")?
+      .to_string();
     Self::from_path(
-      tmp_dir_path.join(POPPY_MANIFEST_NAME).to_str().context("failed to convert path to str")?
+      tmp_dir_path.join(manifest_name).to_str().context("failed to convert path to str")?
     )
   }
 
@@ -156,7 +169,7 @@ impl Manifest {
   pub fn save(&self) -> anyhow::Result<()>
   {
     let path = std::env::current_dir()?
-      .join(POPPY_MANIFEST_NAME);
+      .join(POPPY_MANIFEST_NAMES.last().unwrap());
     anyhow::ensure!(!path.exists(), "manifest already exists in pwd");
     std::fs::write(&path, toml::to_string(&self)?)?;
     debug!("manifest saved to {}", path.to_str().unwrap().dimmed());

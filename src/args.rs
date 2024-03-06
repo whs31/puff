@@ -61,6 +61,9 @@ pub struct InstallArgs
   /// Sync remote registry
   #[arg(short, long)] pub sync: bool,
 
+  /// List remote registry
+  #[arg(long)] pub list_registry: bool,
+
   /// Clean dependencies folder and continue fresh installation
   #[arg(short, long)] pub fresh: bool,
 

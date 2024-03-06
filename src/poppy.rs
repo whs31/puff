@@ -154,6 +154,9 @@ impl Poppy
 
   fn install(&mut self) -> anyhow::Result<&mut Self>
   {
+    if matches!(&self.args.command, Some(Commands::Install(InstallArgs { list_registry: true, .. }))) {
+      return Ok(self);
+    }
     self.resolver
       .borrow_mut()
       .resolve(self.registry.clone(), self.env.arch.clone())?

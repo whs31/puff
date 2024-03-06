@@ -14,7 +14,7 @@
 
 ### Предварительная конфигурация
 Для работы с `poppy` пользователю потребуется:
-- ![Gitlab logo](docs/images/gitlab-logo.png)  Логин/пароль **GitLab**, в котором лежит реестр (если вы читаете это на GitLab, у вас они уже есть)
+- ![Gitlab logo](docs/images/gitlab-logo.png)  ~~Логин/пароль **GitLab**, в котором лежит реестр~~ (если вы читаете это на GitLab, у вас они уже есть)
 - ![Artifactory logo](docs/images/artifactory-logo.png) Логин/токен **Artifactory**:
   - Логин можно получить у системного администратора.
   - С логином и паролем нужно зайти в UI-часть [(сюда)](http://uav.radar-mms.com/ui) и сгенерировать токен:

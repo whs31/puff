@@ -5,21 +5,19 @@ use std::rc::Rc;
 use anyhow::Context;
 use colored::Colorize;
 use log::{debug, info, trace, warn};
-use walkdir::WalkDir;
 use crate::args::Args;
 use crate::artifactory::Artifactory;
-use crate::registry;
-use crate::registry::entry::{RegistryEntry, RegistryEntryRaw};
+use crate::registry::entry::RegistryEntry;
 use crate::resolver::Dependency;
 use crate::utils::Config;
 
 pub struct Registry
 {
   pub packages: Vec<RegistryEntry>,
-  config: Rc<RefCell<Config>>,
+  #[allow(dead_code)] config: Rc<RefCell<Config>>,
   artifactory: Rc<Artifactory>,
   registry_path: String,
-  args: Rc<Args>
+  #[allow(dead_code)] args: Rc<Args>
 }
 
 impl Registry

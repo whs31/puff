@@ -54,7 +54,7 @@ class Artifactory(object):
         # jprint(r.json())
 
         if not os.path.exists(os.path.expanduser('~/.local/bin')):
-            os.makedirs(os.path expanduser('~/.local/bin'))
+            os.makedirs(os.path.expanduser('~/.local/bin'))
 
         latest = r.json()['results'][0]['name']
         print(f'found latest: {latest}')

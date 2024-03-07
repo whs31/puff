@@ -169,13 +169,12 @@ impl Artifactory
     }
     pb.finish_and_clear();
     if quiet {
-      //print!("\x1b[A\x1b[2K\r");
       print!("\x1b[A\x1b[2K\r");
-      println!("downloaded {}@{}/{}/{}",
+      println!("✅ downloaded {}@{}/{}/{}",
         &dep.name.yellow().bold(),
-        &dep.version.to_string().green().bold(),
-        &dep.distribution.to_string().magenta().bold(),
-        &dep.arch.to_string().blue().bold()
+        &dep.version.to_string().green(),
+        &dep.distribution.to_string().magenta().dimmed(),
+        &dep.arch.to_string().blue().dimmed()
       );
     }
 

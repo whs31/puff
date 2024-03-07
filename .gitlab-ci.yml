@@ -29,11 +29,12 @@ build windows:
     before_script:
         - cargo --version
     script:
-        - echo "not implemented"
+        - cargo build --release --target=x86_64-pc-windows-gnu
+        - cp ./target/x86_64-pc-windows-gnu/release/poppy.exe ./poppy.exe
 
     artifacts:
         paths:
-            - ./poppy
+            - ./poppy.exe
         expire_in: 1 hour
 
 install-dev:

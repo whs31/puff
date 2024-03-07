@@ -2,7 +2,7 @@ use std::cell::RefCell;
 use std::collections::HashMap;
 use std::path::Path;
 use std::rc::Rc;
-use anyhow::Context;
+use anyhow::{Context, ensure};
 use colored::Colorize;
 use log::{debug, info, trace, warn};
 use crate::args::Args;
@@ -45,23 +45,23 @@ impl Registry
       warn!("lazy sync is enabled. updating remote registry will not be performed unless cached registry is broken.");
       if Path::new(&self.registry_path).exists() {
         warn!("older registry found. skipping aql sync");
-        // todo: cache registry
-        //return Ok(self);
+        let cached_path = Path::new(&self.registry_path).join("registry.yml");
+        return Ok(self.sync_local(cached_path.to_str().unwrap())?);
       }
     }
 
     let raw = self.artifactory.query(r#"items.find({"repo": "poppy-cxx-repo", "name": {"$match": "*"}}).sort({"$desc": ["created"]})"#)?;
     let parsed: crate::artifactory::query::PackageQueryResponse = serde_json::from_str(&raw)?;
 
+    let mut packages: Vec<RegistryEntry> = Vec::new();
     for entry in parsed.results
     {
       let y = Dependency::from_package_name(entry.name.as_str())?;
-      // trace!("found package: {}/{}/{}@{}", y.name, y.arch, y.distribution, y.version);
-      if self.packages
+      if packages
         .iter()
         .any(|x| x.name == y.name)
       {
-        let reg_entry = self.packages
+        let reg_entry = packages
           .iter_mut()
           .find(|x| x.name == y.name)
           .context("weird things happened...")?;
@@ -105,21 +105,44 @@ impl Registry
           name: y.name,
           versions: HashMap::from([(y.version, HashMap::from([(y.distribution, vec![y.arch])]))]),
         };
-        self.packages.push(reg_entry);
+        packages.push(reg_entry);
       }
     }
+
+    let serialized = serde_yaml::to_string(&packages)?;
+    std::fs::create_dir_all(Path::new(&self.registry_path))?;
+    let cached_path = Path::new(&self.registry_path).join("registry.yml");
+    if Path::new(&cached_path).exists() {
+      trace!("removing old cache...");
+      std::fs::remove_file(&cached_path)?;
+    }
+    std::fs::write(Path::new(&cached_path), serialized)?;
+    debug!("wrote registry to cache ({})", &self.registry_path.dimmed());
+
+    info!("online sync done (found {} packages)", packages.len());
+
+    Ok(self.sync_local(cached_path.to_str().unwrap())?)
+  }
+
+  fn sync_local(&mut self, path: &str) -> anyhow::Result<&mut Self>
+  {
+    ensure!(Path::new(path).exists(), "non-existent registry cache file");
+
+    debug!("loading registry cache from {}", path.dimmed());
+    let deserialized: Vec<RegistryEntry> = serde_yaml::from_str(
+      &std::fs::read_to_string(Path::new(path))?
+    )?;
+
+    debug!("loaded {} packages from cache", deserialized.len());
+
+    self.packages = deserialized;
 
     for entry in &self.packages
     {
       debug!("found package: {}", &entry.pretty_format());
     }
 
-    let serialized = serde_yaml::to_string(&self.packages)?;
-    std::fs::create_dir_all(Path::new(&self.registry_path))?;
-    std::fs::write(Path::new(&self.registry_path).join("registry.yml"), serialized)?;
-    trace!("wrote registry to cache ({})", &self.registry_path.dimmed());
-
-    info!("sync done (found {} packages)", self.packages.len());
+    info!("offline sync done (found {} packages)", self.packages.len());
 
     Ok(self)
   }
@@ -148,7 +171,7 @@ impl Registry
     versions.reverse();
     let latest = versions
       .first()
-      .context("no versions found")?
+      .context("no poppy versions found (latest poppy version routine)")?
       .to_string();
     Ok(Version::try_from(latest)?)
   }

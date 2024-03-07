@@ -2,11 +2,11 @@ use std::cell::RefCell;
 use std::collections::HashMap;
 use std::path::Path;
 use std::rc::Rc;
-use anyhow::{Context, ensure};
+use anyhow::{anyhow, Context, ensure};
 use colored::Colorize;
 use indicatif::{ProgressBar, ProgressDrawTarget, ProgressStyle};
 use futures_util::stream::StreamExt;
-use log::{debug, info, trace, warn};
+use log::{debug, error, info, trace, warn};
 use crate::args::{Args, Commands, PushArgs};
 use crate::manifest::Manifest;
 use crate::resolver::Dependency;
@@ -204,6 +204,12 @@ impl Artifactory
       .send()
       .await?;
     trace!("query response status code: {}", result.status());
+    if !result.status().is_success() {
+      error!("artifactory is not responding (status code: {})", result.status());
+      error!("if you are not connected to the internet, try using offline sync method (see readme)");
+      error!("in case this is not an option, contact your system administrator");
+      return Err(anyhow!("artifactory is not responding"));
+    }
     Ok(result.text().await?)
   }
 }

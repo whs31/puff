@@ -180,7 +180,7 @@ impl Poppy
     }
     self.resolver
       .borrow_mut()
-      .resolve(self.registry.clone(), self.env.arch.clone())?
+      .resolve(self.registry.clone(), self.env.arch.clone(), matches!(&self.args.command, Some(Commands::Install(InstallArgs { exact_version: true, .. }))))?
       .install_dependencies()?;
     crate::utils::emplace::add_gitignore(
       std::env::current_dir()?

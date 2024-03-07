@@ -74,7 +74,7 @@ impl DependencyStack
     })
   }
 
-  pub fn resolve(&mut self, reg: Rc<RefCell<Registry>>, arch: PlatformArch) -> anyhow::Result<&mut Self>
+  pub fn resolve(&mut self, reg: Rc<RefCell<Registry>>, arch: PlatformArch, exact_version: bool) -> anyhow::Result<&mut Self>
   {
     let manifest = Manifest::from_pwd()?;
     manifest.pretty_print();
@@ -94,6 +94,42 @@ impl DependencyStack
       .filter(|dep| seen.insert(dep.dependency.clone()))
       .collect::<Vec<DependencyStackItem>>();
     info!("resolved {} dependencies", self.stack.len());
+
+    let a = self.stack.len();
+    if !exact_version {
+      // remove all versions of same package except for the latest version
+      debug!("solving version conflict...");
+      // if name, arch and distribution is same and version is lower or equal to latest of the package, remove it
+      let mut latest_dependencies: Vec<DependencyStackItem> = Vec::new();
+      latest_dependencies.push(self.stack[0].clone());
+      for dep in &self.stack {
+        if latest_dependencies
+          .iter()
+          .any(|d| d.dependency.distribution == dep.dependency.distribution
+            && d.dependency.arch == dep.dependency.arch
+            && d.dependency.version >= dep.dependency.version
+            && d.dependency.name == dep.dependency.name
+          ) {
+          continue
+        }
+        let prev = latest_dependencies
+          .iter()
+          .position(|d| d.dependency.distribution == dep.dependency.distribution
+            && d.dependency.arch == dep.dependency.arch
+            && d.dependency.version < dep.dependency.version
+            && d.dependency.name == dep.dependency.name
+          );
+        match prev {
+          Some(i) => latest_dependencies[i] = dep.clone(),
+          None => latest_dependencies.push(dep.clone()),
+        }
+      }
+
+      self.stack = latest_dependencies;
+    } else {
+      warn!("--exact-version is specified. no latest versions of dependency will be used");
+    }
+    info!("version conflict solved: {} duplicates removed", a - self.stack.len());
     self.stack
       .iter()
       .for_each(|d| info!("- {}", d.pretty_print()));

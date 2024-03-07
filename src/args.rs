@@ -72,6 +72,9 @@ pub struct InstallArgs
 
   /// Override platform arch (default: native)
   #[arg(short, long)] pub arch: Option<String>,
+
+  /// If this option is specified, poppy will use the exact version specified in the manifest. No dependency round-up will be used.
+  #[arg(short, long)] pub exact_version: bool
 }
 
 #[derive(clap::Args, Debug, Clone)]

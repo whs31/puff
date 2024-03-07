@@ -53,6 +53,9 @@ class Artifactory(object):
         jprint = lambda x: print(json.dumps(x, sort_keys=True, indent=4))
         # jprint(r.json())
 
+        if not os.path.exists(os.path.expanduser('~/.local/bin')):
+            os.makedirs(os.path.expanduser('~/.local/bin'))
+
         latest = r.json()['results'][0]['name']
         print(f'found latest: {latest}')
         latest_url = self.url.format(name='poppy', version='', arch='', dist='')

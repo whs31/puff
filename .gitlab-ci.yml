@@ -1,5 +1,5 @@
 ---
-build:
+build linux:
     tags: [dev-utils]
     stage: build
     cache:
@@ -18,11 +18,29 @@ build:
             - ./poppy
         expire_in: 1 hour
 
+build windows:
+    tags: [dev-utils]
+    stage: build
+    cache:
+        key: "${CI_JOB_NAME}"
+        paths:
+            - .cargo
+            - target
+    before_script:
+        - cargo --version
+    script:
+        - echo "not implemented"
+
+    artifacts:
+        paths:
+            - ./poppy
+        expire_in: 1 hour
+
 install-dev:
     tags: [dev-utils]
     stage: install
     needs:
-        - job: build
+        - job: build linux
           artifacts: true
     script:
         - cp ./poppy /usr/bin/
@@ -36,7 +54,7 @@ package:
     tags: [dev-utils]
     stage: package
     needs:
-        - job: build
+        - job: build linux
           artifacts: true
     script:
         - tar -czvf poppy.tar.gz poppy

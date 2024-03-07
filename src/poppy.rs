@@ -1,4 +1,5 @@
 use std::cell::RefCell;
+use std::path::Path;
 use std::rc::Rc;
 use anyhow::{Context, ensure};
 use colored::Colorize;
@@ -247,19 +248,56 @@ impl Poppy
     debug!("poppy is installed in {}", locate_install::locate_poppy()?.dimmed());
     if current < latest {
       warn!("new version available: {}", latest.to_string().green().bold());
-      warn!("please update via poppup.py");
-      let _path = locate_install::locate_poppy()?;
-      let _dependency = Dependency::new(String::from("poppy"), latest, Distribution::Executable, PlatformArch::Linux64);
-      // let res = self.artifactory
-      //   .pull(&dependency);
-      // match res {
-      //   Ok(_) => debug!("downloaded new version of poppy"),
-      //   Err(e) => {
-      //     error!("failed to download new version of poppy: {}", e);
-      //     warn!("installation will be continued, but it may not work properly");
-      //     return Ok(self);
-      //   }
-      // }
+      let path = locate_install::locate_poppy()?;
+
+      match self.env.arch {
+        PlatformArch::Linux64 => {
+          info!("starting updating...")
+        }
+        _ => {
+          warn!("your system appears to be not linux-x64.");
+          warn!("please, update manually");
+          return Ok(self);
+        }
+      }
+      let dependency = Dependency::new(String::from("poppy"), latest, Distribution::Executable, PlatformArch::Linux64);
+      let res = self.artifactory
+        .pull(&dependency);
+      return match res {
+        Ok(x) => {
+          debug!("downloaded new version of poppy");
+          let tmp_dir = tempfile::tempdir()?;
+          let tmp_dir_path = tmp_dir.path();
+
+          let archive_path = tmp_dir_path.join("poppy.tar.gz");
+          debug!("unpacking poppy to {}", archive_path.display());
+          std::fs::write(&archive_path, x.as_slice())?;
+
+          crate::artifactory::unpack_to(
+            archive_path.to_str().unwrap(),
+            tmp_dir_path.to_str().context("failed to convert path to str")?
+          )?;
+
+          let new_path = tmp_dir_path.join("poppy");
+
+          debug!("removing old poppy from {}", path.as_str().green().dimmed());
+          let exe_path = Path::new(&path)
+            .join("poppy")
+            .into_os_string()
+            .into_string()
+            .unwrap();
+          std::fs::remove_file(exe_path.as_str())?;
+          std::fs::copy(new_path, exe_path.as_str())?;
+          debug!("installed new version of poppy");
+          warn!("installation will be continued, but it may not work properly");
+          Ok(self)
+        },
+        Err(e) => {
+          error!("failed to download new version of poppy: {}", e);
+          warn!("installation will be continued, but it may not work properly");
+          Ok(self)
+        }
+      }
     } else {
       debug!("current installation is up to date! (latest: {})", latest.to_string().green());
     }

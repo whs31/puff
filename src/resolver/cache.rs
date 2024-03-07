@@ -62,7 +62,6 @@ impl Cache
 
   pub fn contains(&self, dependency: &Dependency) -> bool
   {
-    // http://uav.radar-mms.com/artifactory/poppy-cxx-repo/radar/fmt/fmt-1.0.0-any-sources.tar.gz
     trace!("checking if {} v{} ({}/{}) exists in cache",
       dependency.name.magenta().bold(),
       dependency.version.to_string().green().bold(),

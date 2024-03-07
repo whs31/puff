@@ -8,6 +8,19 @@ import platform
 import shutil
 import tarfile
 import sys
+import subprocess
+
+
+def add_to_path(p: str):
+    print("adding to path " + p)
+    commands = ["export PATH=\"{}:$PATH\"".format(p), "echo 'export PATH=\"{}:$PATH\"' >> ~/.bashrc".format(p),
+                "echo 'export PATH=\"{}:$PATH\"' >> ~/.profile".format(p)]
+    if os.path.exists(os.path.expanduser("~/.zshrc")):
+        commands.append("echo 'export PATH=\"{}:$PATH\"' >> ~/.zshrc".format(p))
+
+    for command in commands:
+        subprocess.run(command, shell=True)
+
 
 class Credentials(object):
     def __init__(self, user, token, token_long=None):
@@ -38,7 +51,7 @@ class Artifactory(object):
         print(f'response status code: {r.status_code}')
 
         jprint = lambda x: print(json.dumps(x, sort_keys=True, indent=4))
-        jprint(r.json())
+        # jprint(r.json())
 
         latest = r.json()['results'][0]['name']
         print(f'found latest: {latest}')
@@ -67,6 +80,8 @@ class Artifactory(object):
         shutil.copy('poppy', f'{_where}/poppy')
         print(f'installed poppy to {_where}/poppy')
 
+        add_to_path(_where)
+
         os.remove('poppy-latest.tar.gz')
         os.remove('poppy')
         return r
@@ -89,6 +104,7 @@ class Cargo(object):
                 if line.startswith('version = '):
                     return line.split('=')[1].strip().strip('"')
 
+
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument('--push', action='store_true')
@@ -96,19 +112,19 @@ def main():
     parser.add_argument('--file', type=str)
     parser.add_argument('--name', type=str)
     parser.add_argument('--arch', type=str)
-    parser.add_argument('--where', type=str)
     parser.add_argument('--user', type=str, required=True)
     parser.add_argument('--token', type=str, required=True)
     parser.add_argument('--token-long', type=str)
     args = parser.parse_args()
 
-    print('args: ', args.file, args.name, args.arch, args.where)
+    print('args: ', args.file, args.name, args.arch)
     print(f'ci user: {args.user} \nci token: ***{args.token[3:12]}***')
+    print('installing in ~/.local/bin')
 
 
     artifactory = Artifactory(Credentials(args.user, args.token, args.token_long))
     if args.install_latest:
-        artifactory.install_latest(args.arch, args.where)
+        artifactory.install_latest(args.arch, os.path.expanduser('~/.local/bin'))
 
     if args.push:
         cargo = Cargo('./Cargo.toml')

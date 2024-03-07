@@ -128,7 +128,7 @@ test
 ### Установка Poppy
 - Скачиваем `poppup.py` отсюда: [ссылка](http://uav.radar-mms.com/gitlab/test/essentials/poppy/poppy-cli/-/raw/main/poppup.py?ref_type=heads)
 - Запускаем `poppup.py`: 
-  - `sudo python3 poppup.py --install-latest --where=/usr/bin --arch=linux-x64 --user=ЛОГИН_АРТИФАКТОРИ --token=ТОКЕН_АРТИФАКТОРИ`
+  - `python3 poppup.py --install-latest --arch=linux-x64 --user=ЛОГИН_АРТИФАКТОРИ --token=ТОКЕН_АРТИФАКТОРИ`
 - Установка прошла успешно, если последняя строка в выводе скрипта имеет вид:
   - `installed poppy to ....`
 - Проверяем установку командой `poppy --version`
@@ -168,7 +168,7 @@ fmt = { version = { major = 1, minor = 2, patch = 3 }, distribution = "shared" }
 - `fmt@1.2.3/shared`
 
 #### Как узнать какие библиотеки доступны?
-Для этого можно написать команду `poppy --sync`, которая выдаст список библиотек в реестре `poppy`:
+Для этого можно написать команду `poppy install --list-registry`, которая выдаст список библиотек в реестре `poppy`:
 ![img.png](docs/images/img_2.png)
 
 #### Poppy требует авторизацию в артифактори! Что делать?

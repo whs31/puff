@@ -25,14 +25,6 @@ impl Dependency
 
   pub fn from_package_name(package_name: &str) -> anyhow::Result<Self>
   {
-    // poppy-1.0.10-linux-x64-executable.tar.gz
-    // name-versionmajor.minor.patch-arch-distribution.tar.gz
-
-    // name: ^([a-zA-Z0-9]+)
-    // version: -([0-9]+\.[0-9]+\.[0-9]+)-
-    // arch: -([a-zA-Z0-9-]+)-
-    // distribution: -([a-zA-Z0-9]+)\.tar
-
     let re_name = regex::Regex::new(r"^([a-zA-Z0-9]+)")?;
     let captures_name = re_name
       .captures(package_name)

@@ -112,7 +112,7 @@ impl Artifactory
   }
 
   #[tokio::main]
-  pub async fn pull(&self, dep: &Dependency) -> anyhow::Result<Vec<u8>>
+  pub async fn pull(&self, dep: &Dependency, quiet: bool) -> anyhow::Result<Vec<u8>>
   {
     trace!("pulling dependency {} from artifactory", dep.name.blue().bold());
     let client = reqwest::Client::builder()
@@ -138,18 +138,22 @@ impl Artifactory
       .basic_auth(self.config.borrow().auth.username.as_str(), Some(self.config.borrow().auth.token.as_str()))
       .send()
       .await?;
-    debug!("response status: {}", result.status());
+    if !quiet {
+      debug!("response status: {}", result.status());
+    }
     ensure!(result.status().is_success(), "pulling from artifactory failed with status code {}", result.status().as_str());
     let total = result
       .content_length()
       .unwrap_or(1);
-    debug!("total size: {} KB", total / 1024);
-    let pb = ProgressBar::new(total);
+    if !quiet {
+      debug!("total size: {} KB", total / 1024);
+    }
+    let pb = ProgressBar::new(total / 1024);
     pb.set_style(ProgressStyle::with_template(
-      "{wide_msg} {spinner:.green} {bar:30.yellow/white} {human_pos:4}/ {human_len:4} ({percent:3}%)"
+      "{wide_msg} {spinner:.green} {bar:30.yellow/white} {human_pos:4} KB/ {human_len:4} KB ({percent:3}%)"
     )
       .expect("setting progress bar style should not fail!")
-      .progress_chars("▃ ")
+      //.progress_chars("▃ ")
     );
     pb.set_draw_target(ProgressDrawTarget::stdout_with_hz(5));
     pb.set_message("pulling artifact...");
@@ -161,9 +165,19 @@ impl Artifactory
       let chunk = item?;
       data.extend_from_slice(&chunk);
       downloaded = std::cmp::min(downloaded + chunk.len() as u64, total);
-      pb.set_position(downloaded);
+      pb.set_position(downloaded / 1024);
     }
-    pb.finish_with_message("downloaded successfully");
+    pb.finish_and_clear();
+    if quiet {
+      //print!("\x1b[A\x1b[2K\r");
+      print!("\x1b[A\x1b[2K\r");
+      println!("downloaded {}@{}/{}/{}",
+        &dep.name.yellow().bold(),
+        &dep.version.to_string().green().bold(),
+        &dep.distribution.to_string().magenta().bold(),
+        &dep.arch.to_string().blue().bold()
+      );
+    }
 
     trace!("checking checksum...");
     let md5 = md5::compute(&data);
@@ -186,7 +200,9 @@ impl Artifactory
     if md5_from_api != format!("{:x}", md5) {
       warn!("checksum mismatch");
     } else {
-      debug!("md5 checksum match: {}", "OK".to_string().green());
+      if !quiet {
+        debug!("md5 checksum match: {}", "OK".to_string().green());
+      }
     }
     Ok(data)
   }

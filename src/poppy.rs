@@ -106,16 +106,35 @@ impl Poppy
           .push(&Manifest::from_pwd()?, x.name.as_ref().unwrap())?;
         return Ok(());
       }
+      Commands::Sync(x) => {
+        self
+          .print_environment()
+          .sync(!matches!(args.command, Some(Commands::Install(InstallArgs { lazy: true, .. }))))?
+          .check_for_updates()?
+          .cache_all(x.cache_all, x.include_self)?;
+      },
+      Commands::Install(x) => {
+        self
+          .print_environment()
+          .sync(!x.lazy)?
+          .check_for_updates()?
+          .fresh(x.fresh)?
+          .install()?;
+      }
       _ => {}
     }
 
-    self
-      .print_environment()
-      .sync(!matches!(args.command, Some(Commands::Install(InstallArgs { lazy: true, .. }))))?
-      .check_for_updates()?
-      .fresh(matches!(args.command, Some(Commands::Install(InstallArgs { fresh: true, .. }))))?
-      .install()?;
     Ok(())
+  }
+
+  pub fn cache_all(&mut self, execute: bool, include_self: bool) -> anyhow::Result<&mut Self>
+  {
+    if !execute {
+      trace!("skipping cache all");
+      return Ok(self);
+    }
+    self.resolver.borrow_mut().cache_all(self.registry.clone(), include_self)?;
+    Ok(self)
   }
 
   fn setup_oauth(&mut self, username: &str, token: &str) -> anyhow::Result<()>
@@ -262,7 +281,7 @@ impl Poppy
       }
       let dependency = Dependency::new(String::from("poppy"), latest, Distribution::Executable, PlatformArch::Linux64);
       let res = self.artifactory
-        .pull(&dependency);
+        .pull(&dependency, false);
       return match res {
         Ok(x) => {
           debug!("downloaded new version of poppy");

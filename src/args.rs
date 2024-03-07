@@ -32,6 +32,9 @@ pub enum Commands
   /// Clean dependencies folder
   Clean,
 
+  /// Sync with remote registry
+  Sync(SyncArgs),
+
   /// Purge cache and config folders. Specify --cache to clear only cache or --all to clear all entries
   Purge(PurgeArgs),
 
@@ -85,4 +88,17 @@ pub struct PushArgs
 
   /// REQUIRED: Specify platform arch to push to artifactory
   #[arg(short, long)] pub arch: Option<String>,
+}
+
+#[derive(clap::Args, Debug, Clone)]
+pub struct SyncArgs
+{
+  /// Sync and list remote registry
+  #[arg(short, long)] pub registry: bool,
+
+  /// Download all blobs from remote registry into cache
+  #[arg(short, long)] pub cache_all: bool,
+
+  /// Include poppy packages in --cache-all routine
+  #[arg(long)] pub include_self: bool
 }

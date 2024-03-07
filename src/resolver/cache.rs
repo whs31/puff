@@ -25,7 +25,7 @@ impl Cache
     })
   }
 
-  pub fn get_or_download(&self, dependency: &Dependency) -> anyhow::Result<PathBuf>
+  pub fn get_or_download(&self, dependency: &Dependency, quiet: bool) -> anyhow::Result<PathBuf>
   {
     let tar_name = format!("{}-{}.{}.{}-{}-{}.tar.gz",
       dependency.name,
@@ -44,7 +44,7 @@ impl Cache
     }
 
     self.artifactory
-      .pull(dependency)?
+      .pull(dependency, quiet)?
       .save_as(
         &self.path
           .join(&dependency.name)

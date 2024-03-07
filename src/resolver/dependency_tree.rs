@@ -3,8 +3,10 @@ use std::path::{MAIN_SEPARATOR, Path};
 use std::rc::Rc;
 use anyhow::Context;
 use colored::Colorize;
+use indicatif::{ProgressBar, ProgressDrawTarget};
 use log::{debug, error, info, trace, warn};
 use crate::artifactory::Artifactory;
+use crate::consts::POPPY_NAME;
 use crate::manifest::Manifest;
 use crate::registry::Registry;
 use crate::resolver::{Cache, Dependency};
@@ -138,7 +140,7 @@ impl DependencyStack
         return Err(anyhow::anyhow!("dependency not found in registry"))
       }
       trace!("found {name_f} in registry");
-      let archive = self.cache.get_or_download(&dep)?;
+      let archive = self.cache.get_or_download(&dep, false)?;
       res.push(DependencyStackItem {
         dependency: dep,
         archive_path: archive
@@ -169,6 +171,33 @@ impl DependencyStack
     self.stack
       .iter()
       .try_for_each(|d| d.install(self.target_folder.as_str()))
+  }
+
+  pub fn cache_all(&self, reg: Rc<RefCell<Registry>>, include_self: bool) -> anyhow::Result<()>
+  {
+    debug!("caching all dependencies in current registry");
+    let mut stack: Vec<Dependency> = Vec::new();
+
+    for dep in reg
+      .borrow()
+      .packages
+      .iter()
+    {
+      if !include_self && dep.name == POPPY_NAME { continue; }
+      stack.extend(dep.into_dependency()?)
+    }
+
+    let pb = ProgressBar::new(stack.len() as u64);
+    pb.set_draw_target(ProgressDrawTarget::stdout_with_hz(5));
+    for dep in &stack {
+      self.cache.get_or_download(dep, true)?;
+      pb.inc(1);
+    }
+    pb.finish_and_clear();
+
+    debug!("caching all dependencies in current registry - done! ({} packages)", stack.len());
+
+    Ok(())
   }
 
   #[allow(dead_code)]

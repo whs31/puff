@@ -1,6 +1,7 @@
 use std::collections::HashMap;
 use colored::Colorize;
 use serde::{Deserialize, Serialize};
+use crate::resolver::Dependency;
 use crate::utils::helper_types::{Distribution, PlatformArch, Version};
 
 #[derive(Debug, Serialize, Deserialize)]
@@ -57,5 +58,27 @@ impl RegistryEntry
       );
     }
     str_t
+  }
+
+  pub fn into_dependency(&self) -> anyhow::Result<Vec<Dependency>>
+  {
+    let mut res: Vec<Dependency> = Vec::new();
+
+    for (v, dist) in &self.versions
+    {
+      for (d, platforms) in dist
+      {
+        for platform in platforms
+        {
+          res.push(Dependency {
+            name: self.name.clone(),
+            version: v.clone(),
+            distribution: d.clone(),
+            arch: *platform
+          });
+        }
+      }
+    }
+    Ok(res)
   }
 }

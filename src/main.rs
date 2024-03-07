@@ -24,8 +24,8 @@ fn main() {
     match &args.command {
       Some(Commands::Parse { .. })=> "error",
       _ => match args.verbose {
-        true => "trace",
-        false => "debug",
+        true => "none,poppy=trace",
+        false => "none,poppy=debug",
       }
     }
   )
@@ -35,7 +35,7 @@ fn main() {
 
   match args.command
   {
-    Some(Commands::Install { .. }) | Some(Commands::Push { .. }) => {}
+    Some(Commands::Install { .. }) | Some(Commands::Push { .. }) | Some(Commands::Sync { .. }) => {}
     Some(Commands::Clean) => {
       poppy::Poppy::clean()
         .map_err(|e| { error!("failed to clean: {}", e); std::process::exit(1) } )

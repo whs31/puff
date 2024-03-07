@@ -139,7 +139,20 @@ test
     - `pip install requests`
 
 ### Установка Poppy
+#### В одну команду:
+```shell
+cd ~ \
+&& curl -LRO https://raw.githubusercontent.com/whs31/pppm/main/poppup.py \
+&& python3 poppup.py --install-latest --arch=linux-x64 --user=ЛОГИН_АРТИФАКТОРИ --token=ТОКЕН_АРТИФАКТОРИ \
+&& rm poppup.py \
+&& poppy --version
+```
+#### Подробно:
 - Скачиваем `poppup.py` отсюда: [ссылка](http://uav.radar-mms.com/gitlab/test/essentials/poppy/poppy-cli/-/raw/main/poppup.py?ref_type=heads)
+  **Альтернативная команда**:
+  ```shell
+  curl -LRO https://raw.githubusercontent.com/whs31/pppm/main/poppup.py 
+  ```
 - Запускаем `poppup.py`: 
   - `python3 poppup.py --install-latest --arch=linux-x64 --user=ЛОГИН_АРТИФАКТОРИ --token=ТОКЕН_АРТИФАКТОРИ`
 - Установка прошла успешно, если последняя строка в выводе скрипта имеет вид:

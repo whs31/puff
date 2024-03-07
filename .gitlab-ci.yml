@@ -29,7 +29,7 @@ build windows:
     before_script:
         - cargo --version
     script:
-        - cargo build --release --target=x86_64-pc-windows-gnu
+        - cargo build --release --target x86_64-pc-windows-gnu
         - cp ./target/x86_64-pc-windows-gnu/release/poppy.exe ./poppy.exe
 
     artifacts:

@@ -192,10 +192,28 @@ spdlog = { version = { major = 12, minor = 4, patch = 4 }, distribution = "stati
 cmake = { version = { major = 0, minor = 1, patch = 0 }, distribution = "sources" }
 fmt = { version = { major = 1, minor = 2, patch = 3 }, distribution = "shared" }
 ```
+
 Этот манифест описывает пакет с именем `test` версии `1.0.17`, который зависит от библиотек:
 - `spdlog@12.4.4/static`
 - `cmake@0.1.0/sources`
 - `fmt@1.2.3/shared`
+
+##### Update: С версии 1.1.9 доступен также новый синтаксис версий в манифесте:
+```toml
+[package]
+name = "test"
+version = "1.0.17"
+authors = [
+  "whs31 <whs31@github.io>"
+]
+description = "This is an example manifest"
+
+[dependencies]
+spdlog = { version = "12.4.4", distribution = "static" }
+cmake = { version = "0.1.0", distribution = "sources" }
+fmt = { version = "1.2.3", distribution = "shared" }
+```
+Версии можно указывать в виде строк. Оба синтаксиса поддерживаются и совместимы друг с другом.
 
 #### Как узнать какие библиотеки доступны?
 Для этого можно написать команду `poppy install --list-registry`, которая выдаст список библиотек в реестре `poppy`:

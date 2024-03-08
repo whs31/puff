@@ -17,6 +17,8 @@ pub struct Manifest
 pub struct ManifestPackage
 {
   pub name: String,
+
+  #[serde(deserialize_with = "crate::utils::helper_types::de::str_or_struct_deserializer")]
   pub version: Version,
   pub authors: Option<Vec<String>>,
   pub description: Option<String>
@@ -25,6 +27,7 @@ pub struct ManifestPackage
 #[derive(Debug, Clone, Default, serde::Deserialize, serde::Serialize)]
 pub struct ManifestDependencyData
 {
+  #[serde(deserialize_with = "crate::utils::helper_types::de::str_or_struct_deserializer")]
   pub version: Version,
   pub distribution: Distribution
 }

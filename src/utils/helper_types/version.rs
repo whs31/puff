@@ -1,3 +1,4 @@
+use std::str::FromStr;
 use serde::{Serialize, Deserialize};
 
 #[derive(Debug, Clone, PartialEq, Hash, Eq, PartialOrd, Ord, Serialize, Deserialize)]
@@ -66,5 +67,13 @@ impl TryFrom<String> for Version
   fn try_from(s: String) -> Result<Self, Self::Error>
   {
     Self::try_from(s.as_str())
+  }
+}
+
+impl FromStr for Version {
+  type Err = anyhow::Error;
+
+  fn from_str(s: &str) -> Result<Self, Self::Err> {
+    Self::try_from(s)
   }
 }

@@ -2,7 +2,7 @@ use std::path::PathBuf;
 use std::rc::Rc;
 use anyhow::Context;
 use colored::Colorize;
-use log::trace;
+use log::{debug, trace, warn};
 use crate::artifactory::{Artifactory, SaveAs};
 use crate::resolver::Dependency;
 
@@ -23,6 +23,18 @@ impl Cache
       path: PathBuf::from(path),
       artifactory,
     })
+  }
+
+  pub fn check_cache_total_size(&self) -> anyhow::Result<()>
+  {
+    let total_size = fs_extra::dir::get_size(self.path.as_path())?;
+    let ts_mb = total_size as f64 / 1024.0 / 1024.0;
+    debug!("local cache total size: {:.1} MB", ts_mb);
+    if ts_mb > 512.0 {
+      warn!("local cache size is more than 512 MB. it is recommended to clear it manually");
+      warn!("run poppy purge --cache to reduce the size of local cache");
+    }
+    Ok(())
   }
 
   pub fn get_or_download(&self, dependency: &Dependency, quiet: bool) -> anyhow::Result<PathBuf>

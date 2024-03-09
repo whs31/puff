@@ -170,6 +170,7 @@ impl Poppy
 
   fn sync(&mut self, reclone: bool) -> anyhow::Result<&mut Self>  {
     self.registry.borrow_mut().sync_aql(!reclone)?;
+    self.resolver.borrow().cache.check_cache_total_size()?;
     Ok(self)
   }
 

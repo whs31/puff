@@ -96,11 +96,10 @@ impl DependencyStack
     info!("resolved {} dependencies", self.stack.len());
 
     let a = self.stack.len();
-    if !exact_version {
-      // remove all versions of same package except for the latest version
+    if !exact_version && a > 1 {
       debug!("solving version conflict...");
-      // if name, arch and distribution is same and version is lower or equal to latest of the package, remove it
       let mut latest_dependencies: Vec<DependencyStackItem> = Vec::new();
+
       latest_dependencies.push(self.stack[0].clone());
       for dep in &self.stack {
         if latest_dependencies

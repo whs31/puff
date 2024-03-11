@@ -34,6 +34,10 @@ impl Poppy
       Some(Commands::Install(InstallArgs { arch, .. })) => arch.clone(),
       _ => None
     };
+
+    std::fs::create_dir_all(dirs.cache_dir().join(POPPY_CACHE_DIRECTORY_NAME))?;
+    std::fs::create_dir_all(dirs.cache_dir().join(POPPY_REGISTRY_DIRECTORY_NAME))?;
+    std::fs::create_dir_all(dirs.config_dir())?;
     let env = match arch {
       Some(x) => {
         let mut env_t = Environment::from_current_environment()?;

@@ -105,3 +105,10 @@ pub struct SyncArgs
   /// Include poppy packages in --cache-all routine
   #[arg(long)] pub include_self: bool
 }
+
+#[derive(clap::Args, Debug, Clone)]
+pub struct PackArgs
+{
+  /// Push after packing
+  #[arg(short, long)] pub push: bool
+}

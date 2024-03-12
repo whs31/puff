@@ -46,6 +46,7 @@ install-dev:
     script:
         - cp ./poppy /usr/bin/
         - poppy --version
+        - poppy -u gitlab_ci -t ${ARTIFACTORY_REFERENCE_KEY} sync -r
     artifacts:
         paths: 
             - ./poppy

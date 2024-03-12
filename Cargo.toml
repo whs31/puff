@@ -1,6 +1,6 @@
 [package]
 name = "poppy"
-version = "1.1.12"
+version = "1.1.13"
 description = "poppy - a tool for managing c/c++ packages"
 edition = "2021"
 

@@ -1,5 +1,5 @@
 use anyhow::Context;
-use log::trace;
+use log::{trace, warn};
 use crate::consts::POPPY_INSTALLATION_DIRECTORY_NAME;
 use crate::utils::helper_types::{PlatformArch, Version};
 
@@ -13,14 +13,14 @@ pub struct Environment
 
 impl Environment
 {
-  pub fn from_current_environment() -> anyhow::Result<Self>
+  fn get_cmake_version_from_env() -> anyhow::Result<Version>
   {
-    let cmake_version = Version::try_from(
+    Ok(Version::try_from(
       String::from_utf8(
-      std::process::Command::new("cmake")
-        .arg("--version")
-        .output()?
-        .stdout
+        std::process::Command::new("cmake")
+          .arg("--version")
+          .output()?
+          .stdout
       )?
         .split('\n')
         .collect::<Vec<_>>()
@@ -28,9 +28,17 @@ impl Environment
         .context("cmake version parsing failure")?
         .to_string()
         .chars()
-        .filter(|c| c.is_digit(10) || *c == '.' )
+        .filter(|c| c.is_digit(10) || *c == '.')
         .collect::<String>()
-    )?;
+    )?)
+  }
+
+  pub fn from_current_environment() -> anyhow::Result<Self>
+  {
+    let cmake_version = Self::get_cmake_version_from_env().unwrap_or_else(|e| {
+      warn!("failed to retrieve cmake version: {e}");
+      Version::default()
+    });
 
     let install_dir = std::env::current_dir()?
       .join(POPPY_INSTALLATION_DIRECTORY_NAME)

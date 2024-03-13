@@ -30,8 +30,9 @@ build aarch64:
             - target
     before_script:
         - cargo --version
+
     script:
-        - cargo build --release --target=arm-unknown-linux-musl
+        - cargo build --release --target=aarch64-unknown-linux-musl
         - cp ./target/x86_64-unknown-linux-musl/release/poppy ./poppy
 
     artifacts:

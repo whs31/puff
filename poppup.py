@@ -139,6 +139,8 @@ def main():
             print(f'file {args.file} pushed to artifactory')
         else:
             print(f'file {args.file} already exists in artifactory')
+            
+    os.system('~/.local/bin/poppy -u args.user -t args.token sync -r')
 
 
 if __name__ == '__main__':

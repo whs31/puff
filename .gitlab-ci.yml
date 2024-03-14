@@ -32,8 +32,8 @@ build aarch64:
         - cargo --version
 
     script:
-        - cargo build --release --target=aarch64-unknown-linux-musl
-        - cp ./target/x86_64-unknown-linux-musl/release/poppy ./poppy
+        - cargo build --release --target=aarch64-unknown-linux-gnu
+        - cp ./target/aarch64-unknown-linux-gnu/release/poppy ./poppy
 
     artifacts:
         paths:

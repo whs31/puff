@@ -196,9 +196,9 @@ install-dev-utils:
 
 
 stages:
-    - build
-    - install
-    - package
-    - push
+    #- build
+    #- install
+    #- package
+    #- push
     - install-runners
     

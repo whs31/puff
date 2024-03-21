@@ -52,3 +52,74 @@ impl FromStr for Arch {
     }
   }
 }
+
+#[cfg(test)]
+mod tests
+{
+  use super::*;
+
+  #[test]
+  fn test_serialize()
+  {
+    let a = Arch::X86_64;
+    assert_eq!(a.to_string(), "x86_64");
+
+    let a = Arch::Aarch64;
+    assert_eq!(a.to_string(), "aarch64");
+
+    let a = Arch::Arm;
+    assert_eq!(a.to_string(), "arm");
+
+    let a = Arch::ArmV5TE;
+    assert_eq!(a.to_string(), "armv5te");
+
+    let a = Arch::ArmV7;
+    assert_eq!(a.to_string(), "armv7");
+
+    let a = Arch::ArmV7A;
+    assert_eq!(a.to_string(), "armv7a");
+
+    let a = Arch::ArmV7R;
+    assert_eq!(a.to_string(), "armv7r");
+
+    let a = Arch::ArmV8;
+    assert_eq!(a.to_string(), "armv8");
+
+    let a = Arch::Loongarch64;
+    assert_eq!(a.to_string(), "loongarch64");
+  }
+
+  #[test]
+  fn test_deserialize()
+  {
+    let a = Arch::from_str("x86_64").unwrap();
+    assert_eq!(a, Arch::X86_64);
+
+    let a = Arch::from_str("aarch64").unwrap();
+    assert_eq!(a, Arch::Aarch64);
+
+    let a = Arch::from_str("arm").unwrap();
+    assert_eq!(a, Arch::Arm);
+
+    let a = Arch::from_str("armv5te").unwrap();
+    assert_eq!(a, Arch::ArmV5TE);
+
+    let a = Arch::from_str("armv7").unwrap();
+    assert_eq!(a, Arch::ArmV7);
+
+    let a = Arch::from_str("armv7a").unwrap();
+    assert_eq!(a, Arch::ArmV7A);
+
+    let a = Arch::from_str("armv7r").unwrap();
+    assert_eq!(a, Arch::ArmV7R);
+
+    let a = Arch::from_str("armv8").unwrap();
+    assert_eq!(a, Arch::ArmV8);
+
+    let a = Arch::from_str("loongarch64").unwrap();
+    assert_eq!(a, Arch::Loongarch64);
+
+    let a = Arch::from_str("unknown");
+    assert!(a.is_err());
+  }
+}

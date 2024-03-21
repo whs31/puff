@@ -9,7 +9,7 @@ mod names;
 mod toolchains;
 
 fn try_main() -> anyhow::Result<()> {
-  let directories = Rc::new(core::Directories::new()?);
+  let config = Rc::new(core::Config::create_or_load()?);
   Ok(())
 }
 

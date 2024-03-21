@@ -3,7 +3,7 @@ use std::rc::Rc;
 use colored::Colorize;
 use serde::{Deserialize, Serialize};
 use crate::core;
-use crate::core::args::{Command, RegistryCommand};
+use crate::core::args::{Command, RegistryCommand, ToolchainCommand};
 
 #[derive(Debug, Serialize, Deserialize, Default)]
 pub struct Config
@@ -130,6 +130,32 @@ impl Config
                   Err(anyhow::anyhow!("registry {} not found in config", a.name))
                 }
               }
+            }
+          }
+          Command::Toolchain(toolchain_command) => {
+            match toolchain_command {
+              ToolchainCommand::Cmake(a) => {
+                if let Some(args) = &a.configure_args {
+                  let configure_additional_definitions = args
+                    .iter()
+                    .map(|x| {
+                      let x = x.trim();
+                      let mut parts = x.splitn(2, '=');
+                      let key = parts.next().unwrap();
+                      let value = parts.next().unwrap_or("");
+                      (key.to_string(), value.to_string())
+                    })
+                    .collect::<HashMap<String, String>>();
+                  self.toolchain.cmake.configure_additional_definitions = configure_additional_definitions;
+                };
+                if let Some(cmake) = &a.configure_command {
+                  self.toolchain.cmake.configure_command = cmake.clone();
+                }
+                self.save()?;
+                println!("saved cmake configuration to config");
+                Ok(())
+              },
+              _ => { return Ok(()) }
             }
           }
         }

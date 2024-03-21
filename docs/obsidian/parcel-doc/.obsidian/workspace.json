@@ -35,6 +35,18 @@
             }
           },
           {
+            "id": "a0246ab62d2c4d2a",
+            "type": "leaf",
+            "state": {
+              "type": "markdown",
+              "state": {
+                "file": "Recipes.md",
+                "mode": "source",
+                "source": false
+              }
+            }
+          },
+          {
             "id": "ec382903be3cac9a",
             "type": "leaf",
             "state": {
@@ -47,7 +59,7 @@
             }
           }
         ],
-        "currentTab": 1
+        "currentTab": 2
       }
     ],
     "direction": "vertical"
@@ -113,7 +125,7 @@
             "state": {
               "type": "backlink",
               "state": {
-                "file": "Manifest.md",
+                "file": "Recipes.md",
                 "collapseAll": false,
                 "extraContext": false,
                 "sortOrder": "alphabetical",
@@ -130,7 +142,7 @@
             "state": {
               "type": "outgoing-link",
               "state": {
-                "file": "Manifest.md",
+                "file": "Recipes.md",
                 "linksCollapsed": false,
                 "unlinkedCollapsed": true
               }
@@ -153,7 +165,7 @@
             "state": {
               "type": "outline",
               "state": {
-                "file": "Manifest.md"
+                "file": "Recipes.md"
               }
             }
           }
@@ -174,7 +186,7 @@
       "command-palette:Open command palette": false
     }
   },
-  "active": "f2b09789e9524fff",
+  "active": "a0246ab62d2c4d2a",
   "lastOpenFiles": [
     "Recipes.md",
     "roadmap.canvas",

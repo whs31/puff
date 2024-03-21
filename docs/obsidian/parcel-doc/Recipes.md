@@ -1,5 +1,5 @@
 ### Recipes
-Recipes describe how to build this package from source. Recipes use **YAML** syntax instead of TOML.
+Recipes describe, how you packet (*parcel*) should be built on different platforms and distributions.
 
 What recipe should do:
 - *(optional)* Build package in any folder.
@@ -38,28 +38,43 @@ You can provide recipe for **static** *and/or* **shared** versions of package. A
 
 > You also shoudn't use different `cmake` names (such as `mingw-cmake`, etc.). These must be passed in `poppy configure` command.
 
-
 Example of recipe file for cmake-based project:
 ```yml
 ---
 static:
-	- cmake -GNinja -DCMAKE_BUILD_TYPE=Release -B target -S . -DCMAKE_INSTALL_PREFIX=./target/export
-	- cmake --build target
-	- cmake --install target
-
-shared: 
-	- cmake -GNinja -DCMAKE_BUILD_TYPE=Release -B target -S . -DCMAKE_INSTALL_PREFIX=./target/export -DSHARED=ON
-	- cmake --build target
-	- cmake --install target
+  toolchain:
+    cmake:
+    generator: Ninja
+    definitions:
+        shared: false
+shared:
+  toolchain:
+    cmake:
+      generator: Ninja
+      definitions:
+        shared: true
+```
+This will automatically call the following commands during *build* stage:
+```shell
+# install all required dependencies
+cmake -GNinja -DSTATIC=ON -B target -S . 
+cmake --build target --config release
+cmake --install target --prefix target/export
+# + also copying of necessary manifest/recipe files...
+# + build folder cleanup
 ```
 
 Example of recipe file for just sources project:
 ```yaml
 --- 
 static:
-	- mkdir -p target/export
-	- cp -r export-dir/*.h ./target/export
-	- cp -r export-dir/*.cpp ./target/export
+  toolchain: 
+    shell:
+      - mkdir -p target/export
+      - cp -r src/*.h target/export
+      - cp -r src/*.cpp target/export
+# shared is missing, meaning that library can only be built in static mode
 ```
+This will execute commands as provided.
 
 > Note: do not copy `Parcel.toml`/`.parcel` directory to exports! It will be done automatically!

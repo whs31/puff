@@ -1,4 +1,4 @@
 mod manifest;
 mod dependency;
 
-//pub use manifest::Manifest;
+pub use manifest::Manifest;

@@ -1,7 +1,7 @@
 use std::collections::HashMap;
 use serde::{Deserialize, Serialize};
 use crate::manifest::dependency::ManifestDependencyData;
-use crate::types::{Distribution, VersionRange};
+use crate::types::{VersionRange};
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Manifest
@@ -19,6 +19,23 @@ pub struct ManifestSectionThis
   pub description: Option<String>,
   pub authors: Option<Vec<String>>,
   pub license: Option<String>
+}
+
+impl Manifest
+{
+  pub fn from_directory(path: &str) -> anyhow::Result<Self> {
+    let path = std::path::Path::new(path);
+    let manifest = std::fs::read_to_string(path.join(crate::names::MANIFEST_FILE))?;
+    Ok(toml::from_str(&manifest)?)
+  }
+
+  pub fn from_current_directory() -> anyhow::Result<Self> {
+    Self::from_directory(std::env::current_dir()?
+      .as_os_str()
+      .to_str()
+      .unwrap()
+    )
+  }
 }
 
 #[cfg(test)]

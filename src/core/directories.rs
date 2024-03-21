@@ -1,9 +1,12 @@
 use anyhow::Context;
 
+#[derive(Debug)]
 pub struct Directories
 {
   pub dirs: directories::ProjectDirs
 }
+
+impl Default for Directories { fn default() -> Self { Self::new().unwrap() } }
 
 impl Directories
 {

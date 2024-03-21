@@ -1,3 +1,4 @@
+use std::rc::Rc;
 use colored::Colorize;
 
 mod core;
@@ -8,15 +9,14 @@ mod names;
 mod toolchains;
 
 fn try_main() -> anyhow::Result<()> {
-  let directories = core::Directories::new()?;
-  println!("{:?}", directories.dirs);
+  let directories = Rc::new(core::Directories::new()?);
   Ok(())
 }
 
 fn main() {
   if let Err(e) = try_main() {
     eprintln!("{}: {}",
-              "fatal error in parcel:".to_string().red().bold(),
+              "fatal error in parcel".to_string().red().bold(),
               e.to_string().bright_red().bold());
     std::process::exit(1);
   }

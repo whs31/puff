@@ -1,5 +1,5 @@
 mod config;
 mod args;
+mod directories;
 
-pub use config::*;
-pub use args::*;
+pub use directories::Directories;

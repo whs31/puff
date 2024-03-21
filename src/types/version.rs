@@ -2,7 +2,7 @@ use std::fmt::Display;
 use std::str::FromStr;
 use serde::{Deserialize, Serialize};
 
-#[derive(Debug, Copy, Clone, Hash, Deserialize, Serialize)]
+#[derive(Debug, Copy, Clone, Hash)]
 #[derive(PartialEq, Eq, PartialOrd, Ord)]
 pub struct VersionRange
 {
@@ -17,7 +17,8 @@ pub struct Version(u16, u16, u16);
 impl Display for VersionRange {
   fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
     if self.min == self.max { write!(f, "={}", self.min) }
-    else if self.max.is_highest() { write!(f, "^{}", self.min) }
+    else if self.max.is_highest() && !self.min.is_lowest() { write!(f, "^{}", self.min) }
+    else if self.max.is_highest() { write!(f, "latest") }
     else { write!(f, "{}..{}", self.min, self.max) }
   }
 }
@@ -31,6 +32,19 @@ impl Display for Version {
 
 impl Default for VersionRange { fn default() -> Self { Self::latest() } }
 impl Default for Version { fn default() -> Self { Self::lowest() } }
+
+impl Serialize for VersionRange {
+  fn serialize<S: serde::Serializer>(&self, serializer: S) -> Result<S::Ok, S::Error> {
+    self.to_string().serialize(serializer)
+  }
+}
+
+impl<'de> Deserialize<'de> for VersionRange {
+  fn deserialize<D: serde::Deserializer<'de>>(deserializer: D) -> Result<Self, D::Error> {
+    let s = String::deserialize(deserializer)?;
+    s.parse().map_err(serde::de::Error::custom)
+  }
+}
 
 impl FromStr for VersionRange {
   type Err = anyhow::Error;
@@ -112,7 +126,7 @@ mod tests {
     assert_eq!(v.to_string(), "1.2.3..4.5.6");
 
     let v = VersionRange { min: Version(0, 0, 0), max: Version(65535, 65535, 65535) };
-    assert_eq!(v.to_string(), "^0.0.0");
+    assert_eq!(v.to_string(), "latest");
 
     let v = VersionRange { min: Version(1, 2, 3), max: Version(1, 2, 3) };
     assert_eq!(v.to_string(), "=1.2.3");
@@ -162,5 +176,38 @@ mod tests {
     assert_eq!(v, VersionRange { min: Version(55, 13, 5532), max: Version(55, 13, 5532) });
     assert_eq!(v.min, Version(55, 13, 5532));
     assert_eq!(v.max, Version(55, 13, 5532));
+  }
+
+  #[test]
+  fn test_serde_ser() {
+    let v = VersionRange { min: Version(1, 2, 3), max: Version::highest() };
+    let s = serde_json::to_string(&v).unwrap();
+    assert_eq!(s, "\"^1.2.3\"");
+
+    let v = VersionRange::latest();
+    let s = serde_json::to_string(&v).unwrap();
+    assert_eq!(s, "\"latest\"");
+
+    let v = VersionRange { min: Version(1, 2, 3), max: Version(1, 2, 3) };
+    let s = serde_json::to_string(&v).unwrap();
+    assert_eq!(s, "\"=1.2.3\"");
+  }
+
+  #[test]
+  fn test_serde_de() {
+    let v = VersionRange { min: Version(1, 2, 3), max: Version::highest() };
+    let s = "\"^1.2.3\"".to_string();
+    let v_: VersionRange = serde_json::from_str(&s).unwrap();
+    assert_eq!(v, v_);
+
+    let v = VersionRange::latest();
+    let s = "\"latest\"".to_string();
+    let v_: VersionRange = serde_json::from_str(&s).unwrap();
+    assert_eq!(v, v_);
+
+    let v = VersionRange { min: Version(1, 2, 3), max: Version(1, 2, 3) };
+    let s = "\"=1.2.3\"".to_string();
+    let v_: VersionRange = serde_json::from_str(&s).unwrap();
+    assert_eq!(v, v_);
   }
 }

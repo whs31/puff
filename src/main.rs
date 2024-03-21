@@ -8,12 +8,17 @@ mod manifest;
 mod utility;
 mod names;
 mod toolchains;
+mod parcel;
 
 fn try_main() -> anyhow::Result<()> {
   let args = Rc::new(core::Args::parse());
+
   let mut config = core::Config::create_or_load()?;
   config.process_args(&args)?;
   let config = Rc::new(config);
+
+  let env = Rc::new(core::Environment::new(&args)?);
+  println!("{}", env.pretty_print()); // todo: move this to install step
   Ok(())
 }
 

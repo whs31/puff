@@ -11,6 +11,9 @@ pub struct Args
 #[derive(clap::Subcommand, Debug, Clone)]
 pub enum Command
 {
+  /// Build package
+  Build(BuildArgs),
+
   /// Add or remove a registry from parcel
   #[clap(subcommand)] Registry(RegistryCommand),
 
@@ -71,4 +74,11 @@ pub struct ToolchainCmakeArgs
   #[arg(long)]
   #[clap(num_args = 0.., value_delimiter = ',')]
   pub configure_args: Option<Vec<String>>,
+}
+
+#[derive(clap::Args, Debug, Clone)]
+pub struct BuildArgs
+{
+  /// Folder where manifest is located
+  pub folder: Option<String>,
 }

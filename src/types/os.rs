@@ -40,6 +40,21 @@ impl FromStr for OperatingSystem {
   }
 }
 
+impl OperatingSystem
+{
+  pub fn from_env() -> Self
+  {
+    let os = whoami::platform();
+    match os {
+      whoami::Platform::Linux => Self::Linux,
+      whoami::Platform::Windows => Self::Windows,
+      whoami::Platform::MacOS => Self::MacOS,
+      whoami::Platform::Android => Self::Android,
+      _ => Self::Unknown
+    }
+  }
+}
+
 #[cfg(test)]
 mod tests
 {

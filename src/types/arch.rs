@@ -53,6 +53,21 @@ impl FromStr for Arch {
   }
 }
 
+impl Arch
+{
+  pub fn from_env() -> anyhow::Result<Self>
+  {
+    let arch = whoami::arch();
+    match arch {
+      whoami::Arch::ArmV5 | whoami::Arch::ArmV6 => Ok(Self::Arm),
+      whoami::Arch::ArmV7 => Ok(Self::ArmV7),
+      whoami::Arch::Arm64 => Ok(Self::Aarch64),
+      whoami::Arch::X64 => Ok(Self::X86_64),
+      _ => Err(anyhow::anyhow!("unknown arch: {}", arch))
+    }
+  }
+}
+
 #[cfg(test)]
 mod tests
 {

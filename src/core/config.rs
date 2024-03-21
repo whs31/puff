@@ -158,6 +158,7 @@ impl Config
               _ => { return Ok(()) }
             }
           }
+          _ => { return Ok(()) }
         }
       }
     }

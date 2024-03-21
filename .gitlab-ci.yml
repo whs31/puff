@@ -14,11 +14,11 @@ test linux:
     stage: test
     cache: { key: "${CI_JOB_NAME}", paths: [".cargo", "target"] }
     script:
-        - cargo test -- --target=x86_64-unknown-linux-musl --format=json -Z unstable-options --report-time | junitify -i --out $CI_PROJECT_DIR/test-results/
+        - cargo test -- -Z unstable-options --format json --report-time | cargo2junit > ./test-results.xml
     artifacts:
         when: always
         reports:
-            junit: $CI_PROJECT_DIR/test-results/*.xml
+            junit: ./test-results.xml
 
 
 #build linux:

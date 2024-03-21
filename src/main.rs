@@ -1,4 +1,5 @@
 use std::rc::Rc;
+use clap::Parser;
 use colored::Colorize;
 
 mod core;
@@ -9,7 +10,10 @@ mod names;
 mod toolchains;
 
 fn try_main() -> anyhow::Result<()> {
-  let config = Rc::new(core::Config::create_or_load()?);
+  let args = Rc::new(core::Args::parse());
+  let mut config = core::Config::create_or_load()?;
+  config.process_args(&args)?;
+  let config = Rc::new(config);
   Ok(())
 }
 

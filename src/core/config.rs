@@ -3,6 +3,7 @@ use std::rc::Rc;
 use colored::Colorize;
 use serde::{Deserialize, Serialize};
 use crate::core;
+use crate::core::args::{Command, RegistryCommand};
 
 #[derive(Debug, Serialize, Deserialize, Default)]
 pub struct Config
@@ -88,6 +89,51 @@ impl Config
       config.directories = directories;
       config.save()?;
       Ok(config)
+    }
+  }
+
+  pub fn process_args(&mut self, args: &core::Args) -> anyhow::Result<()>
+  {
+    match &args.command {
+      None => { return Ok(()) }
+      Some(command) => {
+        match command {
+          Command::Registry(registry_command) => {
+            match registry_command {
+              RegistryCommand::Add(a) => {
+                let mut reg_data = RegistryData {
+                  name: a.name.clone(),
+                  base_url: a.url.clone(),
+                  pattern: a.pattern.clone(),
+                  auth: None
+                };
+
+                if let Some(u) = &a.username {
+                  reg_data.auth = Some(RegistryAuth {
+                    username: u.clone(),
+                    password: a.token.clone().unwrap_or(String::new())
+                  });
+                }
+
+                self.registry.list.push(reg_data);
+                self.save()?;
+                println!("added registry {} to config", a.name.yellow().bold());
+                Ok(())
+              }
+              RegistryCommand::Remove(a) => {
+                return if let Some(i) = self.registry.list.iter().position(|x| x.name == a.name) {
+                  self.registry.list.remove(i);
+                  self.save()?;
+                  println!("removed registry {} from config", a.name.yellow().bold());
+                  Ok(())
+                } else {
+                  Err(anyhow::anyhow!("registry {} not found in config", a.name))
+                }
+              }
+            }
+          }
+        }
+      }
     }
   }
 

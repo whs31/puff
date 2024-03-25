@@ -1,7 +1,7 @@
 [package]
-name = "parcel"
+name = "puff"
 version = "2.0.0"
-description = "parcel - a tool for managing c/c++ packages"
+description = "puff - a tool for managing c/c++ packages"
 edition = "2021"
 
 [dependencies]

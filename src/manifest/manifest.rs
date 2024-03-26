@@ -25,6 +25,9 @@ impl Manifest
 {
   pub fn from_directory(path: &str) -> anyhow::Result<Self> {
     let path = std::path::Path::new(path);
+    if !path.join(crate::names::MANIFEST_FILE).exists() {
+      return Err(anyhow::anyhow!("manifest at {} is not found!", path.join(crate::names::MANIFEST_FILE).to_str().unwrap()));
+    }
     let manifest = std::fs::read_to_string(path.join(crate::names::MANIFEST_FILE))?;
     Ok(toml::from_str(&manifest)?)
   }

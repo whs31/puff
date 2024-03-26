@@ -1,5 +1,5 @@
 mod config;
-mod args;
+pub(crate) mod args;
 mod directories;
 mod environment;
 

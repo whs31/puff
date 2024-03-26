@@ -1,24 +1,24 @@
 use std::collections::HashMap;
+use nestify::nest;
 use serde::{Deserialize, Serialize};
 use crate::manifest::dependency::ManifestDependencyData;
 use crate::types::{VersionRange};
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct Manifest
+nest!
 {
-  pub this: ManifestSectionThis,
-  pub needs: Option<HashMap<String, ManifestDependencyData>>,
-  pub build: Option<HashMap<String, VersionRange>>
-}
-
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct ManifestSectionThis
-{
-  pub name: String,
-  pub version: VersionRange,
-  pub description: Option<String>,
-  pub authors: Option<Vec<String>>,
-  pub license: Option<String>
+  #[derive(Debug, Clone, Serialize, Deserialize)]*
+  pub struct Manifest
+  {
+    pub this: pub struct ManifestSectionThis {
+      pub name: String,
+      pub version: VersionRange,
+      pub description: Option<String>,
+      pub authors: Option<Vec<String>>,
+      pub license: Option<String>
+    },
+    pub needs: Option<HashMap<String, ManifestDependencyData>>,
+    pub build: Option<HashMap<String, VersionRange>>
+  }
 }
 
 impl Manifest

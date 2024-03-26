@@ -12,6 +12,7 @@ mod toolchains;
 mod puff;
 mod builder;
 mod pack;
+mod artifactory;
 
 fn try_main() -> anyhow::Result<()> {
   let args = Rc::new(core::Args::parse());
@@ -21,7 +22,7 @@ fn try_main() -> anyhow::Result<()> {
   let config = Rc::new(config);
   let env = Rc::new(core::Environment::new(&args)?);
 
-  let mut puff = puff::Puff::new(config, args.clone(), env);
+  let mut puff = puff::Puff::new(config, args.clone(), env)?;
 
   match &args.command {
     Some(command) => match command {

@@ -14,19 +14,21 @@ pub struct Puff
 {
   pub config: Rc<core::Config>,
   pub args: Rc<core::Args>,
-  pub env: Rc<core::Environment>
+  pub env: Rc<core::Environment>,
+  pub remotes: Rc<crate::artifactory::Registry>
 }
 
 impl Puff
 {
-  pub fn new(config: Rc<core::Config>, args: Rc<core::Args>, env: Rc<core::Environment>) -> Self
+  pub fn new(config: Rc<core::Config>, args: Rc<core::Args>, env: Rc<core::Environment>) -> anyhow::Result<Self>
   {
-    Self
+    Ok(Self
     {
-      config,
+      config: config.clone(),
       args,
-      env
-    }
+      env,
+      remotes: Rc::new(crate::artifactory::Registry::new(config.clone())?)
+    })
   }
 
   pub fn pack(&mut self) -> anyhow::Result<&mut Self>

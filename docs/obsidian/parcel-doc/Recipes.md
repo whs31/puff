@@ -44,8 +44,8 @@ Example of recipe file for cmake-based project:
 static:
   toolchain:
     cmake:
-    generator: Ninja
-    definitions:
+      generator: Ninja
+      definitions:
         shared: false
 shared:
   toolchain:

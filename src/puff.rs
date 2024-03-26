@@ -1,13 +1,13 @@
 use std::rc::Rc;
 use crate::core;
 
-pub struct Parcel
+pub struct Puff
 {
   pub config: Rc<core::Config>,
   pub args: Rc<core::Args>,
 }
 
-impl Parcel
+impl Puff
 {
   pub fn new(config: Rc<core::Config>, args: Rc<core::Args>) -> Self
   {

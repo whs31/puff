@@ -8,7 +8,8 @@ mod manifest;
 mod utility;
 mod names;
 mod toolchains;
-mod parcel;
+mod puff;
+mod builder;
 
 fn try_main() -> anyhow::Result<()> {
   let args = Rc::new(core::Args::parse());

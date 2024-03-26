@@ -17,7 +17,7 @@ pub struct Version(u16, u16, u16);
 impl Display for VersionRange {
   fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
     if self.min == self.max { write!(f, "={}", self.min) }
-    else if self.max.is_highest() && !self.min.is_lowest() { write!(f, "^{}", self.min) }
+    else if self.max.is_highest() && !self.min.is_lowest() { write!(f, "{}", self.min) }
     else if self.max.is_highest() { write!(f, "latest") }
     else { write!(f, "{}..{}", self.min, self.max) }
   }

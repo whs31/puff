@@ -130,6 +130,16 @@ impl Config
                   Err(anyhow::anyhow!("registry {} not found in config", a.name))
                 }
               }
+              RegistryCommand::List => {
+                if self.registry.list.is_empty() {
+                  println!("warning: {}", "no registries found. add one with 'puff registry add'".yellow().bold());
+                  return Ok(())
+                }
+                for reg in &self.registry.list {
+                  println!("{} ({})", reg.name.magenta().bold(), reg.base_url.dimmed());
+                }
+                Ok(())
+              }
             }
           }
           Command::Toolchain(toolchain_command) => {

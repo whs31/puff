@@ -14,11 +14,14 @@ pub enum Command
   /// Build package
   Build(BuildArgs),
 
-  /// Add or remove a registry from parcel
+  /// Add or remove a registry from puff
   #[clap(subcommand)] Registry(RegistryCommand),
 
   /// Specify options for toolchains
   #[clap(subcommand)] Toolchain(ToolchainCommand),
+
+  /// Pack package into a tarball
+  Pack(PackArgs),
 }
 
 #[derive(clap::Subcommand, Debug, Clone)]
@@ -29,6 +32,9 @@ pub enum RegistryCommand
 
   /// Remove an existing registry from parcel
   Remove(RegistryRemoveArgs),
+
+  /// List all registries in parcel
+  List,
 }
 
 #[derive(clap::Args, Debug, Clone)]
@@ -81,4 +87,14 @@ pub struct BuildArgs
 {
   /// Folder where manifest is located
   pub folder: Option<String>,
+}
+
+#[derive(clap::Args, Debug, Clone)]
+pub struct PackArgs
+{
+  /// Folder where manifest is located
+  pub folder: Option<String>,
+
+  /// Output path
+  pub output: Option<String>
 }

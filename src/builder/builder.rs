@@ -1,4 +1,5 @@
 use std::rc::Rc;
+use colored::Colorize;
 use crate::core;
 
 pub struct Builder
@@ -18,9 +19,12 @@ impl Builder
     }
   }
 
-  pub fn build(&self, recipe: &crate::builder::Recipe, path: &str) -> anyhow::Result<&Self>
+  pub fn build(&self, recipe: &crate::builder::Recipe, manifest: &crate::manifest::Manifest, path: &str) -> anyhow::Result<&Self>
   {
-    println!("building {}...", path);
+    println!("building {}@{}",
+             manifest.this.name.bold().cyan(),
+             manifest.this.version.to_string().bold().magenta()
+    );
 
     Ok(self)
   }

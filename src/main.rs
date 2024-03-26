@@ -11,6 +11,7 @@ mod names;
 mod toolchains;
 mod puff;
 mod builder;
+mod pack;
 
 fn try_main() -> anyhow::Result<()> {
   let args = Rc::new(core::Args::parse());
@@ -25,6 +26,7 @@ fn try_main() -> anyhow::Result<()> {
   match &args.command {
     Some(command) => match command {
       Command::Build(x) => { puff.build()?; },
+      Command::Pack(x) => { puff.pack()?; },
       _ => {}
     },
     None => {}

@@ -1,8 +1,14 @@
+use std::collections::HashMap;
 use std::rc::Rc;
+use std::time::Duration;
+use anyhow::Context;
+use colored::Colorize;
+use indicatif::ProgressBar;
 use crate::builder::{Builder, Recipe};
 use crate::core;
 use crate::core::args::Command;
 use crate::manifest::Manifest;
+use crate::names::PACKED_SOURCE_TARBALL_NAME;
 
 pub struct Puff
 {
@@ -21,6 +27,42 @@ impl Puff
       args,
       env
     }
+  }
+
+  pub fn pack(&mut self) -> anyhow::Result<&mut Self>
+  {
+    let path = match &self.args.command {
+      Some(command) => match command {
+        Command::Pack(x) => {
+          match &x.folder {
+            Some(y) => y.clone(),
+            None => std::env::current_dir()?.into_os_string().into_string().unwrap(),
+          }
+        }
+        _ => return Ok(self),
+      }
+      None => return Ok(self),
+    };
+
+    let manifest = Manifest::from_directory(path.as_str())?;
+    let _ = Recipe::from_directory(path.as_str())?; // only for checking for it's existence
+
+    let pb = ProgressBar::new_spinner();
+    pb.enable_steady_tick(Duration::from_millis(100));
+    pb.set_message(format!("packing {}@{}",
+                   manifest.this.name.bold().magenta(),
+                   manifest.this.version.to_string().bold().green()
+    ));
+
+    let mut fmt: HashMap<String, String> = HashMap::new();
+    fmt.insert("name".to_string(), manifest.this.name);
+    fmt.insert("version".to_string(), manifest.this.version.to_string());
+    let tar_name = strfmt::strfmt(PACKED_SOURCE_TARBALL_NAME, &fmt)
+      .context("failed to format tarball name")?;
+    crate::pack::pack(path.as_str(), &tar_name)?;
+
+    pb.finish_and_clear();
+    Ok(self)
   }
 
   pub fn install(&mut self) -> anyhow::Result<&mut Self>
@@ -52,7 +94,7 @@ impl Puff
     let manifest = Manifest::from_directory(path)?;
     let recipe = Recipe::from_directory(path)?;
     let builder = Builder::new(self.config.clone(), self.env.clone());
-    builder.build(&recipe, path)?;
+    builder.build(&recipe, &manifest, path)?;
     Ok(())
   }
 }

@@ -1,9 +1,12 @@
 use std::collections::HashMap;
+use std::io::Write;
+use std::path::PathBuf;
 use std::rc::Rc;
 use std::time::Duration;
 use anyhow::{anyhow, bail, Context, ensure};
 use colored::Colorize;
-use indicatif::ProgressBar;
+use indicatif::{ProgressBar, ProgressDrawTarget, ProgressStyle};
+use futures_util::stream::StreamExt;
 use crate::artifactory::entry::Entry;
 use crate::resolver::{Dependency, PackageGet};
 use crate::types::{Arch, Distribution, OperatingSystem};
@@ -217,7 +220,97 @@ impl Artifactory
   }
 }
 
-// impl PackageGet for Artifactory
-// {
-//
-// }
+impl PackageGet for Artifactory
+{
+  #[tokio::main]
+  async fn get(&self, dependency: &Dependency, allow_sources: bool) -> anyhow::Result<PathBuf>
+  {
+    let mut entry = self.available_packages
+      .iter()
+      .find(|x| x.dependency.name == dependency.name
+        && x.dependency.version.min >= dependency.version.min
+        && x.dependency.version.max <= dependency.version.max
+        && x.dependency.distribution == dependency.distribution
+        && x.dependency.arch == dependency.arch
+      );
+
+    if entry.is_none() && allow_sources {
+      let mut dependency_sources = dependency.clone();
+      dependency_sources.os = OperatingSystem::Unknown;
+      dependency_sources.arch = Arch::Unknown;
+      dependency_sources.distribution = Distribution::Sources;
+      entry = self.available_packages
+        .iter()
+        .find(|x| x.dependency.name == dependency_sources.name
+          && x.dependency.version.min >= dependency_sources.version.min
+          && x.dependency.version.max <= dependency_sources.version.max
+          && x.dependency.distribution == dependency_sources.distribution
+          && x.dependency.arch == dependency_sources.arch
+        );
+    }
+
+    if entry.is_none() {
+      bail!("package not found: {}", dependency);
+    }
+
+    let client = reqwest::Client::builder()
+      .build()?;
+    let result = client
+      .get(&entry.unwrap().url)
+      .basic_auth(self.username.as_ref().unwrap_or(&"guest".to_string()), self.token.clone())
+      .send()
+      .await?;
+    ensure!(result.status().is_success(), "pulling from artifactory failed with status code {}", result.status().as_str());
+    let total = result
+      .content_length()
+      .unwrap_or(1);
+    let pb = ProgressBar::new(total / 1024);
+    pb.set_style(
+      ProgressStyle::with_template("{spinner:.green} [{elapsed_precise}] [{bar:30.blue/blue}] {bytes}/{total_bytes} ({percent:3})")
+        .unwrap()
+    );
+    pb.set_message("downloading package from artifactory");
+    pb.set_draw_target(ProgressDrawTarget::stdout_with_hz(5));
+
+    let target_path = self.config
+      .directories
+      .dirs
+      .cache_dir()
+      .join(format!("{}-{}-{}-{}-{}.tar.gz",
+        entry.unwrap().dependency.name,
+        entry.unwrap().dependency.version.to_string(),
+        entry.unwrap().dependency.arch.to_string(),
+        entry.unwrap().dependency.os.to_string(),
+        entry.unwrap().dependency.distribution.to_string()
+      ));
+    let mut downloaded: u64 = 0;
+    let mut stream = result.bytes_stream();
+    let mut data: Vec<u8> = Vec::new();
+    while let Some(item) = stream.next().await {
+      let chunk = item?;
+      data.extend_from_slice(&chunk);
+      downloaded = std::cmp::min(downloaded + chunk.len() as u64, total);
+      pb.set_position(downloaded / 1024);
+    }
+    pb.finish_and_clear();
+    let md5 = md5::compute(&data);
+
+    let checksum = client
+      .get(&entry.unwrap().api_url)
+      .basic_auth(self.username.as_ref().unwrap_or(&"guest".to_string()), self.token.clone())
+      .send()
+      .await?
+      .text()
+      .await?;
+    let json: serde_json::Value = serde_json::from_str(checksum.as_str())?;
+    let md5_from_api = json
+      .get("checksums")
+      .and_then(|checksums| checksums.get("md5"))
+      .and_then(|checksum| checksum.as_str())
+      .context("checksum not found in api response")?;
+    ensure!(md5_from_api == format!("{:x}", md5), "checksum mismatch");
+    let mut file = std::fs::File::create(&target_path)?;
+    file.write_all(&data)?;
+    Ok(target_path)
+  }
+}

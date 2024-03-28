@@ -1,13 +1,13 @@
 use std::fmt::Display;
 use std::str::FromStr;
 use anyhow::Context;
-use crate::types::{Arch, Distribution, OperatingSystem, Version};
+use crate::types::{Arch, Distribution, OperatingSystem, VersionRange};
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub struct Dependency
 {
   pub name: String,
-  pub version: Version,
+  pub version: VersionRange,
   pub arch: Arch,
   pub os: OperatingSystem,
   pub distribution: Distribution
@@ -23,7 +23,7 @@ impl Display for Dependency
 
 impl Dependency
 {
-  pub fn new(name: String, version: Version, arch: Arch, os: OperatingSystem, distribution: Distribution) -> Self
+  pub fn new(name: String, version: VersionRange, arch: Arch, os: OperatingSystem, distribution: Distribution) -> Self
   {
     Self
     {
@@ -57,7 +57,7 @@ impl Dependency
     Ok(Self
     {
       name: captures_name.get(1).unwrap().as_str().to_string(),
-      version: Version::from_str(captures_version.get(1).unwrap().as_str())?,
+      version: VersionRange::from_str(captures_version.get(1).unwrap().as_str())?,
       arch: Arch::from_str(captures_arch.get(2).unwrap().as_str())?,
       os: OperatingSystem::from_str(captures_arch.get(3).unwrap().as_str())?,
       distribution: Distribution::from_str(captures_distribution.get(1).unwrap().as_str())?,
@@ -74,7 +74,7 @@ mod tests {
     let dep = Dependency::from_package_name("cmake-0.1.3-unknown-unknown-sources.tar.gz");
     assert!(dep.is_ok());
     assert_eq!(dep.as_ref().unwrap().clone().name, "cmake");
-    assert_eq!(dep.as_ref().unwrap().clone().version, Version::from_str("0.1.3").unwrap());
+    assert_eq!(dep.as_ref().unwrap().clone().version, VersionRange::from_str("0.1.3").unwrap());
     assert_eq!(dep.as_ref().unwrap().clone().arch, Arch::Unknown);
     assert_eq!(dep.as_ref().unwrap().clone().os, OperatingSystem::Unknown);
     assert_eq!(dep.as_ref().unwrap().clone().distribution, Distribution::Sources);
@@ -82,7 +82,7 @@ mod tests {
     let dep = Dependency::from_package_name("fmt-1.1.3-x86_64-windows-static.tar.gz");
     assert!(dep.is_ok());
     assert_eq!(dep.as_ref().unwrap().clone().name, "fmt");
-    assert_eq!(dep.as_ref().unwrap().clone().version, Version::from_str("1.1.3").unwrap());
+    assert_eq!(dep.as_ref().unwrap().clone().version, VersionRange::from_str("1.1.3").unwrap());
     assert_eq!(dep.as_ref().unwrap().clone().arch, Arch::X86_64);
     assert_eq!(dep.as_ref().unwrap().clone().os, OperatingSystem::Windows);
     assert_eq!(dep.as_ref().unwrap().clone().distribution, Distribution::Static);

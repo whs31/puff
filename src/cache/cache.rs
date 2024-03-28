@@ -44,8 +44,10 @@ impl Cache
 
 impl PackageGet for Cache
 {
-  fn get(&self, dependency: &Dependency, allow_sources: bool) -> anyhow::Result<PathBuf>
+  #[tokio::main]
+  async fn get(&self, dependency: &Dependency, allow_sources: bool) -> anyhow::Result<PathBuf>
   {
+    // todo: range support
     let path = self.path
       .join(format!("{}-{}-{}-{}-{}.tar.gz",
                     dependency.name,

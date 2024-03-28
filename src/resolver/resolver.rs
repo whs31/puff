@@ -1,12 +1,13 @@
 use std::cell::RefCell;
 use std::rc::Rc;
 use std::time::Duration;
+use anyhow::bail;
 use colored::Colorize;
 use indicatif::ProgressBar;
 use crate::artifactory::Registry;
 use crate::core;
 use crate::manifest::Manifest;
-use crate::resolver::Dependency;
+use crate::resolver::{Dependency, PackageGet};
 
 pub struct Resolver
 {
@@ -54,7 +55,33 @@ impl Resolver
     let mut deps: Vec<Dependency> = Vec::new();
     for x in manifest.needs.as_ref().unwrap() {
       // todo: manifest: from tar gz
-      // todo: registry get
+      // check cache for built package
+      // if not, check reigstry for built package
+      // if not again, check cache for source package
+      // if not, check registry for source package
+      // if all fails, error
+
+      let dependency = Dependency::new(
+        x.0.to_string(),
+        x.1.version,
+        self.env.arch,
+        self.env.os,
+        x.1.distribution
+      );
+
+      let tarball = match self.cache.get(&dependency, false) {
+        Ok(x) => x,
+        Err(_) => match self.registry.borrow().get(&dependency, false) {
+          Ok(x) => x,
+          Err(_) => match self.cache.get(&dependency, true) {
+            Ok(x) => x,
+            Err(_) => match self.registry.borrow().get(&dependency, true) {
+              Ok(x) => x,
+              Err(e) => bail!("failed to get package: {}", e)
+            },
+          },
+        },
+      };
     }
 
     Ok(Vec::new())

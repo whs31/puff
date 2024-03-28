@@ -1,7 +1,10 @@
+use std::path::PathBuf;
 use std::rc::Rc;
 use std::time::Duration;
+use anyhow::ensure;
 use colored::Colorize;
 use indicatif::ProgressBar;
+use crate::resolver::PackageGet;
 
 pub struct Registry
 {
@@ -52,5 +55,25 @@ impl Registry
        self.remotes.len().to_string().bold().magenta()
     );
     Ok(self)
+  }
+}
+
+impl PackageGet for Registry
+{
+  fn get(&self, dependency: &crate::resolver::Dependency, allow_sources: bool) -> anyhow::Result<PathBuf>
+  {
+    let mut result = PathBuf::new();
+    let mut error: String = String::new();
+    for x in &self.remotes {
+      match x.get(dependency, allow_sources) {
+        Ok(x) => {
+          result = x;
+          break;
+        }
+        Err(x) => error = x.to_string()
+      }
+    }
+    ensure!(result.is_file(), "{}", error);
+    Ok(result)
   }
 }

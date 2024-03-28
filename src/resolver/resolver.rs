@@ -53,7 +53,8 @@ impl Resolver
 
     let mut deps: Vec<Dependency> = Vec::new();
     for x in manifest.needs.as_ref().unwrap() {
-
+      // todo: manifest: from tar gz
+      // todo: registry get
     }
 
     Ok(Vec::new())

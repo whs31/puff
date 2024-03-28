@@ -16,6 +16,7 @@ pub struct Artifactory
   pub token: Option<String>,
   url_ping: String,
   url_aql: String,
+  url_api_format: String,
   config: Rc<crate::core::Config>,
   available_packages: Vec<Entry>
 }
@@ -43,6 +44,12 @@ impl Artifactory
       reg_data.name,
       reg_data.pattern
     );
+    let url_api_format = format!("{}{}api/storage/{}/{}",
+      reg_data.base_url,
+      if reg_data.base_url.ends_with('/') { "" } else { "/" },
+      reg_data.name,
+      reg_data.pattern
+    );
     let url_ping = format!("{}{}{}",
       reg_data.base_url,
       if reg_data.base_url.ends_with('/') { "" } else { "/" },
@@ -60,6 +67,7 @@ impl Artifactory
     {
       name,
       url_format,
+      url_api_format,
       url_ping,
       url_aql: format!("{}{}api/search/aql", reg_data.base_url, if reg_data.base_url.ends_with('/') { "" } else { "/" }),
       username,
@@ -201,11 +209,7 @@ impl Artifactory
     let mut packages: Vec<Entry> = Vec::new();
 
     for item in items.results {
-      packages.push(Entry
-      {
-        dependency: Dependency::from_package_name(&item.name)?,
-        url: item.path,
-      });
+      packages.push(Entry::new(Dependency::from_package_name(&item.name)?, &self.url_format, &self.url_api_format)?);
     }
 
     self.available_packages = packages;

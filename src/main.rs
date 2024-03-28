@@ -2,6 +2,7 @@ use std::rc::Rc;
 use clap::Parser;
 use colored::Colorize;
 use crate::core::args::Command;
+use crate::types::Distribution;
 
 mod core;
 mod types;
@@ -37,6 +38,30 @@ fn try_main() -> anyhow::Result<()> {
           .sync()
           .map_err(|e| eprintln!("{}: {}", "warning".yellow().bold(), e.to_string().yellow().bold()));
       },
+      Command::Publish(x) => {
+        if let Some(distribution) = &x.dist {
+          match distribution {
+            Distribution::Sources | Distribution::Unknown => {
+              puff
+                .sync()?
+                .publish_sources(
+                  x.folder
+                    .as_ref()
+                    .unwrap_or(&std::env::current_dir()?.into_os_string().into_string().unwrap())
+                    .as_str(),
+                  x.name.as_str(),
+                  x.force
+                )?;
+            }
+            _ => {
+              eprintln!("{}: {}",
+                "warning".yellow().bold(),
+                "only sources distribution is supported for now".to_string().yellow().bold()
+              )
+            }
+          }
+        }
+      }
       _ => {}
     },
     None => {}

@@ -9,6 +9,7 @@ use crate::core;
 use crate::core::args::Command;
 use crate::manifest::Manifest;
 use crate::names::PACKED_SOURCE_TARBALL_NAME;
+use crate::types::{Arch, Distribution, OperatingSystem};
 
 pub struct Puff
 {
@@ -31,7 +32,7 @@ impl Puff
     })
   }
 
-  pub fn pack(&mut self) -> anyhow::Result<&mut Self>
+  pub fn pack(&self) -> anyhow::Result<Option<String>>
   {
     let path = match &self.args.command {
       Some(command) => match command {
@@ -41,9 +42,9 @@ impl Puff
             None => std::env::current_dir()?.into_os_string().into_string().unwrap(),
           }
         }
-        _ => return Ok(self),
+        _ => return Ok(None),
       }
-      None => return Ok(self),
+      None => return Ok(None),
     };
 
     let manifest = Manifest::from_directory(path.as_str())?;
@@ -68,6 +69,29 @@ impl Puff
       &manifest.this.name.clone().bold().magenta(),
       &manifest.this.version.clone().to_string().bold().green()
     ));
+    Ok(Some(tar_name))
+  }
+
+  pub fn publish_sources(&mut self, path: &str, registry_name: &str, force: bool) -> anyhow::Result<&mut Self>
+  {
+    let remote = self
+      .remotes
+      .remotes
+      .iter()
+      .find(|x| x.name == registry_name)
+      .context(format!("registry {} not found", registry_name))?;
+
+    let tar = self.pack()?;
+
+    remote.push(
+      path,
+      tar.as_ref().unwrap(),
+      Distribution::Sources,
+      Arch::Unknown,
+      OperatingSystem::Unknown,
+      force
+    )?;
+
     Ok(self)
   }
 

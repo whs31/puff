@@ -24,7 +24,7 @@ pub enum Command
   Pack(PackArgs),
 
   /// Pack and push package to Artifactory
-  Push(PushArgs),
+  Publish(PublishArgs),
 }
 
 #[derive(clap::Subcommand, Debug, Clone)]
@@ -103,10 +103,13 @@ pub struct PackArgs
 }
 
 #[derive(clap::Args, Debug, Clone)]
-pub struct PushArgs
+pub struct PublishArgs
 {
   /// Folder where manifest is located
   pub folder: Option<String>,
+
+  /// Type of distribution
+  #[arg(short, long)] pub dist: Option<crate::types::Distribution>,
 
   /// Name of the registry to be added. Must be same as the name of the repository in Artifactory
   #[arg(short, long)] pub name: String,

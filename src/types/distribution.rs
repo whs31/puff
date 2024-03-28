@@ -7,6 +7,7 @@ pub enum Distribution
 {
   Static,
   #[default] Shared,
+  Sources,
   Unknown
 }
 
@@ -15,6 +16,7 @@ impl std::fmt::Display for Distribution {
     match self {
       Self::Static => write!(f, "static"),
       Self::Shared => write!(f, "shared"),
+      Self::Sources => write!(f, "sources"),
       Self::Unknown => write!(f, "unknown"),
     }
   }
@@ -28,7 +30,8 @@ impl FromStr for Distribution {
     match s.as_str() {
       "static" => Ok(Self::Static),
       "shared"|"dynamic"|"dyn" => Ok(Self::Shared),
-      "unknown"|"sources"|"any" => Ok(Self::Unknown),
+      "sources" => Ok(Self::Sources),
+      "unknown"|"any" => Ok(Self::Unknown),
       _ => Err(anyhow::anyhow!("unknown distribution: {}", s))
     }
   }

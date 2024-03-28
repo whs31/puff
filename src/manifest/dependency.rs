@@ -5,7 +5,7 @@ use crate::types::{Distribution, VersionRange};
 
 #[derive(Debug, Clone, Copy, Hash)]
 #[derive(PartialEq, Eq, PartialOrd, Ord)]
-pub struct ManifestDependencyData // todo: deserialize it from either string or struct
+pub struct ManifestDependencyData
 {
   pub version: VersionRange,
   pub distribution: Distribution
@@ -21,10 +21,6 @@ impl FromStr for ManifestDependencyData {
   type Err = anyhow::Error;
 
   fn from_str(s: &str) -> Result<Self, Self::Err> {
-    // deserializes exactly like version range but optionally with distribution
-    // (separated by '@'). if distribution is not provided, it defaults to shared
-    // e.g.: "10.0.0", "10.0.0@static", "10.0.0@shared", "^10.0.0", "=10.0.0@shared"
-
     let mut s = s.split('@');
     if s.clone().collect::<Vec<_>>().len() == 1 {
       Ok(Self { version: s.next().unwrap().parse()?, distribution: Distribution::Shared })

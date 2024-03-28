@@ -6,7 +6,7 @@ use colored::Colorize;
 use indicatif::ProgressBar;
 use crate::builder::{Builder, Recipe};
 use crate::core;
-use crate::core::args::Command;
+use crate::core::args::{BuildArgs, Command, InstallArgs};
 use crate::manifest::Manifest;
 use crate::names::PACKED_SOURCE_TARBALL_NAME;
 use crate::types::{Arch, Distribution, OperatingSystem};
@@ -16,19 +16,23 @@ pub struct Puff
   pub config: Rc<core::Config>,
   pub args: Rc<core::Args>,
   pub env: Rc<core::Environment>,
-  pub remotes: Rc<crate::artifactory::Registry>
+  pub remotes: Rc<crate::artifactory::Registry>,
+  pub cache: Rc<crate::cache::Cache>
 }
 
 impl Puff
 {
   pub fn new(config: Rc<core::Config>, args: Rc<core::Args>, env: Rc<core::Environment>) -> anyhow::Result<Self>
   {
+    let remotes = Rc::new(crate::artifactory::Registry::new(config.clone())?);
+    let cache = Rc::new(crate::cache::Cache::new(config.clone(), env.clone(), remotes.clone()));
     Ok(Self
     {
       config: config.clone(),
       args,
       env,
-      remotes: Rc::new(crate::artifactory::Registry::new(config.clone())?)
+      remotes,
+      cache
     })
   }
 
@@ -107,27 +111,15 @@ impl Puff
     Ok(self)
   }
 
-  pub fn install(&mut self) -> anyhow::Result<&mut Self>
+  pub fn install(&mut self, arguments: &InstallArgs) -> anyhow::Result<&mut Self>
   {
     println!("{}", self.env.pretty_print());
     Ok(self)
   }
 
-  pub fn build(&mut self) -> anyhow::Result<&mut Self>
+  pub fn build(&mut self, arguments: &BuildArgs) -> anyhow::Result<&mut Self>
   {
-    let path = match &self.args.command {
-      Some(command) => match command {
-        Command::Build(x) => {
-          match &x.folder {
-            Some(y) => y.clone(),
-            None => std::env::current_dir()?.into_os_string().into_string().unwrap(),
-          }
-        }
-        _ => return Ok(self),
-      }
-      None => return Ok(self),
-    };
-    self.build_packet(&path)?;
+    self.build_packet(arguments.folder.as_ref().unwrap_or(&std::env::current_dir()?.into_os_string().into_string().unwrap()))?;
     Ok(self)
   }
 

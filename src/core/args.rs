@@ -14,6 +14,9 @@ pub enum Command
   /// Build package
   Build(BuildArgs),
 
+  /// Install required dependencies
+  Install(InstallArgs),
+
   /// Add or remove a registry from puff
   #[clap(subcommand)] Registry(RegistryCommand),
 
@@ -87,6 +90,13 @@ pub struct ToolchainCmakeArgs
 
 #[derive(clap::Args, Debug, Clone)]
 pub struct BuildArgs
+{
+  /// Folder where manifest is located
+  pub folder: Option<String>,
+}
+
+#[derive(clap::Args, Debug, Clone)]
+pub struct InstallArgs
 {
   /// Folder where manifest is located
   pub folder: Option<String>,

@@ -14,6 +14,7 @@ mod puff;
 mod builder;
 mod pack;
 mod artifactory;
+mod cache;
 
 fn try_main() -> anyhow::Result<()> {
   let args = Rc::new(core::Args::parse());
@@ -30,7 +31,12 @@ fn try_main() -> anyhow::Result<()> {
       Command::Build(x) => {
         puff
           .sync()?
-          .build()?;
+          .build(x)?;
+      },
+      Command::Install(x) => {
+        puff
+          .sync()?
+          .install(x)?;
       },
       Command::Pack(x) => { puff.pack()?; },
       Command::Registry(x) => {

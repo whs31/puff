@@ -9,8 +9,7 @@ pub enum OperatingSystem
   Windows,
   MacOS,
   Android,
-  #[default]
-  Unknown
+  #[default] Unknown
 }
 
 impl std::fmt::Display for OperatingSystem {

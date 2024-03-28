@@ -22,6 +22,9 @@ pub enum Command
 
   /// Pack package into a tarball
   Pack(PackArgs),
+
+  /// Pack and push package to Artifactory
+  Push(PushArgs),
 }
 
 #[derive(clap::Subcommand, Debug, Clone)]
@@ -96,5 +99,18 @@ pub struct PackArgs
   pub folder: Option<String>,
 
   /// Output path
-  pub output: Option<String>
+  #[arg(short, long)] pub output: Option<String>
+}
+
+#[derive(clap::Args, Debug, Clone)]
+pub struct PushArgs
+{
+  /// Folder where manifest is located
+  pub folder: Option<String>,
+
+  /// Name of the registry to be added. Must be same as the name of the repository in Artifactory
+  #[arg(short, long)] pub name: String,
+
+  /// Overwrite existing package
+  #[arg(short, long)] pub force: bool
 }

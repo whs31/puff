@@ -1,8 +1,10 @@
+use std::collections::HashMap;
 use std::rc::Rc;
 use std::time::Duration;
-use anyhow::{bail, Context};
+use anyhow::{bail, Context, ensure};
 use colored::Colorize;
 use indicatif::ProgressBar;
+use crate::types::{Arch, Distribution, OperatingSystem};
 
 pub struct Artifactory
 {
@@ -80,6 +82,69 @@ impl Artifactory
       &self.name.bold().magenta(),
       "is available".to_string().green().bold(),
     ));
+    Ok(())
+  }
+
+  pub fn push(
+    &self,
+    path: &str,
+    packed_file: &str,
+    distribution: Distribution,
+    arch: Arch,
+    os: OperatingSystem,
+    force: bool
+  ) -> anyhow::Result<()>
+  {
+    let manifest = crate::manifest::Manifest::from_directory(path)?;
+    let recipe = crate::builder::Recipe::from_directory(path)?;
+    println!("pushing {}@{} to {}", manifest.this.name, manifest.this.version, &self.name);
+
+    let mut fmt: HashMap<String, String> = HashMap::new();
+    fmt.insert("name".to_string(), manifest.this.name.clone());
+    fmt.insert("version".to_string(), manifest.this.version.clone().to_string());
+    fmt.insert("arch".to_string(), arch.to_string());
+    fmt.insert("platform".to_string(), os.to_string());
+    fmt.insert("distribution".to_string(), distribution.to_string());
+
+    let url = strfmt::strfmt(self.url_format.as_str(), &fmt)
+      .context("failed to format url")?;
+    let client = reqwest::blocking::Client::builder()
+      .build()?;
+    let exists = client
+      .get(url.clone())
+      .basic_auth(self.username.as_ref().unwrap_or(&"guest".to_string()), self.token.clone())
+      .send()?;
+
+    if exists.status().is_success() {
+      println!("{} {}@{}/{}/{}/{} {} {}",
+        String::from("package").yellow().bold(),
+        manifest.this.name.bold().magenta(),
+        manifest.this.version.to_string().bold().green(),
+        distribution.to_string().cyan(),
+        arch.to_string().white(),
+        os.to_string().white(),
+        String::from("already exists in").yellow().bold(),
+        &self.name.bold().cyan()
+      );
+
+      if !force {
+        println!("{}. use --force flag to push anyway", String::from("warning").cyan().bold());
+        return Ok(());
+      } else {
+        println!("{}", String::from("warning: overriding existing package").yellow().bold());
+      }
+    }
+
+    let res = client
+      .put(url)
+      .basic_auth(self.username.as_ref().unwrap_or(&"guest".to_string()), self.token.clone())
+      .body(std::fs::read(packed_file)?)
+      .send()?;
+
+    if !res.status().is_success() {
+      bail!("failed to push package: {}", res.status());
+    }
+    std::fs::remove_file(packed_file)?;
     Ok(())
   }
 }

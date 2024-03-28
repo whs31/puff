@@ -6,16 +6,16 @@ use serde::{Deserialize, Serialize};
 pub enum Distribution
 {
   Static,
-
-  #[default]
-  Shared
+  #[default] Shared,
+  Unknown
 }
 
 impl std::fmt::Display for Distribution {
   fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
     match self {
       Self::Static => write!(f, "static"),
-      Self::Shared => write!(f, "shared")
+      Self::Shared => write!(f, "shared"),
+      Self::Unknown => write!(f, "unknown"),
     }
   }
 }
@@ -28,6 +28,7 @@ impl FromStr for Distribution {
     match s.as_str() {
       "static" => Ok(Self::Static),
       "shared"|"dynamic"|"dyn" => Ok(Self::Shared),
+      "unknown"|"sources"|"any" => Ok(Self::Unknown),
       _ => Err(anyhow::anyhow!("unknown distribution: {}", s))
     }
   }

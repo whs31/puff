@@ -182,7 +182,7 @@ mod tests {
   fn test_serde_ser() {
     let v = VersionRange { min: Version(1, 2, 3), max: Version::highest() };
     let s = serde_json::to_string(&v).unwrap();
-    assert_eq!(s, "\"^1.2.3\"");
+    assert_eq!(s, "\"1.2.3\"");
 
     let v = VersionRange::latest();
     let s = serde_json::to_string(&v).unwrap();

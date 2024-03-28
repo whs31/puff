@@ -5,8 +5,7 @@ use serde::{Deserialize, Serialize};
 #[derive(PartialEq, Eq, PartialOrd, Ord)]
 pub enum Arch
 {
-  #[default]
-  X86_64,
+  #[default] X86_64,
   Aarch64,
   Arm,
   ArmV5TE,
@@ -14,7 +13,8 @@ pub enum Arch
   ArmV7A,
   ArmV7R,
   ArmV8,
-  Loongarch64
+  Loongarch64,
+  Unknown
 }
 
 impl std::fmt::Display for Arch {
@@ -28,7 +28,8 @@ impl std::fmt::Display for Arch {
       Self::ArmV7A => write!(f, "armv7a"),
       Self::ArmV7R => write!(f, "armv7r"),
       Self::ArmV8 => write!(f, "armv8"),
-      Self::Loongarch64 => write!(f, "loongarch64")
+      Self::Loongarch64 => write!(f, "loongarch64"),
+      Self::Unknown => write!(f, "unknown"),
     }
   }
 }
@@ -48,6 +49,7 @@ impl FromStr for Arch {
       "armv7r" | "armv7rl" => Ok(Self::ArmV7R),
       "armv8" | "armv8l" => Ok(Self::ArmV8),
       "loongarch64" | "loongarch" | "loongarch64l" => Ok(Self::Loongarch64),
+      "unknown"|"any" => Ok(Self::Unknown),
       _ => Err(anyhow::anyhow!("unknown arch: {}", s))
     }
   }

@@ -1,9 +1,11 @@
 use std::collections::HashMap;
 use std::rc::Rc;
 use std::time::Duration;
-use anyhow::{bail, Context, ensure};
+use anyhow::{anyhow, bail, Context, ensure};
 use colored::Colorize;
 use indicatif::ProgressBar;
+use crate::artifactory::entry::Entry;
+use crate::resolver::Dependency;
 use crate::types::{Arch, Distribution, OperatingSystem};
 
 pub struct Artifactory
@@ -13,7 +15,9 @@ pub struct Artifactory
   pub username: Option<String>,
   pub token: Option<String>,
   url_ping: String,
-  config: Rc<crate::core::Config>
+  url_aql: String,
+  config: Rc<crate::core::Config>,
+  available_packages: Vec<Entry>
 }
 
 impl Artifactory
@@ -57,9 +61,11 @@ impl Artifactory
       name,
       url_format,
       url_ping,
+      url_aql: format!("{}{}api/search/aql", reg_data.base_url, if reg_data.base_url.ends_with('/') { "" } else { "/" }),
       username,
       token,
-      config
+      config,
+      available_packages: Vec::new()
     })
   }
 
@@ -166,6 +172,42 @@ impl Artifactory
       &self.name.bold().cyan()
     ));
     Ok(())
+  }
+
+  #[tokio::main]
+  pub async fn query(&self, query: &str) -> anyhow::Result<String>
+  {
+    let client = reqwest::Client::builder()
+      .build()?;
+    let result = client
+      .post(&self.url_aql)
+      .basic_auth(self.username.as_ref().unwrap_or(&"guest".to_string()), self.token.clone())
+      .body(String::from(query))
+      .send()
+      .await?;
+    if !result.status().is_success() {
+      return Err(anyhow!("artifactory is not responding"));
+    }
+    Ok(result.text().await?)
+  }
+
+  pub fn sync_aql(&mut self) -> anyhow::Result<&mut Self>
+  {
+    let raw = self.query(
+      r#"items.find({"repo": "poppy-cxx-repo", "name": {"$match": "*"}}).sort({"$desc": ["created"]})"#
+    )?;
+
+    let items = serde_json::from_str::<crate::artifactory::query::PackageQueryResponse>(&raw)?;
+    let mut packages: Vec<Entry> = Vec::new();
+
+    for item in items.results {
+      packages.push(Entry
+      {
+        dependency: Dependency::from_package_name(&item.name)?,
+        url: item.path,
+      });
+    }
+    Ok(self)
   }
 }
 

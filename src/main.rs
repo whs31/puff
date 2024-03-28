@@ -15,6 +15,7 @@ mod builder;
 mod pack;
 mod artifactory;
 mod cache;
+mod resolver;
 
 fn try_main() -> anyhow::Result<()> {
   let args = Rc::new(core::Args::parse());

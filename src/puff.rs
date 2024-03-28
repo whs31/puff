@@ -25,7 +25,7 @@ impl Puff
   pub fn new(config: Rc<core::Config>, args: Rc<core::Args>, env: Rc<core::Environment>) -> anyhow::Result<Self>
   {
     let remotes = Rc::new(crate::artifactory::Registry::new(config.clone())?);
-    let cache = Rc::new(crate::cache::Cache::new(config.clone(), env.clone(), remotes.clone()));
+    let cache = Rc::new(crate::cache::Cache::new(config.clone(), env.clone(), remotes.clone())?);
     Ok(Self
     {
       config: config.clone(),

@@ -96,15 +96,24 @@ impl Artifactory
   ) -> anyhow::Result<()>
   {
     let manifest = crate::manifest::Manifest::from_directory(path)?;
-    let recipe = crate::builder::Recipe::from_directory(path)?;
-    println!("pushing {}@{} to {}", manifest.this.name, manifest.this.version, &self.name);
+
+    let pb = ProgressBar::new_spinner();
+    pb.enable_steady_tick(Duration::from_millis(100));
+    pb.set_message(format!("pushing {}@{}/{}/{}/{} to {}",
+      &manifest.this.name.bold().magenta(),
+      &manifest.this.version.to_string().bold().green(),
+      distribution.to_string().cyan().dimmed(),
+      arch.to_string().white().dimmed(),
+      os.to_string().white().dimmed(),
+      self.name.bold().bright_green()
+    ));
 
     let mut fmt: HashMap<String, String> = HashMap::new();
     fmt.insert("name".to_string(), manifest.this.name.clone());
     fmt.insert("version".to_string(), manifest.this.version.clone().to_string());
     fmt.insert("arch".to_string(), arch.to_string());
     fmt.insert("platform".to_string(), os.to_string());
-    fmt.insert("distribution".to_string(), distribution.to_string());
+    fmt.insert("dist".to_string(), distribution.to_string());
 
     let url = strfmt::strfmt(self.url_format.as_str(), &fmt)
       .context("failed to format url")?;
@@ -128,7 +137,8 @@ impl Artifactory
       );
 
       if !force {
-        println!("{}. use --force flag to push anyway", String::from("warning").cyan().bold());
+        pb.finish_and_clear();
+        println!("{}: use --force flag to push anyway", String::from("tip").cyan().bold());
         return Ok(());
       } else {
         println!("{}", String::from("warning: overriding existing package").yellow().bold());
@@ -145,6 +155,16 @@ impl Artifactory
       bail!("failed to push package: {}", res.status());
     }
     std::fs::remove_file(packed_file)?;
+
+    pb.finish_with_message(format!("{} {}@{}/{}/{}/{} to {}",
+      "successfully pushed".to_string().green().bold(),
+      &manifest.this.name.bold().magenta(),
+      &manifest.this.version.to_string().bold().green(),
+      distribution.to_string().cyan().dimmed(),
+      arch.to_string().white().dimmed(),
+      os.to_string().white().dimmed(),
+      &self.name.bold().cyan()
+    ));
     Ok(())
   }
 }

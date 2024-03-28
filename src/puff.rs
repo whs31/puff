@@ -41,6 +41,12 @@ impl Puff
             Some(y) => y.clone(),
             None => std::env::current_dir()?.into_os_string().into_string().unwrap(),
           }
+        },
+        Command::Publish(x) => {
+          match &x.folder {
+            Some(y) => y.clone(),
+            None => std::env::current_dir()?.into_os_string().into_string().unwrap(),
+          }
         }
         _ => return Ok(None),
       }
@@ -81,11 +87,9 @@ impl Puff
       .find(|x| x.name == registry_name)
       .context(format!("registry {} not found", registry_name))?;
 
-    let tar = self.pack()?;
-
     remote.push(
       path,
-      tar.as_ref().unwrap(),
+      self.pack()?.as_ref().context("failed to pack sources. contact the maintainer")?,
       Distribution::Sources,
       Arch::Unknown,
       OperatingSystem::Unknown,
@@ -98,6 +102,8 @@ impl Puff
   pub fn sync(&mut self) -> anyhow::Result<&mut Self>
   {
     self.remotes.ping_all()?;
+    println!();
+    println!();
     Ok(self)
   }
 

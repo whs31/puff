@@ -194,7 +194,7 @@ impl Artifactory
   pub fn sync_aql(&mut self) -> anyhow::Result<&mut Self>
   {
     let raw = self.query(
-      r#"items.find({"repo": "poppy-cxx-repo", "name": {"$match": "*"}}).sort({"$desc": ["created"]})"#
+      format!(r#"items.find({{"repo": "{name}", "name": {{"$match": "*"}}}}).sort({{"$desc": ["created"]}})"#, name = self.name).as_str()
     )?;
 
     let items = serde_json::from_str::<crate::artifactory::query::PackageQueryResponse>(&raw)?;
@@ -207,6 +207,8 @@ impl Artifactory
         url: item.path,
       });
     }
+
+    self.available_packages = packages;
     Ok(self)
   }
 }

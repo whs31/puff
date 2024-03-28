@@ -1,3 +1,4 @@
+use std::cell::RefCell;
 use std::collections::HashMap;
 use std::rc::Rc;
 use std::time::Duration;
@@ -16,7 +17,7 @@ pub struct Puff
   pub config: Rc<core::Config>,
   pub args: Rc<core::Args>,
   pub env: Rc<core::Environment>,
-  pub remotes: Rc<crate::artifactory::Registry>,
+  pub remotes: Rc<RefCell<crate::artifactory::Registry>>,
   pub cache: Rc<crate::cache::Cache>
 }
 
@@ -24,7 +25,7 @@ impl Puff
 {
   pub fn new(config: Rc<core::Config>, args: Rc<core::Args>, env: Rc<core::Environment>) -> anyhow::Result<Self>
   {
-    let remotes = Rc::new(crate::artifactory::Registry::new(config.clone())?);
+    let remotes = Rc::new(RefCell::new(crate::artifactory::Registry::new(config.clone())?));
     let cache = Rc::new(crate::cache::Cache::new(config.clone(), env.clone(), remotes.clone())?);
     Ok(Self
     {
@@ -82,10 +83,12 @@ impl Puff
     Ok(Some(tar_name))
   }
 
-  pub fn publish_sources(&mut self, path: &str, registry_name: &str, force: bool) -> anyhow::Result<&mut Self>
+  pub fn publish_sources(&self, path: &str, registry_name: &str, force: bool) -> anyhow::Result<&Self>
   {
-    let remote = self
+    let remotes_ref = self
       .remotes
+      .borrow();
+    let remote = remotes_ref
       .remotes
       .iter()
       .find(|x| x.name == registry_name)
@@ -105,9 +108,15 @@ impl Puff
 
   pub fn sync(&mut self) -> anyhow::Result<&mut Self>
   {
-    self.remotes.ping_all()?;
+    self.remotes
+      .borrow()
+      .ping_all()?;
     println!();
     println!();
+
+    self.remotes
+      .borrow_mut()
+      .sync_all()?;
     Ok(self)
   }
 

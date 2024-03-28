@@ -1,3 +1,4 @@
+use std::cell::RefCell;
 use std::path::PathBuf;
 use std::rc::Rc;
 use anyhow::bail;
@@ -9,13 +10,13 @@ pub struct Cache
 {
   pub config: Rc<core::Config>,
   pub env: Rc<core::Environment>,
-  pub registry: Rc<crate::artifactory::Registry>,
+  pub registry: Rc<RefCell<crate::artifactory::Registry>>,
   pub path: PathBuf
 }
 
 impl Cache
 {
-  pub fn new(config: Rc<core::Config>, env: Rc<core::Environment>, registry: Rc<crate::artifactory::Registry>) -> anyhow::Result<Self>
+  pub fn new(config: Rc<core::Config>, env: Rc<core::Environment>, registry: Rc<RefCell<crate::artifactory::Registry>>) -> anyhow::Result<Self>
   {
     let path = config.directories.dirs.cache_dir().to_path_buf();
     std::fs::create_dir_all(&path)?;

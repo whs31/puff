@@ -71,6 +71,12 @@ impl Puff
     Ok(self)
   }
 
+  pub fn sync(&mut self) -> anyhow::Result<&mut Self>
+  {
+    self.remotes.ping_all()?;
+    Ok(self)
+  }
+
   pub fn install(&mut self) -> anyhow::Result<&mut Self>
   {
     println!("{}", self.env.pretty_print());

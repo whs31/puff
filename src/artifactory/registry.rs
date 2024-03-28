@@ -14,7 +14,6 @@ impl Registry
     for x in &config.registry.list
     {
       let artifactory = crate::artifactory::Artifactory::new(config.clone(), &x.name)?;
-      artifactory.ping()?;
       remotes.push(artifactory);
     }
     Ok(Self
@@ -22,5 +21,13 @@ impl Registry
       remotes,
       config
     })
+  }
+
+  pub fn ping_all(&self) -> anyhow::Result<&Self>
+  {
+    for x in &self.remotes {
+      x.ping()?;
+    }
+    Ok(self)
   }
 }

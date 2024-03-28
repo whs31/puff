@@ -26,8 +26,17 @@ fn try_main() -> anyhow::Result<()> {
 
   match &args.command {
     Some(command) => match command {
-      Command::Build(x) => { puff.build()?; },
+      Command::Build(x) => {
+        puff
+          .sync()?
+          .build()?;
+      },
       Command::Pack(x) => { puff.pack()?; },
+      Command::Registry(x) => {
+        let _ = puff
+          .sync()
+          .map_err(|e| eprintln!("{}: {}", "warning".yellow().bold(), e.to_string().yellow().bold()));
+      },
       _ => {}
     },
     None => {}

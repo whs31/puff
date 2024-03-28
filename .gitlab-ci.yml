@@ -5,9 +5,9 @@ build linux:
     cache: { key: "${CI_JOB_NAME}", paths: [".cargo", "target"] }
     script:
         - cargo build --release --target=x86_64-unknown-linux-musl
-        - cp ./target/x86_64-unknown-linux-musl/release/parcel ./parcel
+        - cp ./target/x86_64-unknown-linux-musl/release/puff ./puff
 
-    artifacts: { paths: ["./parcel"], expire_in: 1 hour }
+    artifacts: { paths: ["./puff"], expire_in: 1 hour }
 
 test linux:
     tags: [dev-utils]

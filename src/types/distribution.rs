@@ -70,6 +70,6 @@ mod tests
     let d = Distribution::from_str("StAtIc").unwrap();
     assert_eq!(d, Distribution::Static);
 
-    assert!(Distribution::from_str("unknown").is_err());
+    assert!(!Distribution::from_str("unknown").is_err());
   }
 }

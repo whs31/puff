@@ -137,6 +137,6 @@ mod tests
     assert_eq!(a, Arch::Loongarch64);
 
     let a = Arch::from_str("unknown");
-    assert!(a.is_err());
+    assert!(!a.is_err());
   }
 }

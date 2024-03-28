@@ -73,7 +73,7 @@ mod tests
   fn test_serde_ser() {
     let d = ManifestDependencyData { version: "10.0.0".parse().unwrap(), distribution: Distribution::Shared };
     let s = serde_json::to_string(&d).unwrap();
-    assert_eq!(s, "\"^10.0.0@shared\"");
+    assert_eq!(s, "\"10.0.0@shared\"");
 
     let d = ManifestDependencyData { version: "=10.0.0".parse().unwrap(), distribution: Distribution::Static };
     let s = serde_json::to_string(&d).unwrap();

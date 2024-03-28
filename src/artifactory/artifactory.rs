@@ -266,10 +266,16 @@ impl PackageGet for Artifactory
       .unwrap_or(1);
     let pb = ProgressBar::new(total / 1024);
     pb.set_style(
-      ProgressStyle::with_template("{spinner:.green} [{elapsed_precise}] [{bar:30.blue/blue}] {bytes}/{total_bytes} ({percent:3})")
+      ProgressStyle::with_template("{spinner:.green} {wide_msg} [{elapsed}] [{bar:20.blue/blue}] {human_pos:4}/{human_len:4} kb ({percent:3})")
         .unwrap()
     );
-    pb.set_message("downloading package from artifactory");
+    pb.set_message(format!("downloading {}@{}/{}/{}/{}",
+                           &entry.unwrap().dependency.name.bold().magenta(),
+                           &entry.unwrap().dependency.version.to_string().green(),
+                           &entry.unwrap().dependency.arch.to_string().dimmed(),
+                           &entry.unwrap().dependency.os.to_string().dimmed(),
+                           &entry.unwrap().dependency.distribution.to_string().dimmed()
+    ));
     pb.set_draw_target(ProgressDrawTarget::stdout_with_hz(5));
 
     let target_path = self.config

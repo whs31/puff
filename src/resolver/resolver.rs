@@ -33,16 +33,12 @@ impl Resolver
   pub fn resolve(&self, path: &str) -> anyhow::Result<()>
   {
     let manifest = Manifest::from_directory(path)?;
-    let pb = ProgressBar::new_spinner();
-    pb.enable_steady_tick(Duration::from_millis(100));
-    pb.set_message(format!("{} {}",
+    println!("\n{} {}",
       "resolving dependency tree for".to_string().bold().cyan(),
       manifest.this.name.bold().magenta()
-    ));
+    );
 
     let tree = self.collect_recursively(manifest)?;
-
-    pb.finish_and_clear();
     Ok(())
   }
 

@@ -18,7 +18,7 @@ pub struct Artifactory
   url_aql: String,
   url_api_format: String,
   config: Rc<crate::core::Config>,
-  available_packages: Vec<Entry>
+  pub(crate) available_packages: Vec<Entry>
 }
 
 impl Artifactory

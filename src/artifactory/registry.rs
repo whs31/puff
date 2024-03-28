@@ -1,5 +1,6 @@
 use std::rc::Rc;
 use std::time::Duration;
+use colored::Colorize;
 use indicatif::ProgressBar;
 
 pub struct Registry
@@ -46,6 +47,10 @@ impl Registry
       pb.inc(1);
     }
     pb.finish_and_clear();
+    println!("found {} packages in {} remotes",
+       self.remotes.iter().map(|x| x.available_packages.len()).sum::<usize>().to_string().bold().green(),
+       self.remotes.len().to_string().bold().magenta()
+    );
     Ok(self)
   }
 }

@@ -239,7 +239,7 @@ impl PackageGet for Artifactory
       dependency_sources.os = OperatingSystem::Unknown;
       dependency_sources.arch = Arch::Unknown;
       dependency_sources.distribution = Distribution::Sources;
-      entry = self.available_packages
+      entry = self.available_packages // todo: make this separate function
         .iter()
         .find(|x| x.dependency.name == dependency_sources.name
           && x.dependency.version.min >= dependency_sources.version.min

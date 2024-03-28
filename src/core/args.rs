@@ -52,8 +52,8 @@ pub struct RegistryAddArgs
   /// URL of the Artifactory registry, stripped of any trailing slashes and without repository name
   #[arg(long)] pub url: String,
 
-  /// Package layout pattern in selected repository in Artifactory
-  #[arg(short, long)] pub pattern: String,
+  /// Package layout pattern in selected repository in Artifactory. May lead to errors and bugs, use with caution
+  #[arg(short, long)] pub pattern: Option<String>,
 
   /// Username for basic auth in Artifactory
   #[arg(short, long)] pub username: Option<String>,

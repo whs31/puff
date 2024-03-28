@@ -104,7 +104,7 @@ impl Config
                 let mut reg_data = RegistryData {
                   name: a.name.clone(),
                   base_url: a.url.clone(),
-                  pattern: a.pattern.clone(),
+                  pattern: a.pattern.clone().unwrap_or("parcels/radar/{name}/{version}/{name}-{version}-{arch}-{platform}-{dist}.tar.gz".to_string()),
                   auth: None
                 };
 

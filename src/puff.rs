@@ -10,6 +10,7 @@ use crate::core;
 use crate::core::args::{BuildArgs, Command, InstallArgs};
 use crate::manifest::Manifest;
 use crate::names::PACKED_SOURCE_TARBALL_NAME;
+use crate::resolver::Resolver;
 use crate::types::{Arch, Distribution, OperatingSystem};
 
 pub struct Puff
@@ -123,6 +124,15 @@ impl Puff
   pub fn install(&mut self, arguments: &InstallArgs) -> anyhow::Result<&mut Self>
   {
     println!("{}", self.env.pretty_print());
+
+    let path = match &arguments.folder {
+      Some(x) => x.clone(),
+      None => std::env::current_dir()?.into_os_string().into_string().unwrap(),
+    };
+    let resolver = Resolver::new(self.config.clone(), self.env.clone(), self.remotes.clone(), self.cache.clone());
+
+    resolver
+      .resolve(path.as_str())?;
     Ok(self)
   }
 

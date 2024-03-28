@@ -5,7 +5,7 @@ use anyhow::{anyhow, bail, Context, ensure};
 use colored::Colorize;
 use indicatif::ProgressBar;
 use crate::artifactory::entry::Entry;
-use crate::resolver::Dependency;
+use crate::resolver::{Dependency, PackageGet};
 use crate::types::{Arch, Distribution, OperatingSystem};
 
 pub struct Artifactory
@@ -217,3 +217,7 @@ impl Artifactory
   }
 }
 
+// impl PackageGet for Artifactory
+// {
+//
+// }

@@ -67,6 +67,11 @@ fn try_main() -> anyhow::Result<()> {
               )
             }
           }
+        } else {
+          eprintln!("{}: {}",
+            "warning".yellow().bold(),
+            "no distribution specified".to_string().yellow().bold()
+          )
         }
       }
       _ => {}

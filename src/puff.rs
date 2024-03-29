@@ -38,29 +38,10 @@ impl Puff
     })
   }
 
-  pub fn pack(&self) -> anyhow::Result<Option<String>>
+  pub fn pack(&self, path: &str) -> anyhow::Result<Option<String>>
   {
-    let path = match &self.args.command {
-      Some(command) => match command {
-        Command::Pack(x) => {
-          match &x.folder {
-            Some(y) => y.clone(),
-            None => std::env::current_dir()?.into_os_string().into_string().unwrap(),
-          }
-        },
-        Command::Publish(x) => {
-          match &x.folder {
-            Some(y) => y.clone(),
-            None => std::env::current_dir()?.into_os_string().into_string().unwrap(),
-          }
-        }
-        _ => return Ok(None),
-      }
-      None => return Ok(None),
-    };
-
-    let manifest = Manifest::from_directory(path.as_str())?;
-    let _ = Recipe::from_directory(path.as_str())?; // only for checking for it's existence
+    let manifest = Manifest::from_directory(path)?;
+    let _ = Recipe::from_directory(path)?; // only for checking for it's existence
 
     let pb = ProgressBar::new_spinner();
     pb.enable_steady_tick(Duration::from_millis(100));
@@ -74,7 +55,7 @@ impl Puff
     fmt.insert("version".to_string(), manifest.this.version.clone().to_string());
     let tar_name = strfmt::strfmt(PACKED_SOURCE_TARBALL_NAME, &fmt)
       .context("failed to format tarball name")?;
-    crate::pack::pack(path.as_str(), &tar_name)?;
+    crate::pack::pack(path, &tar_name)?;
 
     pb.finish_with_message(format!("{} {}@{}",
       "successfully packed".to_string().green().bold(),
@@ -82,6 +63,37 @@ impl Puff
       &manifest.this.version.clone().to_string().bold().green()
     ));
     Ok(Some(tar_name))
+  }
+
+  pub fn publish_target(
+    &self,
+    path: &str,
+    registry_name: &str,
+    force: bool,
+    arch: Arch,
+    os: OperatingSystem,
+    distribution: Distribution
+  ) -> anyhow::Result<&Self>
+  {
+    let remotes_ref = self
+      .remotes
+      .borrow();
+    let remote = remotes_ref
+      .remotes
+      .iter()
+      .find(|x| x.name == registry_name)
+      .context(format!("registry {} not found", registry_name))?;
+
+    remote.push(
+      path,
+      self.pack(path)?.as_ref().context("failed to pack sources. contact the maintainer")?,
+      distribution,
+      arch,
+      os,
+      force
+    )?;
+
+    Ok(self)
   }
 
   pub fn publish_sources(&self, path: &str, registry_name: &str, force: bool) -> anyhow::Result<&Self>
@@ -97,7 +109,7 @@ impl Puff
 
     remote.push(
       path,
-      self.pack()?.as_ref().context("failed to pack sources. contact the maintainer")?,
+      self.pack(path)?.as_ref().context("failed to pack sources. contact the maintainer")?,
       Distribution::Sources,
       Arch::Unknown,
       OperatingSystem::Unknown,

@@ -124,6 +124,12 @@ pub struct PublishArgs
   /// Name of the registry to be added. Must be same as the name of the repository in Artifactory
   #[arg(short, long)] pub name: String,
 
+  /// Package architecture
+  #[arg(short, long)] pub arch: Option<crate::types::Arch>,
+
+  /// Package operating system
+  #[arg(short, long)] pub os: Option<crate::types::OperatingSystem>,
+
   /// Overwrite existing package
   #[arg(short, long)] pub force: bool
 }

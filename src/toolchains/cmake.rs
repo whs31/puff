@@ -1,6 +1,7 @@
 use std::env::temp_dir;
 use anyhow::{bail, Context, ensure};
 use crate::builder::Recipe;
+use crate::toolchains::Toolchain;
 use crate::types::Distribution;
 
 pub struct CMakeToolchain
@@ -22,8 +23,11 @@ impl CMakeToolchain
         .collect()
     }
   }
+}
 
-  pub fn build_from_recipe(&self, recipe: &Recipe, source_directory: &str, distribution: Distribution) -> anyhow::Result<()>
+impl Toolchain for CMakeToolchain
+{
+  fn build_from_recipe(&self, recipe: &Recipe, source_directory: &str, distribution: Distribution) -> anyhow::Result<()>
   {
     let target_temp = temp_dir()
       .join(std::time::SystemTime::now().duration_since(std::time::UNIX_EPOCH)?.as_nanos().to_string())
@@ -39,45 +43,14 @@ impl CMakeToolchain
     }
     command.arg(format!("-DCMAKE_PREFIX_PATH={}", crate::names::DEPENDENCIES_FOLDER));
 
-    // todo: rewrite
-    match distribution {
-      Distribution::Static => {
-        command.arg("-DBUILD_SHARED_LIBS=OFF");
-        let definitions = recipe
-          .static_toolchain
-          .as_ref()
-          .context("cmake toolchain was requested to build as static but no static toolchain was provided")?
-          .toolchain
-          .cmake
-          .as_ref()
-          .context("cmake toolchain was requested to build package but recipe is not configured for cmake")?
-          .definitions
-          .as_ref();
-        if let Some(definitions) = definitions {
-          for x in definitions {
-            command.arg(format!("-D{}={}", x.0.to_uppercase(), x.1.to_uppercase()));
-          }
-        }
-      },
-      Distribution::Shared => {
-        command.arg("-DBUILD_SHARED_LIBS=ON");
-        let definitions = recipe
-          .shared_toolchain
-          .as_ref()
-          .context("cmake toolchain was requested to build as shared but no shared toolchain was provided")?
-          .toolchain
-          .cmake
-          .as_ref()
-          .context("cmake toolchain was requested to build package but recipe is not configured for cmake")?
-          .definitions
-          .as_ref();
-        if let Some(definitions) = definitions {
-          for x in definitions {
-            command.arg(format!("-D{}={}", x.0.to_uppercase(), x.1.to_uppercase()));
-          }
-        }
-      },
-      _ => bail!("unsupported distribution: {:?}", distribution)
+    let toolchain = recipe
+      .extract_toolchain(distribution)?
+      .cmake
+      .context("cmake toolchain was requested to build package but recipe is not configured for cmake")?;
+    if let Some(definitions) = toolchain.definitions.as_ref() {
+      for x in definitions {
+        command.arg(format!("-D{}={}", x.0.to_uppercase(), x.1.to_uppercase()));
+      }
     }
 
     println!("cmake command: {:?}", command);

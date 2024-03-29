@@ -1,6 +1,8 @@
 use std::collections::HashMap;
+use anyhow::{anyhow, Context};
 use serde::{Deserialize, Serialize};
 use crate::names::{EXTENSIONS_DIRECTORY, RECIPE_FILE};
+use crate::types::Distribution;
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct Recipe
@@ -44,5 +46,24 @@ impl Recipe
       .join(RECIPE_FILE)
       .as_path()
     )?)?)
+  }
+
+  pub fn extract_toolchain(&self, distribution: Distribution) -> anyhow::Result<ToolchainSection>
+  {
+    match distribution {
+      Distribution::Static => Ok(self
+        .static_toolchain
+        .as_ref()
+        .context("toolchain was requested to build as static but no static toolchain was provided")?
+        .toolchain
+        .clone()),
+      Distribution::Shared => Ok(self
+        .shared_toolchain
+        .as_ref()
+        .context("toolchain was requested to build as shared but no shared toolchain was provided")?
+        .toolchain
+        .clone()),
+      _ => Err(anyhow!("unsupported distribution for build: {}", distribution))
+    }
   }
 }

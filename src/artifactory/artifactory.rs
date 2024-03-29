@@ -288,7 +288,7 @@ impl PackageGet for Artifactory
       downloaded = std::cmp::min(downloaded + chunk.len() as u64, total);
       pb.set_position(downloaded / 1024);
     }
-    pb.finish_and_clear(); //todo
+    pb.finish_and_clear();
     let md5 = md5::compute(&data);
 
     let checksum = client

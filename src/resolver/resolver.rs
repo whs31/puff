@@ -40,6 +40,13 @@ impl Resolver
     );
 
     let tree = self.collect_recursively(manifest)?;
+    // remove duplicates
+    let tree = tree
+      .into_iter()
+      .fold(Vec::new(), |mut acc, x| {
+        if !acc.iter().any(|y: &ResolverEntry| y.dependency == x.dependency) { acc.push(x); }
+        acc
+      });
 
     for x in tree {
       println!("=> {:<70}   [{:<10}]   ({})",

@@ -2,9 +2,9 @@ use std::cell::RefCell;
 use std::path::PathBuf;
 use std::rc::Rc;
 use std::time::Duration;
-use anyhow::{anyhow, bail};
+use anyhow::{anyhow, bail, Context};
 use colored::Colorize;
-use indicatif::ProgressBar;
+use indicatif::{ProgressBar, ProgressFinish};
 use crate::artifactory::Registry;
 use crate::core;
 use crate::manifest::Manifest;
@@ -51,13 +51,6 @@ impl Resolver
 
     let mut deps: Vec<Dependency> = Vec::new();
     for x in manifest.needs.as_ref().unwrap() {
-      // todo: manifest: from tar gz
-      // check cache for built package
-      // if not, check reigstry for built package
-      // if not again, check cache for source package
-      // if not, check registry for source package
-      // if all fails, error
-
       let dependency = Dependency::new(
         x.0.to_string(),
         x.1.version,
@@ -67,13 +60,20 @@ impl Resolver
       );
 
       let tarball = self.try_get(&dependency)?;
+      let folded_manifest = Manifest::from_tar_gz(tarball.to_str().context("failed to convert path to string")?)?;
+      let sub_deps = self.collect_recursively(folded_manifest)?;
+      deps.extend(sub_deps);
+      deps.push(dependency);
     }
 
-    Ok(Vec::new())
+    Ok(deps)
   }
 
   pub fn try_get(&self, dependency: &Dependency) -> anyhow::Result<PathBuf>
   {
+    let pb = ProgressBar::new_spinner().with_finish(ProgressFinish::AndLeave);
+    pb.enable_steady_tick(Duration::from_millis(100));
+    pb.set_message(format!("searching for {}", dependency.pretty_print()));
     match self.cache.get(&dependency, false) {
       Ok(x) => Ok(x),
       Err(_) => match self.registry.borrow().get(&dependency, false) {

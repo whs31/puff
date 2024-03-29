@@ -1,4 +1,5 @@
 use std::collections::HashMap;
+use anyhow::Context;
 use nestify::nest;
 use serde::{Deserialize, Serialize};
 use crate::manifest::dependency::ManifestDependencyData;
@@ -38,6 +39,19 @@ impl Manifest
       .to_str()
       .unwrap()
     )
+  }
+
+  pub fn from_tar_gz(tar_path: &str) -> anyhow::Result<Self> {
+    let tmp_dir = tempfile::tempdir()?;
+    let tmp_dir_path = tmp_dir.path();
+
+    crate::pack::unpack(
+      tar_path,
+      tmp_dir_path.to_str().context("failed to convert tmpdir path to str")?
+    )?;
+
+    let manifest = Self::from_directory(tmp_dir_path.to_str().context("failed to convert tmpdir path to str")?)?;
+    Ok(manifest)
   }
 }
 

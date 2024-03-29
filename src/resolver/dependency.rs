@@ -1,6 +1,7 @@
 use std::fmt::Display;
 use std::str::FromStr;
 use anyhow::Context;
+use colored::Colorize;
 use crate::types::{Arch, Distribution, OperatingSystem, VersionRange};
 
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
@@ -81,6 +82,17 @@ impl Dependency
     dep.arch = Arch::Unknown;
     dep.os = OperatingSystem::Unknown;
     dep
+  }
+
+  pub fn pretty_print(&self) -> String
+  {
+    format!("{}@{}/{}/{}/{}",
+            self.name.bold().yellow(),
+            self.version.to_string().bold().blue(),
+            self.arch.to_string().dimmed(),
+            self.os.to_string().dimmed(),
+            self.distribution.to_string().bold()
+    )
   }
 }
 

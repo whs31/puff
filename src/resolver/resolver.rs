@@ -175,8 +175,8 @@ impl Resolver
     };
 
     if recipe_toolchain.toolchain.cmake.is_some() {
-      // CMakeToolchain::new(&self.config)
-      //   .build_from_recipe(&recipe, build_directory.to_str().unwrap(), entry.dependency.distribution.clone())?;
+      CMakeToolchain::new(&self.config)
+        .build_from_recipe(&recipe, build_directory.to_str().unwrap(), entry.dependency.distribution.clone())?;
     } else if recipe_toolchain.toolchain.shell.is_some() {
       ShellToolchain::new()
         .build_from_recipe(&recipe, build_directory.to_str().unwrap(), entry.dependency.distribution.clone())?;

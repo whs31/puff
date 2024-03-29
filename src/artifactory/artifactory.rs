@@ -227,26 +227,13 @@ impl PackageGet for Artifactory
   {
     let mut entry = self.available_packages
       .iter()
-      .find(|x| x.dependency.name == dependency.name
-        && x.dependency.version.min >= dependency.version.min
-        && x.dependency.version.max <= dependency.version.max
-        && x.dependency.distribution == dependency.distribution
-        && x.dependency.arch == dependency.arch
-      );
+      .find(|x| x.dependency.ranged_compare(dependency));
 
     if entry.is_none() && allow_sources {
-      let mut dependency_sources = dependency.clone();
-      dependency_sources.os = OperatingSystem::Unknown;
-      dependency_sources.arch = Arch::Unknown;
-      dependency_sources.distribution = Distribution::Sources;
-      entry = self.available_packages // todo: make this separate function
+      let dependency = dependency.as_sources_dependency();
+      entry = self.available_packages
         .iter()
-        .find(|x| x.dependency.name == dependency_sources.name
-          && x.dependency.version.min >= dependency_sources.version.min
-          && x.dependency.version.max <= dependency_sources.version.max
-          && x.dependency.distribution == dependency_sources.distribution
-          && x.dependency.arch == dependency_sources.arch
-        );
+        .find(|x| x.dependency.ranged_compare(&dependency));
     }
 
     if entry.is_none() {

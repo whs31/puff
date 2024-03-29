@@ -63,6 +63,25 @@ impl Dependency
       distribution: Distribution::from_str(captures_distribution.get(1).unwrap().as_str())?,
     })
   }
+
+  pub fn ranged_compare(&self, other: &Dependency) -> bool
+  {
+    self.name == other.name
+      && self.version.min >= other.version.min
+      && self.version.max <= other.version.max
+      && self.arch == other.arch
+      && self.os == other.os
+      && self.distribution == other.distribution
+  }
+
+  pub fn as_sources_dependency(&self) -> Dependency
+  {
+    let mut dep = self.clone();
+    dep.distribution = Distribution::Sources;
+    dep.arch = Arch::Unknown;
+    dep.os = OperatingSystem::Unknown;
+    dep
+  }
 }
 
 #[cfg(test)]

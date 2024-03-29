@@ -1,7 +1,8 @@
 use std::cell::RefCell;
+use std::path::PathBuf;
 use std::rc::Rc;
 use std::time::Duration;
-use anyhow::bail;
+use anyhow::{anyhow, bail};
 use colored::Colorize;
 use indicatif::ProgressBar;
 use crate::artifactory::Registry;
@@ -65,21 +66,26 @@ impl Resolver
         x.1.distribution
       );
 
-      let tarball = match self.cache.get(&dependency, false) {
-        Ok(x) => x,
-        Err(_) => match self.registry.borrow().get(&dependency, false) {
-          Ok(x) => x,
-          Err(_) => match self.cache.get(&dependency, true) {
-            Ok(x) => x,
-            Err(_) => match self.registry.borrow().get(&dependency, true) {
-              Ok(x) => x,
-              Err(e) => bail!("failed to get package: {}", e)
-            },
-          },
-        },
-      };
+      let tarball = self.try_get(&dependency)?;
     }
 
     Ok(Vec::new())
+  }
+
+  pub fn try_get(&self, dependency: &Dependency) -> anyhow::Result<PathBuf>
+  {
+    match self.cache.get(&dependency, false) {
+      Ok(x) => Ok(x),
+      Err(_) => match self.registry.borrow().get(&dependency, false) {
+        Ok(x) => Ok(x),
+        Err(_) => match self.cache.get(&dependency, true) {
+          Ok(x) => Ok(x),
+          Err(_) => match self.registry.borrow().get(&dependency, true) {
+            Ok(x) => Ok(x),
+            Err(e) => Err(anyhow!("failed to get package: {}", e))
+          },
+        },
+      },
+    }
   }
 }

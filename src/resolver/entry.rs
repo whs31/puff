@@ -23,7 +23,6 @@ impl ResolverEntry
 
   pub fn install(&self, target_folder: &str) -> anyhow::Result<()>
   {
-    let path = self.tar_path.parent().unwrap();
     std::fs::create_dir_all(target_folder)?;
     crate::pack::unpack(
       self.tar_path.as_path().to_str().unwrap(),

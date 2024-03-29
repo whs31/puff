@@ -58,7 +58,7 @@ fn try_main() -> anyhow::Result<()> {
           .unwrap_or(&std::env::current_dir()?.into_os_string().into_string().unwrap())
           .as_str())?;
       },
-      Command::Registry(x) => {
+      Command::Registry(_x) => {
         let _ = puff
           .sync()
           .map_err(|e| eprintln!("{}: {}", "warning".yellow().bold(), e.to_string().yellow().bold()));
@@ -78,7 +78,7 @@ fn try_main() -> anyhow::Result<()> {
                   x.force
                 )?;
             },
-            dist => {
+            _ => {
               let export_folder = Path::new(
                 x.folder
                   .as_ref()
@@ -140,8 +140,8 @@ fn try_main() -> anyhow::Result<()> {
 fn main() {
   if let Err(e) = try_main() {
     eprintln!("{}: {}",
-              "fatal error in puff".to_string().red().bold(),
-              e.to_string().bright_red().bold());
+      "fatal error in puff".to_string().red().bold(),
+      e.to_string().bright_red().bold());
     std::process::exit(1);
   }
 }

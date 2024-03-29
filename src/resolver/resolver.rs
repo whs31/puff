@@ -1,6 +1,6 @@
 use std::cell::RefCell;
 use std::env::temp_dir;
-use std::path::{Path, PathBuf};
+use std::path::{Path};
 use std::rc::Rc;
 use std::time::Duration;
 use anyhow::{anyhow, Context};
@@ -10,8 +10,8 @@ use crate::artifactory::Registry;
 use crate::builder::Recipe;
 use crate::core;
 use crate::manifest::Manifest;
-use crate::names::{DEPENDENCIES_FOLDER, EXPORT_FOLDER, TARGET_FOLDER};
-use crate::resolver::{Dependency, dependency, PackageGet, ResolverEntry};
+use crate::names::{DEPENDENCIES_FOLDER};
+use crate::resolver::{Dependency, PackageGet, ResolverEntry};
 use crate::toolchains::{CMakeToolchain, ShellToolchain, Toolchain};
 use crate::types::Distribution;
 
@@ -157,7 +157,7 @@ impl Resolver
       .join(entry.dependency.version.to_string().clone());
     std::fs::create_dir_all(&build_directory)?;
     crate::pack::unpack(entry.tar_path.to_str().unwrap(), build_directory.to_str().unwrap())?;
-    let manifest = Manifest::from_directory(build_directory.to_str().unwrap())?;
+    let _manifest = Manifest::from_directory(build_directory.to_str().unwrap())?;
     let recipe = Recipe::from_directory(build_directory.to_str().unwrap())?;
 
     self.resolve(build_directory.to_str().unwrap())?;

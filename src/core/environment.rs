@@ -9,7 +9,7 @@ pub struct Environment
 
 impl Environment
 {
-  pub fn new(args: &core::Args) -> anyhow::Result<Self>
+  pub fn new(_args: &core::Args) -> anyhow::Result<Self>
   {
     // todo: cross-compilation args
     Ok(Self {

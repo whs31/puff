@@ -1,6 +1,5 @@
 use std::path::PathBuf;
 use std::rc::Rc;
-use std::time::Duration;
 use anyhow::ensure;
 use colored::Colorize;
 use indicatif::ProgressBar;
@@ -9,6 +8,8 @@ use crate::resolver::PackageGet;
 pub struct Registry
 {
   pub remotes: Vec<crate::artifactory::Artifactory>,
+
+  #[allow(dead_code)]
   config: Rc<crate::core::Config>
 }
 

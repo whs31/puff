@@ -33,6 +33,7 @@ impl Manifest
     Ok(toml::from_str(&manifest)?)
   }
 
+  #[allow(dead_code)]
   pub fn from_current_directory() -> anyhow::Result<Self> {
     Self::from_directory(std::env::current_dir()?
       .as_os_str()

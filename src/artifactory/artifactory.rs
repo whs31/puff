@@ -5,7 +5,7 @@ use std::rc::Rc;
 use std::time::Duration;
 use anyhow::{anyhow, bail, Context, ensure};
 use colored::Colorize;
-use indicatif::{ProgressBar, ProgressDrawTarget, ProgressStyle};
+use indicatif::{ProgressBar, ProgressStyle};
 use futures_util::stream::StreamExt;
 use crate::artifactory::entry::Entry;
 use crate::resolver::{Dependency, PackageGet};

@@ -30,6 +30,7 @@ impl Cache
     })
   }
 
+  #[allow(dead_code)]
   pub fn clear_all(&self) -> anyhow::Result<()>
   {
     let pb = ProgressBar::new_spinner();

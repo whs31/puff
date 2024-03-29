@@ -165,6 +165,7 @@ impl Config
                 println!("saved cmake configuration to config");
                 Ok(())
               },
+              #[allow(unreachable_patterns)]
               _ => { return Ok(()) }
             }
           }

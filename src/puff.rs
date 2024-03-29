@@ -1,15 +1,8 @@
 use std::cell::RefCell;
-use std::collections::HashMap;
 use std::rc::Rc;
-use std::time::Duration;
 use anyhow::Context;
-use colored::Colorize;
-use indicatif::ProgressBar;
-use crate::builder::{Builder, Recipe};
 use crate::core;
-use crate::core::args::{BuildArgs, Command, InstallArgs};
-use crate::manifest::Manifest;
-use crate::names::PACKED_SOURCE_TARBALL_NAME;
+use crate::core::args::{BuildArgs, InstallArgs};
 use crate::resolver::Resolver;
 use crate::types::{Arch, Distribution, OperatingSystem};
 
@@ -118,7 +111,12 @@ impl Puff
       Some(x) => x.clone(),
       None => std::env::current_dir()?.into_os_string().into_string().unwrap(),
     };
-    let resolver = Resolver::new(self.config.clone(), self.env.clone(), self.remotes.clone(), self.cache.clone());
+    let resolver = Resolver::new(
+      self.config.clone(),
+      self.env.clone(),
+      self.remotes.clone(),
+      self.cache.clone()
+    );
 
     resolver
       .resolve(path.as_str())?;
@@ -127,16 +125,6 @@ impl Puff
 
   pub fn build(&mut self, arguments: &BuildArgs) -> anyhow::Result<&mut Self>
   {
-    self.build_packet(arguments.folder.as_ref().unwrap_or(&std::env::current_dir()?.into_os_string().into_string().unwrap()))?;
-    Ok(self)
-  }
-
-  fn build_packet(&self, path: &str) -> anyhow::Result<()>
-  {
-    let manifest = Manifest::from_directory(path)?;
-    let recipe = Recipe::from_directory(path)?;
-    let builder = Builder::new(self.config.clone(), self.env.clone());
-    builder.build(&recipe, &manifest, path)?;
-    Ok(())
+    todo!()
   }
 }

@@ -1,6 +1,6 @@
 use std::env::temp_dir;
 use std::path::PathBuf;
-use anyhow::{bail, Context, ensure};
+use anyhow::{Context, ensure};
 use crate::builder::Recipe;
 use crate::toolchains::Toolchain;
 use crate::types::Distribution;

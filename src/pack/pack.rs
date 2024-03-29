@@ -6,7 +6,7 @@ pub fn pack(source: &str, target: &str) -> anyhow::Result<()> {
   let enc = GzEncoder::new(tar_gz, flate2::Compression::default());
   let mut tar = tar::Builder::new(enc);
 
-  for entry in std::fs::read_dir(std::env::current_dir()?)? {
+  for entry in std::fs::read_dir(source)? {
     let entry = entry?;
     let path = entry.path();
     if path.is_dir() {

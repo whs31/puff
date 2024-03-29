@@ -95,17 +95,44 @@ impl Resolver
 
   pub fn try_get(&self, dependency: &Dependency) -> anyhow::Result<ResolverEntry>
   {
-    let pb = ProgressBar::new_spinner().with_finish(ProgressFinish::AndLeave);
-    pb.enable_steady_tick(Duration::from_millis(100));
+    let pb = ProgressBar::new_spinner();
     pb.set_message(format!("searching for {}", dependency.pretty_print()));
     match self.cache.get(&dependency, false) {
-      Ok(x) => Ok(ResolverEntry::new(dependency.with_updated_version_from_archive_name(x.as_path())?, false, x)),
+      Ok(x) => {
+        pb.finish_with_message(format!("{} {} in cache ({})",
+          "found".to_string().green().bold(),
+          dependency.pretty_print(),
+          "pre-built".to_string().green().bold()
+        ));
+        Ok(ResolverEntry::new(dependency.with_updated_version_from_archive_name(x.as_path())?, false, x))
+      },
       Err(_) => match self.registry.borrow().get(&dependency, false) {
-        Ok(x) => Ok(ResolverEntry::new(dependency.with_updated_version_from_archive_name(x.as_path())?, false, x)),
+        Ok(x) => {
+          pb.finish_with_message(format!("{} {} in registry ({})",
+            "found".to_string().green().bold(),
+            dependency.pretty_print(),
+            "pre-built".to_string().green().bold()
+          ));
+          Ok(ResolverEntry::new(dependency.with_updated_version_from_archive_name(x.as_path())?, false, x))
+        },
         Err(_) => match self.cache.get(&dependency, true) {
-          Ok(x) => Ok(ResolverEntry::new(dependency.with_updated_version_from_archive_name(x.as_path())?, true, x)),
+          Ok(x) => {
+            pb.finish_with_message(format!("{} {} in cache ({})",
+              "found".to_string().green().bold(),
+              dependency.pretty_print(),
+              "sources".to_string().magenta().bold().dimmed()
+            ));
+            Ok(ResolverEntry::new(dependency.with_updated_version_from_archive_name(x.as_path())?, true, x))
+          },
           Err(_) => match self.registry.borrow().get(&dependency, true) {
-            Ok(x) => Ok(ResolverEntry::new(dependency.with_updated_version_from_archive_name(x.as_path())?, true, x)),
+            Ok(x) => {
+              pb.finish_with_message(format!("{} {} in registry ({})",
+                "found".to_string().green().bold(),
+                dependency.pretty_print(),
+                "sources".to_string().magenta().bold().dimmed()
+              ));
+              Ok(ResolverEntry::new(dependency.with_updated_version_from_archive_name(x.as_path())?, true, x))
+            },
             Err(e) => Err(anyhow!("failed to get package: {}", e))
           },
         },

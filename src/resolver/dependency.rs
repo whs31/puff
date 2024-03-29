@@ -65,6 +65,28 @@ impl Dependency
     })
   }
 
+  pub fn from_std_path(path: &std::path::Path) -> anyhow::Result<Self>
+  {
+    Self::from_package_name(path.file_name().unwrap().to_str().unwrap())
+  }
+
+  pub fn with_updated_version(&self, rhs: &Dependency) -> anyhow::Result<Self>
+  {
+    Ok(Self {
+      name: self.name.clone(),
+      version: rhs.version.clone(),
+      arch: self.arch.clone(),
+      os: self.os.clone(),
+      distribution: self.distribution.clone(),
+    })
+  }
+
+  pub fn with_updated_version_from_std_path(&self, path: &std::path::Path) -> anyhow::Result<Self>
+  {
+    let dep = Self::from_std_path(path)?;
+    self.with_updated_version(&dep)
+  }
+
   pub fn ranged_compare(&self, other: &Dependency) -> bool
   {
     self.name == other.name

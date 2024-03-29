@@ -20,6 +20,16 @@ mod artifactory;
 mod cache;
 mod resolver;
 
+fn cleanup(target: &str) -> anyhow::Result<()> {
+  for entry in std::fs::read_dir(target)? {
+    let entry = entry?;
+    if entry.file_name().to_str().unwrap().ends_with(".tar.gz") {
+      std::fs::remove_file(entry.path())?;
+    }
+  }
+  Ok(())
+}
+
 fn try_main() -> anyhow::Result<()> {
   let args = Rc::new(core::Args::parse());
 
@@ -108,6 +118,22 @@ fn try_main() -> anyhow::Result<()> {
     },
     None => {}
   }
+
+  if let Some(command) = &args.command {
+    match command {
+      Command::Build(_) | Command::Install(_) | Command::Publish(_) => {
+        cleanup(
+          std::env::current_exe()?
+            .parent()
+            .unwrap()
+            .to_str()
+            .unwrap()
+        )?
+      }
+      _ => {}
+    }
+  }
+
   Ok(())
 }
 

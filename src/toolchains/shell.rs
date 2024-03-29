@@ -1,3 +1,4 @@
+use std::path::Path;
 use anyhow::{Context};
 use shlex::Shlex;
 use crate::builder::Recipe;
@@ -29,6 +30,16 @@ impl Toolchain for ShellToolchain
         .output()
         .context(format!("failed to execute shell command ({}), output: {:?}", cmd, command.output()))?;
     }
+
+    let target = Path::new(source_directory)
+      .join(crate::names::TARGET_FOLDER)
+      .join(crate::names::EXPORT_FOLDER);
+    crate::toolchains::utl::copy_package_metafiles(
+      source_directory,
+      target
+        .to_str()
+        .context("failed to convert target directory path to string")?
+    )?;
 
     Ok(())
   }

@@ -72,15 +72,25 @@ impl Toolchain for CMakeToolchain
       .output()
       .context(format!("failed to execute cmake build command ({:?})", command))?;
 
+    let export_folder = target_temp
+      .clone()
+      .join(crate::names::EXPORT_FOLDER);
     let mut command = std::process::Command::new("cmake");
     command
       .arg("--install")
       .arg(target_temp.clone())
       .arg("--prefix")
-      .arg(target_temp.clone().join(crate::names::EXPORT_FOLDER));
+      .arg(export_folder.clone());
     command
       .output()
       .context(format!("failed to execute cmake install command ({:?})", command))?;
+
+    crate::toolchains::utl::copy_package_metafiles(
+      source_directory,
+      export_folder
+        .to_str()
+        .context("failed to convert export directory path to string")?
+    )?;
 
     Ok(())
   }

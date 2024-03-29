@@ -253,8 +253,9 @@ impl PackageGet for Artifactory
       .unwrap_or(1);
     let pb = ProgressBar::new(total / 1024);
     pb.set_style(
-      ProgressStyle::with_template("{spinner:.green} {wide_msg} [{elapsed}] [{bar:20.blue/blue}] {human_pos:4}/{human_len:4} kb ({percent:3})")
+      ProgressStyle::with_template("{spinner:.green} {wide_msg} [{elapsed}] [{bar:30.blue/blue}] {human_pos:4}/{human_len:4} kb ({percent:3})")
         .unwrap()
+        .progress_chars("█▒░")
     );
     pb.set_message(format!("downloading {}@{}/{}/{}/{}",
                            &entry.unwrap().dependency.name.bold().magenta(),

@@ -30,6 +30,10 @@ impl Toolchain for ShellToolchain
       command
         .output()
         .context(format!("failed to execute shell command ({}), output: {:?}", cmd, command.output()))?;
+
+      if !command.status()?.success() {
+        return Err(anyhow::anyhow!("failed to execute shell command ({}), output: {:?}", cmd, command.output()));
+      }
     }
 
     let target = Path::new(source_directory)

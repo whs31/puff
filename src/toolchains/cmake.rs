@@ -57,10 +57,8 @@ impl Toolchain for CMakeToolchain
         command.arg(format!("-D{}={}", x.0.to_uppercase(), x.1.to_uppercase()));
       }
     }
-
-    command
-      .output()
-      .context(format!("failed to execute cmake configure command ({:?})", command))?;
+    command.stdout(std::process::Stdio::null());
+    ensure!(command.status()?.success(), "cmake configure step failed");
 
     let mut command = std::process::Command::new("cmake");
     command
@@ -69,9 +67,8 @@ impl Toolchain for CMakeToolchain
       .arg("--config")
       .arg("release")
       .arg("--parallel");
-    command
-      .output()
-      .context(format!("failed to execute cmake build command ({:?})", command))?;
+    command.stdout(std::process::Stdio::null());
+    ensure!(command.status()?.success(), "cmake build step failed");
 
     let export_folder = target_temp
       .clone()
@@ -82,9 +79,8 @@ impl Toolchain for CMakeToolchain
       .arg(target_temp.clone())
       .arg("--prefix")
       .arg(export_folder.clone());
-    command
-      .output()
-      .context(format!("failed to execute cmake install command ({:?})", command))?;
+    command.stdout(std::process::Stdio::null());
+    ensure!(command.status()?.success(), "cmake install step failed");
 
     crate::toolchains::utl::copy_package_metafiles(
       source_directory,

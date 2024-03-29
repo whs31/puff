@@ -83,9 +83,9 @@ pub fn pack_for_cache(path: &str, arch: Arch, distribution: Distribution, os: Op
   let tar_name = format!("{}-{}-{}-{}-{}.tar.gz",
     &manifest.this.name,
     &manifest.this.version,
-    distribution.to_string(),
     arch.to_string(),
-    os.to_string()
+    os.to_string(),
+    distribution.to_string()
   );
   pack(path, &tar_name)?;
 

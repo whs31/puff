@@ -5,12 +5,12 @@ use std::rc::Rc;
 use std::time::Duration;
 use anyhow::{anyhow, Context};
 use colored::Colorize;
-use indicatif::{ProgressBar, ProgressFinish};
+use indicatif::{ProgressBar, ProgressFinish, ProgressStyle};
 use crate::artifactory::Registry;
 use crate::builder::Recipe;
 use crate::core;
 use crate::manifest::Manifest;
-use crate::names::{EXPORT_FOLDER, TARGET_FOLDER};
+use crate::names::{DEPENDENCIES_FOLDER, EXPORT_FOLDER, TARGET_FOLDER};
 use crate::resolver::{Dependency, dependency, PackageGet, ResolverEntry};
 use crate::toolchains::{CMakeToolchain, ShellToolchain, Toolchain};
 use crate::types::Distribution;
@@ -58,12 +58,17 @@ impl Resolver
       }
     }
 
-    for x in tree {
-      println!("=> {:<70}   [{:<10}]   ({})",
-               x.dependency.pretty_print(),
-               if !x.require_build { "pre-built" } else { "sources" },
-               x.tar_path.to_str().unwrap().to_string().dimmed()
-      );
+    let pb = ProgressBar::new(tree.len() as u64).with_finish(ProgressFinish::AndClear);
+    pb.set_message("installing dependencies");
+    pb.set_style(
+      ProgressStyle::with_template("{spinner:.green} {wide_msg} [{elapsed}] [{bar:30.yellow/yellow}] {human_pos:4}/{human_len:4} ({percent:3})")
+        .unwrap()
+        .progress_chars("█▒░")
+    );
+    let install_path = Path::new(path).join(DEPENDENCIES_FOLDER);
+    for x in &tree {
+      x.install(install_path.to_str().context("failed to convert path to string")?)?;
+      pb.inc(1);
     }
     Ok(())
   }
@@ -155,7 +160,7 @@ impl Resolver
     let manifest = Manifest::from_directory(build_directory.to_str().unwrap())?;
     let recipe = Recipe::from_directory(build_directory.to_str().unwrap())?;
 
-    // todo: install dependencies before build
+    self.resolve(build_directory.to_str().unwrap())?;
 
     let recipe_toolchain = match entry.dependency.distribution {
       Distribution::Static => match &recipe.static_toolchain {
@@ -192,6 +197,7 @@ impl Resolver
       entry.dependency.os.clone()
     )?;
     self.cache.put(tarball.as_str())?;
+    entry.tar_path = self.cache.get(&entry.dependency, false)?;
 
     Ok(ResolverEntry::new(entry.dependency.clone(), true, build_directory))
   }

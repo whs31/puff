@@ -83,13 +83,13 @@ impl Resolver
     pb.enable_steady_tick(Duration::from_millis(100));
     pb.set_message(format!("searching for {}", dependency.pretty_print()));
     match self.cache.get(&dependency, false) {
-      Ok(x) => Ok(ResolverEntry::new(dependency.with_updated_version_from_std_path(x.as_path())?, false, x)),
+      Ok(x) => Ok(ResolverEntry::new(dependency.with_updated_version_from_archive_name(x.as_path())?, false, x)),
       Err(_) => match self.registry.borrow().get(&dependency, false) {
-        Ok(x) => Ok(ResolverEntry::new(dependency.with_updated_version_from_std_path(x.as_path())?, false, x)),
+        Ok(x) => Ok(ResolverEntry::new(dependency.with_updated_version_from_archive_name(x.as_path())?, false, x)),
         Err(_) => match self.cache.get(&dependency, true) {
-          Ok(x) => Ok(ResolverEntry::new(dependency.with_updated_version_from_std_path(x.as_path())?, true, x)),
+          Ok(x) => Ok(ResolverEntry::new(dependency.with_updated_version_from_archive_name(x.as_path())?, true, x)),
           Err(_) => match self.registry.borrow().get(&dependency, true) {
-            Ok(x) => Ok(ResolverEntry::new(dependency.with_updated_version_from_std_path(x.as_path())?, true, x)),
+            Ok(x) => Ok(ResolverEntry::new(dependency.with_updated_version_from_archive_name(x.as_path())?, true, x)),
             Err(e) => Err(anyhow!("failed to get package: {}", e))
           },
         },

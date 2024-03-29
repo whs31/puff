@@ -81,7 +81,7 @@ impl Dependency
     })
   }
 
-  pub fn with_updated_version_from_std_path(&self, path: &std::path::Path) -> anyhow::Result<Self>
+  pub fn with_updated_version_from_archive_name(&self, path: &std::path::Path) -> anyhow::Result<Self>
   {
     let dep = Self::from_std_path(path)?;
     self.with_updated_version(&dep)

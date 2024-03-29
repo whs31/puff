@@ -38,7 +38,7 @@ impl Dependency
 
   pub fn from_package_name(package_name: &str) -> anyhow::Result<Self>
   {
-    let re_name = regex::Regex::new(r"^([a-zA-Z0-9]+)")?;
+    let re_name = regex::Regex::new(r"^([a-zA-Z0-9_+]+)")?;
     let captures_name = re_name
       .captures(package_name)
       .context("invalid package name")?;

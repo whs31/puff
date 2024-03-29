@@ -234,6 +234,9 @@ impl PackageGet for Artifactory
       entry = self.available_packages
         .iter()
         .find(|x| x.dependency.ranged_compare(&dependency));
+      if entry.is_none() {
+        bail!("source package not found: {} ({}..{})", dependency, dependency.version.min, dependency.version.max);
+      }
     }
 
     if entry.is_none() {

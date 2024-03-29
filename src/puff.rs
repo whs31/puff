@@ -38,31 +38,8 @@ impl Puff
     })
   }
 
-  pub fn pack(&self, path: &str) -> anyhow::Result<Option<String>>
-  {
-    let manifest = Manifest::from_directory(path)?;
-    let _ = Recipe::from_directory(path)?; // only for checking for it's existence
-
-    let pb = ProgressBar::new_spinner();
-    pb.enable_steady_tick(Duration::from_millis(100));
-    pb.set_message(format!("packing {}@{}",
-      &manifest.this.name.bold().magenta(),
-      &manifest.this.version.to_string().bold().green()
-    ));
-
-    let mut fmt: HashMap<String, String> = HashMap::new();
-    fmt.insert("name".to_string(), manifest.this.name.clone());
-    fmt.insert("version".to_string(), manifest.this.version.clone().to_string());
-    let tar_name = strfmt::strfmt(PACKED_SOURCE_TARBALL_NAME, &fmt)
-      .context("failed to format tarball name")?;
-    crate::pack::pack(path, &tar_name)?;
-
-    pb.finish_with_message(format!("{} {}@{}",
-      "successfully packed".to_string().green().bold(),
-      &manifest.this.name.clone().bold().magenta(),
-      &manifest.this.version.clone().to_string().bold().green()
-    ));
-    Ok(Some(tar_name))
+  pub fn pack(&self, path: &str) -> anyhow::Result<Option<String>> {
+    Ok(Some(crate::pack::pack_with_manifest(path)?))
   }
 
   pub fn publish_target(

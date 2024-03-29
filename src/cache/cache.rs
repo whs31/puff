@@ -6,7 +6,6 @@ use anyhow::bail;
 use indicatif::ProgressBar;
 use crate::core;
 use crate::resolver::{Dependency, PackageGet};
-use crate::types::{Arch, Distribution, OperatingSystem};
 
 pub struct Cache
 {
@@ -38,6 +37,15 @@ impl Cache
     pb.set_message("clearing cache");
     std::fs::remove_dir_all(&self.path)?;
     std::fs::create_dir_all(&self.path)?;
+    Ok(())
+  }
+
+  pub fn put(&self, tarball_path: &str) -> anyhow::Result<()>
+  {
+    let path = PathBuf::from(tarball_path);
+    std::fs::copy(tarball_path, &self.path.join(
+      path.file_name().unwrap().to_str().unwrap()
+    ))?;
     Ok(())
   }
 }

@@ -94,7 +94,6 @@ impl Dependency
       && self.version.max <= other.version.max
       && self.arch == other.arch
       && self.os == other.os
-      && self.distribution == other.distribution
   }
 
   pub fn as_sources_dependency(&self) -> Dependency

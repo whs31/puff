@@ -1,4 +1,5 @@
 use std::env::temp_dir;
+use std::path::PathBuf;
 use anyhow::{bail, Context, ensure};
 use crate::builder::Recipe;
 use crate::toolchains::Toolchain;
@@ -27,7 +28,7 @@ impl CMakeToolchain
 
 impl Toolchain for CMakeToolchain
 {
-  fn build_from_recipe(&self, recipe: &Recipe, source_directory: &str, distribution: Distribution) -> anyhow::Result<()>
+  fn build_from_recipe(&self, recipe: &Recipe, source_directory: &str, distribution: Distribution) -> anyhow::Result<PathBuf>
   {
     let target_temp = temp_dir()
       .join(std::time::SystemTime::now().duration_since(std::time::UNIX_EPOCH)?.as_nanos().to_string())
@@ -92,6 +93,6 @@ impl Toolchain for CMakeToolchain
         .context("failed to convert export directory path to string")?
     )?;
 
-    Ok(())
+    Ok(export_folder)
   }
 }

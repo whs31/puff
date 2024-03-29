@@ -1,3 +1,4 @@
+use std::path::PathBuf;
 use std::path::Path;
 use anyhow::{Context};
 use shlex::Shlex;
@@ -14,7 +15,7 @@ impl ShellToolchain
 
 impl Toolchain for ShellToolchain
 {
-  fn build_from_recipe(&self, recipe: &Recipe, source_directory: &str, distribution: Distribution) -> anyhow::Result<()>
+  fn build_from_recipe(&self, recipe: &Recipe, source_directory: &str, distribution: Distribution) -> anyhow::Result<PathBuf>
   {
     let toolchain = recipe
       .extract_toolchain(distribution)?
@@ -41,6 +42,6 @@ impl Toolchain for ShellToolchain
         .context("failed to convert target directory path to string")?
     )?;
 
-    Ok(())
+    Ok(target)
   }
 }

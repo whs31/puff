@@ -1,5 +1,5 @@
 mod pack;
 mod unpack;
 
-pub use pack::pack;
+pub use pack::*;
 pub use unpack::unpack;

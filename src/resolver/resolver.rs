@@ -1,15 +1,16 @@
 use std::cell::RefCell;
 use std::env::temp_dir;
-use std::path::PathBuf;
+use std::path::{Path, PathBuf};
 use std::rc::Rc;
 use std::time::Duration;
-use anyhow::{anyhow, bail, Context};
+use anyhow::{anyhow, Context};
 use colored::Colorize;
 use indicatif::{ProgressBar, ProgressFinish};
 use crate::artifactory::Registry;
 use crate::builder::Recipe;
 use crate::core;
 use crate::manifest::Manifest;
+use crate::names::{EXPORT_FOLDER, TARGET_FOLDER};
 use crate::resolver::{Dependency, dependency, PackageGet, ResolverEntry};
 use crate::toolchains::{CMakeToolchain, ShellToolchain, Toolchain};
 use crate::types::Distribution;
@@ -174,15 +175,23 @@ impl Resolver
       _ => { return Err(anyhow!("unsupported distribution for build: {} (package {})", entry.dependency.distribution, entry.dependency)); }
     };
 
-    if recipe_toolchain.toolchain.cmake.is_some() {
+    let export_dir = if recipe_toolchain.toolchain.cmake.is_some() {
       CMakeToolchain::new(&self.config)
-        .build_from_recipe(&recipe, build_directory.to_str().unwrap(), entry.dependency.distribution.clone())?;
+        .build_from_recipe(&recipe, build_directory.to_str().unwrap(), entry.dependency.distribution.clone())?
     } else if recipe_toolchain.toolchain.shell.is_some() {
       ShellToolchain::new()
-        .build_from_recipe(&recipe, build_directory.to_str().unwrap(), entry.dependency.distribution.clone())?;
+        .build_from_recipe(&recipe, build_directory.to_str().unwrap(), entry.dependency.distribution.clone())?
     } else {
-      return Err(anyhow!("recipe for {} does not have a valid supported toolchain", entry.dependency));
-    }
+      return Err(anyhow!("unsupported toolchain for build: {:?}", recipe_toolchain.toolchain));
+    };
+
+    let tarball = crate::pack::pack_for_cache(
+      export_dir.to_str().unwrap(),
+      entry.dependency.arch.clone(),
+      entry.dependency.distribution.clone(),
+      entry.dependency.os.clone()
+    )?;
+    self.cache.put(tarball.as_str())?;
 
     Ok(ResolverEntry::new(entry.dependency.clone(), true, build_directory))
   }

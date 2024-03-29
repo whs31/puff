@@ -2,24 +2,30 @@ use std::collections::HashMap;
 use serde::{Deserialize, Serialize};
 use crate::names::{EXTENSIONS_DIRECTORY, RECIPE_FILE};
 
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct Recipe
 {
   #[serde(rename = "static")]
-  pub static_toolchain: Option<ToolchainSection>,
+  pub static_toolchain: Option<Toolchain>,
 
   #[serde(rename = "shared")]
-  pub shared_toolchain: Option<ToolchainSection>,
+  pub shared_toolchain: Option<Toolchain>,
 }
 
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Serialize, Deserialize, Debug, Clone)]
+pub struct Toolchain
+{
+  pub toolchain: ToolchainSection
+}
+
+#[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct ToolchainSection
 {
   pub cmake: Option<CMakeSection>,
   pub shell: Option<Vec<String>>
 }
 
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct CMakeSection
 {
   pub generator: Option<String>,

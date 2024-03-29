@@ -264,7 +264,6 @@ impl PackageGet for Artifactory
                            &entry.unwrap().dependency.os.to_string().dimmed(),
                            &entry.unwrap().dependency.distribution.to_string().dimmed()
     ));
-    pb.set_draw_target(ProgressDrawTarget::stdout_with_hz(5));
 
     let target_path = self.config
       .directories
@@ -286,7 +285,7 @@ impl PackageGet for Artifactory
       downloaded = std::cmp::min(downloaded + chunk.len() as u64, total);
       pb.set_position(downloaded / 1024);
     }
-    pb.finish_and_clear();
+    pb.finish_and_clear(); //todo
     let md5 = md5::compute(&data);
 
     let checksum = client

@@ -47,35 +47,27 @@ impl PackageGet for Cache
   #[tokio::main]
   async fn get(&self, dependency: &Dependency, allow_sources: bool) -> anyhow::Result<PathBuf>
   {
-    // todo: range support
-    let path = self.path
-      .join(format!("{}-{}-{}-{}-{}.tar.gz",
-                    dependency.name,
-                    dependency.version.to_string(),
-                    dependency.arch.to_string(),
-                    dependency.os.to_string(),
-                    dependency.distribution.to_string()
-      ));
-    if path.exists() {
-      Ok(path)
-    }
-    else if allow_sources {
-      let path_src = self.path
-        .join(format!("{}-{}-{}-{}-{}.tar.gz",
-                      dependency.name,
-                      dependency.version.to_string(),
-                      Arch::Unknown,
-                      OperatingSystem::Unknown,
-                      Distribution::Sources
-        ));
-      if path_src.exists() {
-        Ok(path_src)
-      } else {
-        bail!("no such package in cache: {}", dependency)
+    for x in std::fs::read_dir(&self.path)? {
+      let path = x?.path();
+      let found = Dependency::from_package_name(path.file_name().unwrap().to_str().unwrap())?;
+      if found.ranged_compare(dependency) {
+        return Ok(path);
       }
     }
-    else {
+
+    if !allow_sources {
       bail!("no such package in cache: {}", dependency)
     }
+
+    for x in std::fs::read_dir(&self.path)? {
+      let path = x?.path();
+      let found = Dependency::from_package_name(path.file_name().unwrap().to_str().unwrap())?;
+      let dependency = dependency.as_sources_dependency();
+      if found.ranged_compare(&dependency) {
+        return Ok(path);
+      }
+    }
+
+    bail!("no such package in cache: {}", dependency)
   }
 }

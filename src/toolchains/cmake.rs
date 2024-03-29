@@ -37,7 +37,7 @@ impl Toolchain for CMakeToolchain
       .arg("-S")
       .arg(source_directory)
       .arg("-B")
-      .arg(target_temp);
+      .arg(target_temp.clone());
     for x in &self.configure_additional_arguments {
       command.arg("-D").arg(x);
     }
@@ -47,21 +47,40 @@ impl Toolchain for CMakeToolchain
       .extract_toolchain(distribution)?
       .cmake
       .context("cmake toolchain was requested to build package but recipe is not configured for cmake")?;
+    // generator
+    if let Some(generator) = toolchain.generator {
+      command.arg(format!("-G{}", generator.as_str()));
+    }
     if let Some(definitions) = toolchain.definitions.as_ref() {
       for x in definitions {
         command.arg(format!("-D{}={}", x.0.to_uppercase(), x.1.to_uppercase()));
       }
     }
 
-    println!("cmake command: {:?}", command);
-
     command
       .output()
-      .context("failed to execute cmake command")?;
+      .context(format!("failed to execute cmake configure command ({:?})", command))?;
 
-    ensure!(command.status()?.success(), "failed to execute cmake command");
+    let mut command = std::process::Command::new("cmake");
+    command
+      .arg("--build")
+      .arg(target_temp.clone())
+      .arg("--config")
+      .arg("release")
+      .arg("--parallel");
+    command
+      .output()
+      .context(format!("failed to execute cmake build command ({:?})", command))?;
 
-    println!("cmake command output: {}", String::from_utf8_lossy(&command.output().unwrap().stdout));
+    let mut command = std::process::Command::new("cmake");
+    command
+      .arg("--install")
+      .arg(target_temp.clone())
+      .arg("--prefix")
+      .arg(target_temp.clone().join(crate::names::EXPORT_FOLDER));
+    command
+      .output()
+      .context(format!("failed to execute cmake install command ({:?})", command))?;
 
     Ok(())
   }

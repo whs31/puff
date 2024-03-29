@@ -1,9 +1,10 @@
 use std::cell::RefCell;
 use std::rc::Rc;
 use anyhow::Context;
+use clap::arg;
 use crate::core;
 use crate::core::args::{BuildArgs, InstallArgs};
-use crate::resolver::Resolver;
+use crate::resolver::{Resolver, ResolverEntry};
 use crate::types::{Arch, Distribution, OperatingSystem};
 
 pub struct Puff
@@ -125,6 +126,17 @@ impl Puff
 
   pub fn build(&mut self, arguments: &BuildArgs) -> anyhow::Result<&mut Self>
   {
-    todo!()
+    let install_args = InstallArgs {
+      folder: arguments.folder.clone()
+    };
+    self
+      .install(&install_args)?;
+    let resolver = Resolver::new(
+      self.config.clone(),
+      self.env.clone(),
+      self.remotes.clone(),
+      self.cache.clone()
+    );
+    Ok(self)
   }
 }

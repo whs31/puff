@@ -93,6 +93,9 @@ pub struct BuildArgs
 {
   /// Folder where manifest is located
   pub folder: Option<String>,
+
+  /// Type of distribution
+  #[arg(short, long)] pub dist: crate::types::Distribution,
 }
 
 #[derive(clap::Args, Debug, Clone)]

@@ -210,20 +210,8 @@ impl Resolver
     self.resolve(build_directory.to_str().unwrap())?;
 
     let recipe_toolchain = match entry.dependency.distribution {
-      Distribution::Static => match &recipe.static_toolchain {
-        Some(x) => { entry.dependency.distribution = Distribution::Static; x.clone() },
-        None => {
-          entry.dependency.distribution = Distribution::Shared;
-          recipe.shared_toolchain.clone().context(format!("recipe for {} does not have a static or shared toolchain", entry.dependency))?
-        }
-      },
-      Distribution::Shared => match &recipe.shared_toolchain {
-        Some(x) => { entry.dependency.distribution = Distribution::Shared; x.clone() },
-        None => {
-          entry.dependency.distribution = Distribution::Static;
-          recipe.static_toolchain.clone().context(format!("recipe for {} does not have a static or shared toolchain", entry.dependency))?
-        }
-      },
+      Distribution::Static => recipe.static_toolchain.clone().context(format!("recipe for {} does not have a static or shared toolchain", entry.dependency))?,
+      Distribution::Shared => recipe.shared_toolchain.clone().context(format!("recipe for {} does not have a static or shared toolchain", entry.dependency))?,
       _ => { return Err(anyhow!("unsupported distribution for build: {} (package {})", entry.dependency.distribution, entry.dependency)); }
     };
 

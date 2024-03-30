@@ -42,11 +42,11 @@ fn try_main() -> anyhow::Result<()> {
 
   match &args.command {
     Some(command) => match command {
-      Command::Build(x) => {
-        puff
-          .sync()?
-          .build(x)?;
-      },
+      // Command::Build(x) => {
+      //   puff
+      //     .sync()?
+      //     .build(x)?;
+      // },
       Command::Install(x) => {
         puff
           .sync()?
@@ -72,8 +72,12 @@ fn try_main() -> anyhow::Result<()> {
                 .publish_sources(
                   x.folder
                     .as_ref()
-                    .unwrap_or(&std::env::current_dir()?.into_os_string().into_string().unwrap())
-                    .as_str(),
+                    .unwrap_or(
+                      &std::env::current_dir()?
+                        .into_os_string()
+                        .into_string()
+                        .unwrap()
+                    ).as_str(),
                   x.name.as_str(),
                   x.force
                 )?;
@@ -88,9 +92,8 @@ fn try_main() -> anyhow::Result<()> {
                       .into_string()
                       .unwrap()
                   )
-              )
-                .join(TARGET_FOLDER)
-                .join(EXPORT_FOLDER);
+              ).join(TARGET_FOLDER)
+               .join(EXPORT_FOLDER);
               if !export_folder.exists() {
                 return Err(anyhow::anyhow!("{}: {}", "error".red().bold(), "target folder does not exist. run 'puff build' first".to_string().red().bold()));
               } else {
@@ -121,7 +124,7 @@ fn try_main() -> anyhow::Result<()> {
 
   if let Some(command) = &args.command {
     match command {
-      Command::Build(_) | Command::Install(_) | Command::Publish(_) => {
+      /* Command::Build(_) | */ Command::Install(_) | Command::Publish(_) => {
         cleanup(
           std::env::current_exe()?
             .parent()

@@ -124,6 +124,7 @@ impl Puff
     Ok(self)
   }
 
+  // todo: refactor this
   pub fn build(&mut self, arguments: &BuildArgs) -> anyhow::Result<&mut Self>
   {
     let install_args = InstallArgs {

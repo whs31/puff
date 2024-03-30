@@ -11,8 +11,8 @@ pub struct Args
 #[derive(clap::Subcommand, Debug, Clone)]
 pub enum Command
 {
-  /// Build package
-  Build(BuildArgs),
+  // Build package (todo)
+  // Build(BuildArgs),
 
   /// Install required dependencies
   Install(InstallArgs),

@@ -117,10 +117,8 @@ impl Puff
 
     if arguments.fresh {
       println!("performing fresh install");
-      std::fs::remove_dir_all(
-        Path::new(path.as_str())
-          .join(DEPENDENCIES_FOLDER)
-      )?;
+      let dependencies_folder = Path::new(path.as_str()).join(DEPENDENCIES_FOLDER);
+      if dependencies_folder.exists() { std::fs::remove_dir_all(dependencies_folder)?; }
     }
 
     let resolver = Resolver::new(

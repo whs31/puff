@@ -9,7 +9,6 @@ use indicatif::{ProgressBar, ProgressFinish, ProgressStyle};
 use crate::artifactory::Registry;
 use crate::builder::Recipe;
 use crate::core;
-use crate::core::Args;
 use crate::core::args::BuildArgs;
 use crate::manifest::Manifest;
 use crate::names::{DEPENDENCIES_FOLDER};
@@ -46,7 +45,7 @@ impl Resolver
       manifest.this.name.bold().magenta()
     );
 
-    let tree = self.collect_recursively(manifest)?;
+    let tree = self.collect_recursively(manifest.clone())?;
     let mut tree = tree
       .into_iter()
       .fold(Vec::new(), |mut acc, x| {
@@ -60,18 +59,24 @@ impl Resolver
       }
     }
 
-    let pb = ProgressBar::new(tree.len() as u64).with_finish(ProgressFinish::AndClear);
+    let pb = ProgressBar::new(tree.len() as u64);
     pb.set_message("installing dependencies");
     pb.set_style(
       ProgressStyle::with_template("{spinner:.green} {wide_msg} [{elapsed}] [{bar:30.yellow/yellow}] {human_pos:4}/{human_len:4} ({percent:3})")
         .unwrap()
         .progress_chars("█▒░")
     );
-    let install_path = Path::new(path).join(DEPENDENCIES_FOLDER);
+    let install_path = Path::new(path)
+      .join(DEPENDENCIES_FOLDER);
     for x in &tree {
+      pb.set_message(format!("installing {}", x.dependency.pretty_print()));
       x.install(install_path.to_str().context("failed to convert path to string")?)?;
       pb.inc(1);
     }
+    pb.finish_with_message(format!("installed {} dependencies for {}",
+      tree.len().to_string().magenta().bold(),
+      manifest.this.name.bold().green()
+    ));
     Ok(())
   }
 
@@ -103,44 +108,16 @@ impl Resolver
 
   pub fn try_get(&self, dependency: &Dependency) -> anyhow::Result<ResolverEntry>
   {
-    let pb = ProgressBar::new_spinner();
+    let pb = ProgressBar::new_spinner().with_finish(ProgressFinish::AndClear);
     pb.set_message(format!("searching for {}", dependency.pretty_print()));
     match self.cache.get(&dependency, false) {
-      Ok(x) => {
-        pb.finish_with_message(format!("{} {} in cache ({})",
-          "found".to_string().green().bold(),
-          dependency.pretty_print(),
-          "pre-built".to_string().green().bold()
-        ));
-        Ok(ResolverEntry::new(dependency.with_updated_version_from_archive_name(x.as_path())?, false, x))
-      },
+      Ok(x) => Ok(ResolverEntry::new(dependency.with_updated_version_from_archive_name(x.as_path())?, false, x)),
       Err(_) => match self.registry.borrow().get(&dependency, false) {
-        Ok(x) => {
-          pb.finish_with_message(format!("{} {} in registry ({})",
-            "found".to_string().green().bold(),
-            dependency.pretty_print(),
-            "pre-built".to_string().green().bold()
-          ));
-          Ok(ResolverEntry::new(dependency.with_updated_version_from_archive_name(x.as_path())?, false, x))
-        },
+        Ok(x) => Ok(ResolverEntry::new(dependency.with_updated_version_from_archive_name(x.as_path())?, false, x)),
         Err(_) => match self.cache.get(&dependency, true) {
-          Ok(x) => {
-            pb.finish_with_message(format!("{} {} in cache ({})",
-              "found".to_string().green().bold(),
-              dependency.pretty_print(),
-              "sources".to_string().magenta().bold().dimmed()
-            ));
-            Ok(ResolverEntry::new(dependency.with_updated_version_from_archive_name(x.as_path())?, true, x))
-          },
+          Ok(x) => Ok(ResolverEntry::new(dependency.with_updated_version_from_archive_name(x.as_path())?, true, x)),
           Err(_) => match self.registry.borrow().get(&dependency, true) {
-            Ok(x) => {
-              pb.finish_with_message(format!("{} {} in registry ({})",
-                "found".to_string().green().bold(),
-                dependency.pretty_print(),
-                "sources".to_string().magenta().bold().dimmed()
-              ));
-              Ok(ResolverEntry::new(dependency.with_updated_version_from_archive_name(x.as_path())?, true, x))
-            },
+            Ok(x) => Ok(ResolverEntry::new(dependency.with_updated_version_from_archive_name(x.as_path())?, true, x)),
             Err(e) => Err(anyhow!("failed to get package: {}", e))
           },
         },

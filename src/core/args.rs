@@ -103,6 +103,9 @@ pub struct InstallArgs
 {
   /// Folder where manifest is located
   pub folder: Option<String>,
+
+  /// Clean previously installed packages and perform fresh installation
+  #[arg(short, long)] pub fresh: bool,
 }
 
 #[derive(clap::Args, Debug, Clone)]

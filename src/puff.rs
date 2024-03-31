@@ -1,9 +1,11 @@
 use std::cell::RefCell;
+use std::path::Path;
 use std::rc::Rc;
 use anyhow::Context;
 use clap::arg;
 use crate::core;
 use crate::core::args::{BuildArgs, InstallArgs};
+use crate::names::DEPENDENCIES_FOLDER;
 use crate::resolver::{Resolver, ResolverEntry};
 use crate::types::{Arch, Distribution, OperatingSystem};
 
@@ -112,6 +114,15 @@ impl Puff
       Some(x) => x.clone(),
       None => std::env::current_dir()?.into_os_string().into_string().unwrap(),
     };
+
+    if arguments.fresh {
+      println!("performing fresh install");
+      std::fs::remove_dir_all(
+        Path::new(path.as_str())
+          .join(DEPENDENCIES_FOLDER)
+      )?;
+    }
+
     let resolver = Resolver::new(
       self.config.clone(),
       self.env.clone(),
@@ -128,7 +139,8 @@ impl Puff
   pub fn build(&mut self, arguments: &BuildArgs) -> anyhow::Result<&mut Self>
   {
     let install_args = InstallArgs {
-      folder: arguments.folder.clone()
+      folder: arguments.folder.clone(),
+      fresh: true
     };
     self
       .install(&install_args)?;

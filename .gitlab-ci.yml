@@ -47,8 +47,8 @@ package arch:
         - cp -r arch_package/ /tmp/
         - cd /tmp/arch_package
         - chown -R nobody .
-        - makepkg -g >> PKGBUILD
-        - makepkg
+        - runuser -u nobody -- makepkg -g
+        - runuser -u nobody -- makepkg
         - cp *.pkg.tar.zst ${CI_PROJECT_DIR}/
     artifacts: 
         paths: 

@@ -43,8 +43,7 @@
               }
             }
           }
-        ],
-        "currentTab": 2
+        ]
       }
     ],
     "direction": "vertical"
@@ -110,7 +109,7 @@
             "state": {
               "type": "backlink",
               "state": {
-                "file": "index.md",
+                "file": "first-steps.md",
                 "collapseAll": false,
                 "extraContext": false,
                 "sortOrder": "alphabetical",
@@ -127,7 +126,7 @@
             "state": {
               "type": "outgoing-link",
               "state": {
-                "file": "index.md",
+                "file": "first-steps.md",
                 "linksCollapsed": false,
                 "unlinkedCollapsed": true
               }
@@ -150,7 +149,7 @@
             "state": {
               "type": "outline",
               "state": {
-                "file": "index.md"
+                "file": "first-steps.md"
               }
             }
           }
@@ -171,11 +170,11 @@
       "command-palette:Open command palette": false
     }
   },
-  "active": "e6f15738dac489c4",
+  "active": "f2afb1d2c7c69def",
   "lastOpenFiles": [
+    "index.md",
     "first-steps.md",
     "recipes.md",
-    "index.md",
     "registries.md",
     "installation.md",
     "images/img3.png",

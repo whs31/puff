@@ -25,14 +25,26 @@
             "state": {
               "type": "markdown",
               "state": {
-                "file": "index.md",
+                "file": "first-steps.md",
+                "mode": "source",
+                "source": false
+              }
+            }
+          },
+          {
+            "id": "e6f15738dac489c4",
+            "type": "leaf",
+            "state": {
+              "type": "markdown",
+              "state": {
+                "file": "first-steps.md",
                 "mode": "source",
                 "source": false
               }
             }
           }
         ],
-        "currentTab": 1
+        "currentTab": 2
       }
     ],
     "direction": "vertical"
@@ -98,7 +110,7 @@
             "state": {
               "type": "backlink",
               "state": {
-                "file": "index.md",
+                "file": "first-steps.md",
                 "collapseAll": false,
                 "extraContext": false,
                 "sortOrder": "alphabetical",
@@ -115,7 +127,7 @@
             "state": {
               "type": "outgoing-link",
               "state": {
-                "file": "index.md",
+                "file": "first-steps.md",
                 "linksCollapsed": false,
                 "unlinkedCollapsed": true
               }
@@ -138,7 +150,7 @@
             "state": {
               "type": "outline",
               "state": {
-                "file": "index.md"
+                "file": "first-steps.md"
               }
             }
           }
@@ -159,12 +171,13 @@
       "command-palette:Open command palette": false
     }
   },
-  "active": "9b672f2b4df26be0",
+  "active": "e6f15738dac489c4",
   "lastOpenFiles": [
-    "registries.md",
-    "installation.md",
+    "recipes.md",
     "first-steps.md",
     "index.md",
+    "registries.md",
+    "installation.md",
     "images/img3.png",
     "images/Group 8(1).png",
     "images/img2.png",

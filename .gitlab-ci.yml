@@ -33,6 +33,25 @@ package debian:
 
     artifacts: { paths: ["./puff.deb"], expire_in: 1 hour }
 
+package arch:
+    tags: [dev-utils]
+    stage: package
+    needs:
+        - job: build linux
+          artifacts: true
+    script: 
+        - mkdir arch_package
+        - cp puff arch_package/
+        - cp PKGBUILD arch_package/
+        - cd arch_package
+        - makepkg -g >> PKGBUILD
+        - makepkg
+        - cp *.pkg.tar.zst ${CI_PROJECT_DIR}/
+    artifacts: 
+        paths: 
+            - ${CI_PROJECT_DIR}/*.pkg.tar.zst
+        expire_in: 1 hour 
+
 
 #build linux:
 #    tags: [dev-utils]

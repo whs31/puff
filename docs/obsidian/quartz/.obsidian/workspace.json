@@ -37,7 +37,7 @@
             "state": {
               "type": "markdown",
               "state": {
-                "file": "first-steps.md",
+                "file": "index.md",
                 "mode": "source",
                 "source": false
               }
@@ -110,7 +110,7 @@
             "state": {
               "type": "backlink",
               "state": {
-                "file": "first-steps.md",
+                "file": "index.md",
                 "collapseAll": false,
                 "extraContext": false,
                 "sortOrder": "alphabetical",
@@ -127,7 +127,7 @@
             "state": {
               "type": "outgoing-link",
               "state": {
-                "file": "first-steps.md",
+                "file": "index.md",
                 "linksCollapsed": false,
                 "unlinkedCollapsed": true
               }
@@ -150,7 +150,7 @@
             "state": {
               "type": "outline",
               "state": {
-                "file": "first-steps.md"
+                "file": "index.md"
               }
             }
           }
@@ -173,8 +173,8 @@
   },
   "active": "e6f15738dac489c4",
   "lastOpenFiles": [
-    "recipes.md",
     "first-steps.md",
+    "recipes.md",
     "index.md",
     "registries.md",
     "installation.md",

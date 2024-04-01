@@ -4,8 +4,9 @@ use anyhow::Context;
 use clap::Parser;
 use colored::Colorize;
 use crate::core::args::Command;
-use crate::names::{EXPORT_FOLDER, TARGET_FOLDER};
+use crate::names::{EXPORT_FOLDER, NAME, TARGET_FOLDER, VERSION};
 use crate::types::Distribution;
+use crate::utility::ascii::ASCII_ART;
 
 mod core;
 mod types;
@@ -33,6 +34,29 @@ fn cleanup(target: &str) -> anyhow::Result<()> {
 fn try_main() -> anyhow::Result<()> {
   let args = Rc::new(core::Args::parse());
 
+  if args.version {
+    println!("{}", ASCII_ART.yellow().bold());
+    println!("{} - {} {} {} version {}",
+      NAME.to_string().bright_yellow().bold(),
+      "a".to_string().bold(),
+      "c/c++".to_string().bold().blue(),
+      "package manager!".to_string().bold(),
+      VERSION.to_string().bold()
+    );
+
+    println!();
+    println!("built from branch: {}", option_env!("GIT_BRANCH").unwrap_or("unknown").bold().magenta());
+    println!("commit: {}", option_env!("GIT_COMMIT").unwrap_or("unknown").bold().magenta());
+    println!("dirty: {}", option_env!("GIT_DIRTY").unwrap_or("unknown").bold().red());
+    println!("build timestamp: {}", option_env!("SOURCE_TIMESTAMP").unwrap_or("unknown").green().bold().black());
+    println!("cli tool by {}", "whs31 <ryazantsev.dl@edu.spbstu.ru>".blue().bold());
+    println!("remote/ci server by {}", "spoo0k <mukhin.va@gmail.com>".blue().bold());
+    println!("written in rust with love");
+    println!("copyright {}", "whs31 © 2024".blue().bold());
+
+    return Ok(());
+  }
+
   let mut config = core::Config::create_or_load()?;
   config.process_args(&args)?;
   let config = Rc::new(config);
@@ -40,13 +64,9 @@ fn try_main() -> anyhow::Result<()> {
 
   let mut puff = puff::Puff::new(config, args.clone(), env)?;
 
+
   match &args.command {
     Some(command) => match command {
-      // Command::Build(x) => {
-      //   puff
-      //     .sync()?
-      //     .build(x)?;
-      // },
       Command::Install(x) => {
         puff
           .sync()?
@@ -116,6 +136,11 @@ fn try_main() -> anyhow::Result<()> {
             "no distribution specified".to_string().yellow().bold()
           )
         }
+      },
+      Command::Purge(x) => {
+        let _ = puff
+          .purge(x)
+          .map_err(|e| eprintln!("{}: {}", "warning".yellow().bold(), e.to_string().yellow().bold()));
       }
       _ => {}
     },

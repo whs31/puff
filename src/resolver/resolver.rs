@@ -9,7 +9,6 @@ use indicatif::{ProgressBar, ProgressFinish, ProgressStyle};
 use crate::artifactory::Registry;
 use crate::builder::Recipe;
 use crate::core;
-use crate::core::args::BuildArgs;
 use crate::manifest::Manifest;
 use crate::names::{DEPENDENCIES_FOLDER};
 use crate::resolver::{Dependency, PackageGet, ResolverEntry};
@@ -123,51 +122,6 @@ impl Resolver
         },
       },
     }
-  }
-
-  pub fn build_top_level(&self, path: &str, build_args: &BuildArgs) -> anyhow::Result<()>
-  {
-    let manifest = Manifest::from_directory(path)?;
-    let pb = ProgressBar::new_spinner()
-      .with_finish(ProgressFinish::AndClear);
-    pb.enable_steady_tick(Duration::from_millis(100));
-    pb.set_message(format!("building top-level package {}", manifest.this.name));
-
-    let recipe = Recipe::from_directory(path)?;
-    let mut distribution = build_args.dist;
-    let recipe_toolchain = match build_args.dist {
-      Distribution::Static => match &recipe.static_toolchain {
-        Some(x) =>  { distribution = Distribution::Static; x.clone() },
-        None => {
-          distribution = Distribution::Shared;
-          recipe.shared_toolchain.clone().context(format!("recipe for {} does not have a static or shared toolchain", manifest.this.name))?
-        }
-      },
-      Distribution::Shared => match &recipe.shared_toolchain {
-        Some(x) => { distribution = Distribution::Shared; x.clone() },
-        None => {
-          distribution = Distribution::Static;
-          recipe.static_toolchain.clone().context(format!("recipe for {} does not have a static or shared toolchain", manifest.this.name))?
-        }
-      },
-      _ => { return Err(anyhow!("unsupported distribution for build: {} (package {})", build_args.dist, manifest.this.name)); }
-    };
-
-    let export_dir = if recipe_toolchain.toolchain.cmake.is_some() {
-      CMakeToolchain::new(&self.config)
-        .build_from_recipe(&recipe, path, distribution)?
-    } else if recipe_toolchain.toolchain.shell.is_some() {
-      ShellToolchain::new()
-        .build_from_recipe(&recipe, path, distribution)?
-    } else {
-      return Err(anyhow!("unsupported toolchain for build: {:?}", recipe_toolchain.toolchain));
-    };
-
-    pb.finish_with_message(format!("{} {}",
-      "done:".to_string().green().bold(),
-      manifest.this.name
-    ));
-    Ok(())
   }
 
   pub fn build(&self, entry: &mut ResolverEntry) -> anyhow::Result<ResolverEntry>

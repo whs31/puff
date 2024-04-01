@@ -5,7 +5,10 @@
 pub struct Args
 {
   /// Execute one of major subcommands
-  #[command(subcommand)] pub command: Option<Command>
+  #[command(subcommand)] pub command: Option<Command>,
+
+  /// Print version and exit
+  #[arg(short, long)] pub version: bool
 }
 
 #[derive(clap::Subcommand, Debug, Clone)]
@@ -28,6 +31,9 @@ pub enum Command
 
   /// Pack and push package to Artifactory
   Publish(PublishArgs),
+
+  /// Purge selected local folders
+  Purge(PurgeArgs),
 }
 
 #[derive(clap::Subcommand, Debug, Clone)]
@@ -138,4 +144,17 @@ pub struct PublishArgs
 
   /// Overwrite existing package
   #[arg(short, long)] pub force: bool
+}
+
+#[derive(clap::Args, Debug, Clone)]
+pub struct PurgeArgs
+{
+  /// Purge all folders (implies --cache --config)
+  #[arg(long)] pub all: bool,
+
+  /// Purge cache folder (implies --all)
+  #[arg(long)] pub cache: bool,
+
+  /// Purge config folder (implies --all)
+  #[arg(long)] pub config: bool
 }

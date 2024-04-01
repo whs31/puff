@@ -2,11 +2,11 @@ use std::cell::RefCell;
 use std::path::Path;
 use std::rc::Rc;
 use anyhow::Context;
-use clap::arg;
+use colored::Colorize;
 use crate::core;
-use crate::core::args::{BuildArgs, InstallArgs};
+use crate::core::args::{BuildArgs, InstallArgs, PurgeArgs};
 use crate::names::DEPENDENCIES_FOLDER;
-use crate::resolver::{Resolver, ResolverEntry};
+use crate::resolver::{Resolver};
 use crate::types::{Arch, Distribution, OperatingSystem};
 
 pub struct Puff
@@ -133,7 +133,29 @@ impl Puff
     Ok(self)
   }
 
+  pub fn purge(&self, args: &PurgeArgs) -> anyhow::Result<&Self>
+  {
+    if args.config || args.all {
+      if self.config.directories.dirs.config_dir().exists() {
+        println!("purging {} directory", "config".to_string().yellow().bold());
+        std::fs::remove_dir_all(self.config.directories.dirs.config_dir())?;
+      } else {
+        println!("{} directory does not exist", "config".to_string().yellow().bold());
+      }
+    }
+    if args.cache || args.all {
+      if self.config.directories.dirs.cache_dir().exists() {
+        println!("purging {} directory", "cache".to_string().magenta().bold());
+        std::fs::remove_dir_all(self.config.directories.dirs.cache_dir())?;
+      } else {
+        println!("{} directory does not exist", "cache".to_string().magenta().bold());
+      }
+    }
+    Ok(self)
+  }
+
   // todo: refactor this
+  #[allow(dead_code)]
   pub fn build(&mut self, arguments: &BuildArgs) -> anyhow::Result<&mut Self>
   {
     let install_args = InstallArgs {
@@ -142,7 +164,7 @@ impl Puff
     };
     self
       .install(&install_args)?;
-    let resolver = Resolver::new(
+    let _ = Resolver::new(
       self.config.clone(),
       self.env.clone(),
       self.remotes.clone(),

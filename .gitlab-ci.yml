@@ -44,7 +44,9 @@ package arch:
         - mkdir arch_package
         - cp puff arch_package/
         - cp PKGBUILD arch_package/
-        - cd arch_package
+        - cp -r arch_package/ /tmp/
+        - cd /tmp/arch_package
+        - chown -R nobody .
         - makepkg -g >> PKGBUILD
         - makepkg
         - cp *.pkg.tar.zst ${CI_PROJECT_DIR}/

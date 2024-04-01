@@ -1,6 +1,7 @@
 mod artifactory;
+mod registry;
 pub mod query;
+pub mod entry;
 
 pub use artifactory::Artifactory;
-pub use artifactory::SaveAs;
-pub use artifactory::unpack_to;
+pub use registry::Registry;

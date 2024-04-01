@@ -1,0 +1,11 @@
+{
+	"nodes":[
+		{"id":"0e9eb071223de8a8","type":"file","file":"Manifest.md","x":-1020,"y":-180,"width":1061,"height":1260,"color":"2"},
+		{"id":"d9d5effa6b446f93","type":"text","text":"### «Parcel»\n- Manifest: `Parcel.toml` file\n- Recipes: `.parcel` folder","x":-80,"y":-520,"width":340,"height":140,"color":"5"},
+		{"id":"331514fad1fad1f8","x":140,"y":-180,"width":1170,"height":1820,"color":"5","type":"file","file":"Recipes.md"}
+	],
+	"edges":[
+		{"id":"3c1d4414981bdd08","fromNode":"d9d5effa6b446f93","fromSide":"bottom","toNode":"0e9eb071223de8a8","toSide":"top"},
+		{"id":"dfb83defa1aada39","fromNode":"d9d5effa6b446f93","fromSide":"bottom","toNode":"331514fad1fad1f8","toSide":"top"}
+	]
+}

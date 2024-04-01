@@ -1,3 +1,4 @@
-pub mod manifest;
+mod manifest;
+mod dependency;
 
 pub use manifest::Manifest;

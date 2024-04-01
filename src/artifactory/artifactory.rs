@@ -1,163 +1,284 @@
-use std::cell::RefCell;
 use std::collections::HashMap;
-use std::path::Path;
+use std::io::Write;
+use std::path::PathBuf;
 use std::rc::Rc;
-use anyhow::{anyhow, Context, ensure};
+use std::time::Duration;
+use anyhow::{anyhow, bail, Context, ensure};
 use colored::Colorize;
-use indicatif::{ProgressBar, ProgressDrawTarget, ProgressStyle};
+use indicatif::{ProgressBar, ProgressStyle};
 use futures_util::stream::StreamExt;
-use log::{debug, error, info, trace, warn};
-use crate::args::{Args, Commands, PushArgs};
-use crate::manifest::Manifest;
-use crate::resolver::Dependency;
-use crate::utils::Config;
-use crate::utils::environment::Environment;
-use crate::utils::helper_types::{Distribution, PlatformArch};
+use crate::artifactory::entry::Entry;
+use crate::resolver::{Dependency, PackageGet};
+use crate::types::{Arch, Distribution, OperatingSystem};
 
-#[derive(Clone)]
 pub struct Artifactory
 {
-  pub config: Rc<RefCell<Config>>,
-  pub args: Rc<Args>,
-  pub env: Rc<Environment>
+  pub name: String,
+  pub url_format: String,
+  pub username: Option<String>,
+  pub token: Option<String>,
+  url_ping: String,
+  url_aql: String,
+  url_api_format: String,
+  config: Rc<crate::core::Config>,
+  pub(crate) available_packages: Vec<Entry>
 }
 
 impl Artifactory
 {
-  pub fn new(config: Rc<RefCell<Config>>, args: Rc<Args>, env: Rc<Environment>) -> Self
+  pub fn new(config: Rc<crate::core::Config>, name: &str) -> anyhow::Result<Self>
   {
-    Self { config, args, env }
+    let name = if config.registry.list
+      .iter()
+      .find(|x| x.name == name)
+      .is_some()
+    {
+      name.to_string()
+    } else {
+      bail!("internal error: no such registry in config: {}. report this bug to the developers", name)
+    };
+    let reg_data = config.registry.list
+      .iter()
+      .find(|x| x.name == name)
+      .context("internal error: no such registry in config: {}. report this bug to the developers")?;
+    let url_format = format!("{}{}{}/{}",
+      reg_data.base_url,
+      if reg_data.base_url.ends_with('/') { "" } else { "/" },
+      reg_data.name,
+      reg_data.pattern
+    );
+    let url_api_format = format!("{}{}api/storage/{}/{}",
+      reg_data.base_url,
+      if reg_data.base_url.ends_with('/') { "" } else { "/" },
+      reg_data.name,
+      reg_data.pattern
+    );
+    let url_ping = format!("{}{}{}",
+      reg_data.base_url,
+      if reg_data.base_url.ends_with('/') { "" } else { "/" },
+      reg_data.name
+    );
+    let username = match &reg_data.auth {
+      None => None,
+      Some(x) => Some(x.username.clone())
+    };
+    let token = match &reg_data.auth {
+      None => None,
+      Some(x) => Some(x.password.clone())
+    };
+    Ok(Artifactory
+    {
+      name,
+      url_format,
+      url_api_format,
+      url_ping,
+      url_aql: format!("{}{}api/search/aql", reg_data.base_url, if reg_data.base_url.ends_with('/') { "" } else { "/" }),
+      username,
+      token,
+      config,
+      available_packages: Vec::new()
+    })
   }
 
-  pub fn push(&self, manifest: &Manifest, data_path: &str) -> anyhow::Result<()>
+  pub fn ping(&self) -> anyhow::Result<()>
   {
-    debug!("pushing!");
-    let arch = match &self.args.command
-    {
-      Some(Commands::Push(arg)) => arg.arch.as_ref().context("arch cannot be empty")?.clone(),
-      _ => return Err(anyhow::anyhow!("arch not specified"))
-    };
-    ensure!(!self.config.borrow().auth.username.is_empty() && !self.config.borrow().auth.token.is_empty(),
-      "no username or token provided for artifactory oauth. please provide using --username and \
-      --token flags or enter credentials interactively via poppy --sync");
+    let pb = ProgressBar::new_spinner();
+    pb.enable_steady_tick(Duration::from_millis(100));
+    pb.set_message(format!("checking access to {}",
+      &self.name.bold().bright_green()
+    ));
+    let client = reqwest::blocking::Client::new();
+    let res = client
+      .get(&self.url_ping)
+      .basic_auth(self.username.as_ref().unwrap_or(&"guest".to_string()), self.token.clone())
+      .send()?;
+    if !res.status().is_success() {
+      bail!("ping failed: {}", res.status());
+    }
+    pb.finish_with_message(format!("{} {}",
+      &self.name.bold().magenta(),
+      "is available".to_string().green().bold(),
+    ));
+    Ok(())
+  }
 
-    let arch = PlatformArch::from(arch.as_str());
-    let distribution = Distribution::from(
-      match &self.args.command
-      {
-        Some(Commands::Push(arg)) => arg.distribution.as_ref().context("distribution cannot be empty")?.as_str(),
-        _ => "unknown"
-      }
-    );
-    ensure!(!matches!(distribution, Distribution::Unknown), "unknown distribution");
-    let push_target = match self.args.command.as_ref().context("command not found")? {
-      Commands::Push(arg) => arg.name.as_ref().context("push target cannot be empty")?,
-      _ => std::process::exit(1)
-    };
+  pub fn push(
+    &self,
+    path: &str,
+    packed_file: &str,
+    distribution: Distribution,
+    arch: Arch,
+    os: OperatingSystem,
+    force: bool
+  ) -> anyhow::Result<()>
+  {
+    let manifest = crate::manifest::Manifest::from_directory(path)?;
 
-    trace!("artifactory base url: {}", &self.config.borrow().remotes.artifactory_url);
-
-    debug!("package name: {}", manifest.package.name.yellow().bold());
-    debug!("package version: {}", manifest.package.version.to_string().cyan().bold());
-    debug!("package tarball: {}", &push_target.purple().bold());
-    debug!("arch: {}", &arch.to_string().green().bold());
-    debug!("distribution: {}", &distribution.to_string().magenta().bold());
+    let pb = ProgressBar::new_spinner();
+    pb.enable_steady_tick(Duration::from_millis(100));
+    pb.set_message(format!("pushing {}@{}/{}/{}/{} to {}",
+      &manifest.this.name.bold().magenta(),
+      &manifest.this.version.to_string().bold().green(),
+      distribution.to_string().cyan().dimmed(),
+      arch.to_string().white().dimmed(),
+      os.to_string().white().dimmed(),
+      self.name.bold().bright_green()
+    ));
 
     let mut fmt: HashMap<String, String> = HashMap::new();
-    fmt.insert("name".to_string(), manifest.package.name.clone());
-    fmt.insert("major".to_string(), manifest.package.version.clone().major.to_string());
-    fmt.insert("minor".to_string(), manifest.package.version.clone().minor.to_string());
-    fmt.insert("patch".to_string(), manifest.package.version.clone().patch.to_string());
-    fmt.insert("arch".to_string(), arch.clone().to_string());
-    fmt.insert("distribution".to_string(), distribution.clone().to_string());
+    fmt.insert("name".to_string(), manifest.this.name.clone());
+    fmt.insert("version".to_string(), manifest.this.version.clone().to_string());
+    fmt.insert("arch".to_string(), arch.to_string());
+    fmt.insert("platform".to_string(), os.to_string());
+    fmt.insert("dist".to_string(), distribution.to_string());
 
-    let url = strfmt::strfmt(&self.config.borrow().remotes.artifactory_url, &fmt)
-      .context("failed to format artifactory url")?;
-
-    let data = std::fs::read(data_path)?;
-
-    let force_push = matches!(self.args.command, Some(Commands::Push(PushArgs { force: true, .. }, ..)));
-    if force_push { warn!("force pushing. this can be dangerous!"); }
-    trace!("pushing {} kb to {}", data.len() / 1024, url);
-    trace!("username: {}", self.config.borrow().auth.username.as_str());
-    trace!("token: {}", self.config.borrow().auth.token.as_str());
-
+    let url = strfmt::strfmt(self.url_format.as_str(), &fmt)
+      .context("failed to format url")?;
     let client = reqwest::blocking::Client::builder()
       .build()?;
-
     let exists = client
       .get(url.clone())
-      .basic_auth(self.config.borrow().auth.username.as_str(), Some(self.config.borrow().auth.token.as_str()))
+      .basic_auth(self.username.as_ref().unwrap_or(&"guest".to_string()), self.token.clone())
       .send()?;
 
-    if exists.status() != 404 {
-      info!("file already exists on artifactory");
-      if !force_push {
-        debug!("skipping push");
+    if exists.status().is_success() {
+      println!("{} {}@{}/{}/{}/{} {} {}",
+        String::from("package").yellow().bold(),
+        manifest.this.name.bold().magenta(),
+        manifest.this.version.to_string().bold().green(),
+        distribution.to_string().cyan(),
+        arch.to_string().white(),
+        os.to_string().white(),
+        String::from("already exists in").yellow().bold(),
+        &self.name.bold().cyan()
+      );
+
+      if !force {
+        pb.finish_and_clear();
+        println!("{}: use --force flag to push anyway", String::from("tip").cyan().bold());
         return Ok(());
-      }
-      else {
-        warn!("OVERRIDING PREVIOUS PACKAGE ON ARTIFACTORY!");
+      } else {
+        println!("{}", String::from("warning: overriding existing package").yellow().bold());
       }
     }
+
     let res = client
       .put(url)
-      .basic_auth(self.config.borrow().auth.username.as_str(), Some(self.config.borrow().auth.token.as_str()))
-      .body(data.to_vec())
+      .basic_auth(self.username.as_ref().unwrap_or(&"guest".to_string()), self.token.clone())
+      .body(std::fs::read(packed_file)?)
       .send()?;
-    trace!("status: {}", res.status());
 
-    info!("pushing done!");
+    if !res.status().is_success() {
+      bail!("failed to push package: {}", res.status());
+    }
+    std::fs::remove_file(packed_file)?;
+
+    pb.finish_with_message(format!("{} {}@{}/{}/{}/{} to {}",
+      "successfully pushed".to_string().green().bold(),
+      &manifest.this.name.bold().magenta(),
+      &manifest.this.version.to_string().bold().green(),
+      distribution.to_string().cyan().dimmed(),
+      arch.to_string().white().dimmed(),
+      os.to_string().white().dimmed(),
+      &self.name.bold().cyan()
+    ));
     Ok(())
   }
 
   #[tokio::main]
-  pub async fn pull(&self, dep: &Dependency, quiet: bool) -> anyhow::Result<Vec<u8>>
+  pub async fn query(&self, query: &str) -> anyhow::Result<String>
   {
-    trace!("pulling dependency {} from artifactory", dep.name.blue().bold());
     let client = reqwest::Client::builder()
-      //.redirect(reqwest::redirect::Policy::none())
       .build()?;
-    let mut fmt: HashMap<String, String> = HashMap::new();
-    fmt.insert("name".to_string(), dep.name.clone());
-    fmt.insert("major".to_string(), dep.version.clone().major.to_string());
-    fmt.insert("minor".to_string(), dep.version.clone().minor.to_string());
-    fmt.insert("patch".to_string(), dep.version.clone().patch.to_string());
-    fmt.insert("arch".to_string(), dep.arch.clone().to_string());
-    fmt.insert("distribution".to_string(), dep.distribution.clone().to_string());
-    let url = strfmt::strfmt(self.config.borrow().remotes.artifactory_url.as_str(), &fmt)
-      .context("failed to format artifactory url")?;
-    let api_url = strfmt::strfmt(self.config.borrow().remotes.artifactory_api_url.as_str(), &fmt)
-      .context("failed to format artifactory api url")?;
-
-    trace!("url: {}", url);
-    trace!("api url: {}", api_url);
-
     let result = client
-      .get(url.as_str())
-      .basic_auth(self.config.borrow().auth.username.as_str(), Some(self.config.borrow().auth.token.as_str()))
+      .post(&self.url_aql)
+      .basic_auth(self.username.as_ref().unwrap_or(&"guest".to_string()), self.token.clone())
+      .body(String::from(query))
       .send()
       .await?;
-    if !quiet {
-      debug!("response status: {}", result.status());
+    if !result.status().is_success() {
+      return Err(anyhow!("artifactory is not responding"));
     }
+    Ok(result.text().await?)
+  }
+
+  pub fn sync_aql(&mut self) -> anyhow::Result<&mut Self>
+  {
+    let raw = self.query(
+      format!(r#"items.find({{"repo": "{name}", "name": {{"$match": "*"}}}}).sort({{"$desc": ["created"]}})"#, name = self.name).as_str()
+    )?;
+
+    let items = serde_json::from_str::<crate::artifactory::query::PackageQueryResponse>(&raw)?;
+    let mut packages: Vec<Entry> = Vec::new();
+
+    for item in items.results {
+      packages.push(Entry::new(Dependency::from_package_name(&item.name)?, &self.url_format, &self.url_api_format)?);
+    }
+
+    self.available_packages = packages;
+    Ok(self)
+  }
+}
+
+impl PackageGet for Artifactory
+{
+  #[tokio::main]
+  async fn get(&self, dependency: &Dependency, allow_sources: bool) -> anyhow::Result<PathBuf>
+  {
+    let mut entry = self.available_packages
+      .iter()
+      .find(|x| x.dependency.ranged_compare(dependency));
+
+    if entry.is_none() && allow_sources {
+      let dependency = dependency.as_sources_dependency();
+      entry = self.available_packages
+        .iter()
+        .find(|x| x.dependency.ranged_compare(&dependency));
+      if entry.is_none() {
+        bail!("source package not found: {} ({}..{})", dependency, dependency.version.min, dependency.version.max);
+      }
+    }
+
+    if entry.is_none() {
+      bail!("package not found: {}", dependency);
+    }
+
+    let client = reqwest::Client::builder()
+      .build()?;
+    let result = client
+      .get(&entry.unwrap().url)
+      .basic_auth(self.username.as_ref().unwrap_or(&"guest".to_string()), self.token.clone())
+      .send()
+      .await?;
     ensure!(result.status().is_success(), "pulling from artifactory failed with status code {}", result.status().as_str());
     let total = result
       .content_length()
       .unwrap_or(1);
-    if !quiet {
-      debug!("total size: {} KB", total / 1024);
-    }
     let pb = ProgressBar::new(total / 1024);
-    pb.set_style(ProgressStyle::with_template(
-      "{wide_msg} {spinner:.green} {bar:30.yellow/white} {human_pos:4} KB/ {human_len:4} KB ({percent:3}%)"
-    )
-      .expect("setting progress bar style should not fail!")
-      //.progress_chars("▃ ")
+    pb.set_style(
+      ProgressStyle::with_template("{spinner:.green} {wide_msg} [{elapsed}] [{bar:30.blue/blue}] {human_pos:4}/{human_len:4} kb ({percent:3})")
+        .unwrap()
+        .progress_chars("█▒░")
     );
-    pb.set_draw_target(ProgressDrawTarget::stdout_with_hz(5));
-    pb.set_message("pulling artifact...");
+    pb.set_message(format!("downloading {}@{}/{}/{}/{}",
+                           &entry.unwrap().dependency.name.bold().magenta(),
+                           &entry.unwrap().dependency.version.to_string().green(),
+                           &entry.unwrap().dependency.arch.to_string().dimmed(),
+                           &entry.unwrap().dependency.os.to_string().dimmed(),
+                           &entry.unwrap().dependency.distribution.to_string().dimmed()
+    ));
 
+    let target_path = self.config
+      .directories
+      .dirs
+      .cache_dir()
+      .join(format!("{}-{}-{}-{}-{}.tar.gz",
+        entry.unwrap().dependency.name,
+        entry.unwrap().dependency.version.to_string(),
+        entry.unwrap().dependency.arch.to_string(),
+        entry.unwrap().dependency.os.to_string(),
+        entry.unwrap().dependency.distribution.to_string()
+      ));
     let mut downloaded: u64 = 0;
     let mut stream = result.bytes_stream();
     let mut data: Vec<u8> = Vec::new();
@@ -168,23 +289,11 @@ impl Artifactory
       pb.set_position(downloaded / 1024);
     }
     pb.finish_and_clear();
-    if quiet {
-      print!("\x1b[A\x1b[2K\r");
-      println!("✅ downloaded {}@{}/{}/{}",
-        &dep.name.yellow().bold(),
-        &dep.version.to_string().green(),
-        &dep.distribution.to_string().magenta().dimmed(),
-        &dep.arch.to_string().blue().dimmed()
-      );
-    }
-
-    trace!("checking checksum...");
     let md5 = md5::compute(&data);
-    trace!("md5: {:x}", md5);
 
     let checksum = client
-      .get(api_url)
-      .basic_auth(self.config.borrow().auth.username.as_str(), Some(self.config.borrow().auth.token.as_str()))
+      .get(&entry.unwrap().api_url)
+      .basic_auth(self.username.as_ref().unwrap_or(&"guest".to_string()), self.token.clone())
       .send()
       .await?
       .text()
@@ -195,88 +304,9 @@ impl Artifactory
       .and_then(|checksums| checksums.get("md5"))
       .and_then(|checksum| checksum.as_str())
       .context("checksum not found in api response")?;
-    trace!("api checksum: {}", md5_from_api);
-    if md5_from_api != format!("{:x}", md5) {
-      warn!("checksum mismatch");
-    } else {
-      if !quiet {
-        debug!("md5 checksum match: {}", "OK".to_string().green());
-      }
-    }
-    Ok(data)
+    ensure!(md5_from_api == format!("{:x}", md5), "checksum mismatch");
+    let mut file = std::fs::File::create(&target_path)?;
+    file.write_all(&data)?;
+    Ok(target_path)
   }
-
-  #[tokio::main]
-  pub async fn query(&self, query: &str) -> anyhow::Result<String>
-  {
-    let client = reqwest::Client::builder()
-      .build()?;
-    trace!("querying artifactory to {}", self.config.borrow().remotes.artifactory_aql_url.as_str().dimmed());
-    let result = client
-      .post(self.config.borrow().remotes.artifactory_aql_url.as_str())
-      .basic_auth(self.config.borrow().auth.username.as_str(), Some(self.config.borrow().auth.token.as_str()))
-      .body(String::from(query))
-      .send()
-      .await?;
-    trace!("query response status code: {}", result.status());
-    if !result.status().is_success() {
-      error!("artifactory is not responding (status code: {})", result.status());
-      error!("if you are not connected to the internet, try using offline sync method (see readme)");
-      error!("in case this is not an option, contact your system administrator");
-      return Err(anyhow!("artifactory is not responding"));
-    }
-    Ok(result.text().await?)
-  }
-}
-
-fn save_to(path: &str, data: &[u8]) -> anyhow::Result<()> {
-  trace!("saving {} bytes to {}", data.len(), path);
-  std::fs::create_dir_all(Path::new(path).parent().unwrap())?;
-  std::fs::write(path, data)?;
-  Ok(())
-}
-
-pub trait SaveAs
-{
-  fn save_as(&self, path: &str) -> anyhow::Result<()>;
-}
-
-impl SaveAs for Vec<u8>
-{
-  fn save_as(&self, path: &str) -> anyhow::Result<()> { save_to(path, self) }
-}
-
-pub fn unpack_to(from: &str, to: &str) -> anyhow::Result<()> {
-  trace!("unpacking {} to {}...",
-    Path::new(from)
-      .file_name()
-      .context("failed to get filename for tar.gz")?
-      .to_str()
-      .context("failed to convert filename to str")?,
-    Path::new(to)
-      .file_name()
-      .context("failed to get filename for tar.gz")?
-      .to_str()
-      .context("failed to convert filename to str")?
-  );
-  std::fs::create_dir_all(to)?;
-
-  let tar_gz = std::fs::File::open(from)?;
-  let tar = flate2::read::GzDecoder::new(tar_gz);
-  let mut archive = tar::Archive::new(tar);
-  archive.unpack(to)?;
-
-  trace!("unpacking {} to {}... OK!",
-    Path::new(from)
-      .file_name()
-      .context("failed to get filename for tar.gz")?
-      .to_str()
-      .context("failed to convert filename to str")?,
-    Path::new(to)
-      .file_name()
-      .context("failed to get filename for tar.gz")?
-      .to_str()
-      .context("failed to convert filename to str")?
-  );
-  Ok(())
 }

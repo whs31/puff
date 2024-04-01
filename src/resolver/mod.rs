@@ -1,7 +1,9 @@
-pub mod dependency_tree;
-pub mod dependency;
-pub mod cache;
+mod dependency;
+mod entry;
+mod resolver;
+mod package_getter;
 
 pub use dependency::Dependency;
-pub use dependency_tree::DependencyStack;
-pub use cache::Cache;
+pub use entry::ResolverEntry;
+pub use resolver::Resolver;
+pub use package_getter::PackageGet;

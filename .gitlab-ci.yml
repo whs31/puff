@@ -2,201 +2,225 @@
 build linux:
     tags: [dev-utils]
     stage: build
-    cache:
-        key: "${CI_JOB_NAME}"
-        paths:
-            - .cargo
-            - target
-    before_script:
-        - cargo --version
+    cache: { key: "${CI_JOB_NAME}", paths: [".cargo", "target"] }
     script:
         - cargo build --release --target=x86_64-unknown-linux-musl
-        - cp ./target/x86_64-unknown-linux-musl/release/poppy ./poppy
+        - cp ./target/x86_64-unknown-linux-musl/release/puff ./puff
 
-    artifacts:
-        paths:
-            - ./poppy
-        expire_in: 1 hour
+    artifacts: { paths: ["./puff"], expire_in: 1 hour }
 
-build aarch64:
+test linux:
     tags: [dev-utils]
-    stage: build
+    stage: test
     allow_failure: true
-    cache:
-        key: "${CI_JOB_NAME}"
-        paths:
-            - .cargo
-            - target
-    before_script:
-        - cargo --version
-
+    cache: { key: "${CI_JOB_NAME}", paths: [".cargo", "target"] }
     script:
-        - cargo build --release --target=aarch64-unknown-linux-gnu
-        - cp ./target/aarch64-unknown-linux-gnu/release/poppy ./poppy
+        - cargo test #-- -Z unstable-options --format json --report-time | cargo2junit > results.xml
+#    artifacts:
+#        when: always
+#        reports:
+#            junit: ./results.xml
 
-    artifacts:
-        paths:
-            - ./poppy
-        expire_in: 1 hour
 
-build windows:
-    tags: [dev-utils]
-    stage: build
-    allow_failure: true
-    cache:
-        key: "${CI_JOB_NAME}"
-        paths:
-            - .cargo
-            - target
-    before_script:
-        - cargo --version
-    script:
-        - cargo build --release --target x86_64-pc-windows-gnu
-        - cp ./target/x86_64-pc-windows-gnu/release/poppy.exe ./poppy.exe
-
-    artifacts:
-        paths:
-            - ./poppy.exe
-        expire_in: 1 hour
-
-install-dev:
-    tags: [dev-utils]
-    stage: install
-    needs:
-        - job: build linux
-          artifacts: true
-    script:
-        - cp ./poppy /usr/bin/
-        - poppy --version
-        - poppy -u gitlab_ci -t ${ARTIFACTORY_REFERENCE_KEY} sync -r
-    artifacts:
-        paths: 
-            - ./poppy
-        expire_in: 1 hour
-
-package:
-    tags: [dev-utils]
-    stage: package
-    needs:
-        - job: build linux
-          artifacts: true
-    script:
-        - tar -czvf poppy.tar.gz poppy
-    artifacts:
-        paths:
-            - ./poppy.tar.gz
-        expire_in: 1 hour
-
-push-artifactory:
-    tags: [dev-utils]
-    stage: push
-    needs:
-        - job: package
-          artifacts: true
-    rules:
-        - if: $CI_PIPELINE_SOURCE == "trigger-install-alse"
-          when: always
-        - if: '$CI_COMMIT_TAG'
-          when: always
-        - when: manual
-    before_script:
-        - echo ${ARTIFACTORY_REFERENCE_KEY}
-    script:
-        - chmod +x ./poppup.py
-        - ./poppup.py --push --file=./poppy.tar.gz --name=poppy --arch=linux-x64 --user=gitlab_ci --token=${ARTIFACTORY_REFERENCE_KEY}
-
-install-alse-1:
-    tags: [alse-first]
-    stage: install-runners
-    needs:
-        - job: push-artifactory
-          artifacts: true
-    rules:
-        - if: $CI_PIPELINE_SOURCE == "trigger-install-alse"
-          when: always
-        - if: '$CI_COMMIT_TAG'
-          when: always
-        - when: manual
-    before_script:
-        - pip3 install requests
-    script:
-        - python3 poppup.py --install-latest --arch=linux-x64 --user=gitlab_ci --token=${ARTIFACTORY_REFERENCE_KEY}
-        - poppy --version
-        - poppy -u gitlab_ci -t ${ARTIFACTORY_REFERENCE_KEY} install --list-registry
-
-install-alse-2:
-    tags: [alse-second]
-    stage: install-runners
-    rules:
-        - if: $CI_PIPELINE_SOURCE == "trigger-install-alse"
-          when: always
-        - if: '$CI_COMMIT_TAG'
-          when: always
-        - when: manual
-    needs:
-        - job: push-artifactory
-          artifacts: true
-    before_script:
-        - pip3 install requests
-    script:
-        - python3 poppup.py --install-latest --arch=linux-x64 --user=gitlab_ci --token=${ARTIFACTORY_REFERENCE_KEY}
-        - poppy --version
-        - poppy -u gitlab_ci -t ${ARTIFACTORY_REFERENCE_KEY} install --list-registry
-
-install-windows-1:
-    tags: [windows-first]
-    stage: install-runners
-    rules:
-        - if: $CI_PIPELINE_SOURCE == "trigger-install-windows"
-          when: always
-        - if: '$CI_COMMIT_TAG'
-          when: always
-        - when: manual
-    needs:
-        - job: push-artifactory
-          artifacts: true
-    script:
-        - python3 poppup.py --install-latest --arch=windows-x64 --user=gitlab_ci --token=${ARTIFACTORY_REFERENCE_KEY}
-        - poppy --version
-        - poppy -u gitlab_ci -t ${ARTIFACTORY_REFERENCE_KEY} install --list-registry
-
-install-windows-2:
-    tags: [windows-second]
-    stage: install-runners
-    rules:
-        - if: $CI_PIPELINE_SOURCE == "trigger-install-windows"
-          when: always
-        - if: '$CI_COMMIT_TAG'
-          when: always
-        - when: manual
-    needs:
-        - job: push-artifactory
-          artifacts: true
-    script:
-        - python3 poppup.py --install-latest --arch=windows-x64 --user=gitlab_ci --token=${ARTIFACTORY_REFERENCE_KEY}
-        - poppy --version
-        - poppy -u gitlab_ci -t ${ARTIFACTORY_REFERENCE_KEY} install --list-registry
-
-install-dev-utils:
-    tags: [dev-utils]
-    stage: install-runners
-    rules:
-        - if: $CI_PIPELINE_SOURCE == "trigger-install-windows"
-          when: always
-        - if: '$CI_COMMIT_TAG'
-          when: always
-        - when: manual
-    needs:
-        - job: push-artifactory
-          artifacts: true
-    script:
-        - python3 poppup.py --install-latest --arch=windows-x64 --user=gitlab_ci --token=${ARTIFACTORY_REFERENCE_KEY}
-        - poppy --version
-        - poppy -u gitlab_ci -t ${ARTIFACTORY_REFERENCE_KEY} install --list-registry
+#build linux:
+#    tags: [dev-utils]
+#    stage: build
+#    cache:
+#        key: "${CI_JOB_NAME}"
+#        paths:
+#            - .cargo
+#            - target
+#    before_script:
+#        - cargo --version
+#    script:
+#        - cargo build --release --target=x86_64-unknown-linux-musl
+#        - cp ./target/x86_64-unknown-linux-musl/release/poppy ./poppy
+#
+#    artifacts:
+#        paths:
+#            - ./poppy
+#        expire_in: 1 hour
+#
+#build aarch64:
+#    tags: [dev-utils]
+#    stage: build
+#    allow_failure: true
+#    cache:
+#        key: "${CI_JOB_NAME}"
+#        paths:
+#            - .cargo
+#            - target
+#    before_script:
+#        - cargo --version
+#
+#    script:
+#        - cargo build --release --target=aarch64-unknown-linux-gnu
+#        - cp ./target/aarch64-unknown-linux-gnu/release/poppy ./poppy
+#
+#    artifacts:
+#        paths:
+#            - ./poppy
+#        expire_in: 1 hour
+#
+#build windows:
+#    tags: [dev-utils]
+#    stage: build
+#    allow_failure: true
+#    cache:
+#        key: "${CI_JOB_NAME}"
+#        paths:
+#            - .cargo
+#            - target
+#    before_script:
+#        - cargo --version
+#    script:
+#        - cargo build --release --target x86_64-pc-windows-gnu
+#        - cp ./target/x86_64-pc-windows-gnu/release/poppy.exe ./poppy.exe
+#
+#    artifacts:
+#        paths:
+#            - ./poppy.exe
+#        expire_in: 1 hour
+#
+#install-dev:
+#    tags: [dev-utils]
+#    stage: install
+#    needs:
+#        - job: build linux
+#          artifacts: true
+#    script:
+#        - cp ./poppy /usr/bin/
+#        - poppy --version
+#        - poppy -u gitlab_ci -t ${ARTIFACTORY_REFERENCE_KEY} sync -r
+#    artifacts:
+#        paths:
+#            - ./poppy
+#        expire_in: 1 hour
+#
+#package:
+#    tags: [dev-utils]
+#    stage: package
+#    needs:
+#        - job: build linux
+#          artifacts: true
+#    script:
+#        - tar -czvf poppy.tar.gz poppy
+#    artifacts:
+#        paths:
+#            - ./poppy.tar.gz
+#        expire_in: 1 hour
+#
+#push-artifactory:
+#    tags: [dev-utils]
+#    stage: push
+#    needs:
+#        - job: package
+#          artifacts: true
+#    rules:
+#        - if: $CI_PIPELINE_SOURCE == "trigger-install-alse"
+#          when: always
+#        - if: '$CI_COMMIT_TAG'
+#          when: always
+#        - when: manual
+#    before_script:
+#        - echo ${ARTIFACTORY_REFERENCE_KEY}
+#    script:
+#        - chmod +x ./poppup.py
+#        - ./poppup.py --push --file=./poppy.tar.gz --name=poppy --arch=linux-x64 --user=gitlab_ci --token=${ARTIFACTORY_REFERENCE_KEY}
+#
+#install-alse-1:
+#    tags: [alse-first]
+#    stage: install-runners
+#    needs:
+#        - job: push-artifactory
+#          artifacts: true
+#    rules:
+#        - if: $CI_PIPELINE_SOURCE == "trigger-install-alse"
+#          when: always
+#        - if: '$CI_COMMIT_TAG'
+#          when: always
+#        - when: manual
+#    before_script:
+#        - pip3 install requests
+#    script:
+#        - python3 poppup.py --install-latest --arch=linux-x64 --user=gitlab_ci --token=${ARTIFACTORY_REFERENCE_KEY}
+#        - poppy --version
+#        - poppy -u gitlab_ci -t ${ARTIFACTORY_REFERENCE_KEY} install --list-registry
+#
+#install-alse-2:
+#    tags: [alse-second]
+#    stage: install-runners
+#    rules:
+#        - if: $CI_PIPELINE_SOURCE == "trigger-install-alse"
+#          when: always
+#        - if: '$CI_COMMIT_TAG'
+#          when: always
+#        - when: manual
+#    needs:
+#        - job: push-artifactory
+#          artifacts: true
+#    before_script:
+#        - pip3 install requests
+#    script:
+#        - python3 poppup.py --install-latest --arch=linux-x64 --user=gitlab_ci --token=${ARTIFACTORY_REFERENCE_KEY}
+#        - poppy --version
+#        - poppy -u gitlab_ci -t ${ARTIFACTORY_REFERENCE_KEY} install --list-registry
+#
+#install-windows-1:
+#    tags: [windows-first]
+#    stage: install-runners
+#    rules:
+#        - if: $CI_PIPELINE_SOURCE == "trigger-install-windows"
+#          when: always
+#        - if: '$CI_COMMIT_TAG'
+#          when: always
+#        - when: manual
+#    needs:
+#        - job: push-artifactory
+#          artifacts: true
+#    script:
+#        - python3 poppup.py --install-latest --arch=windows-x64 --user=gitlab_ci --token=${ARTIFACTORY_REFERENCE_KEY}
+#        - poppy --version
+#        - poppy -u gitlab_ci -t ${ARTIFACTORY_REFERENCE_KEY} install --list-registry
+#
+#install-windows-2:
+#    tags: [windows-second]
+#    stage: install-runners
+#    rules:
+#        - if: $CI_PIPELINE_SOURCE == "trigger-install-windows"
+#          when: always
+#        - if: '$CI_COMMIT_TAG'
+#          when: always
+#        - when: manual
+#    needs:
+#        - job: push-artifactory
+#          artifacts: true
+#    script:
+#        - python3 poppup.py --install-latest --arch=windows-x64 --user=gitlab_ci --token=${ARTIFACTORY_REFERENCE_KEY}
+#        - poppy --version
+#        - poppy -u gitlab_ci -t ${ARTIFACTORY_REFERENCE_KEY} install --list-registry
+#
+#install-dev-utils:
+#    tags: [dev-utils]
+#    stage: install-runners
+#    rules:
+#        - if: $CI_PIPELINE_SOURCE == "trigger-install-windows"
+#          when: always
+#        - if: '$CI_COMMIT_TAG'
+#          when: always
+#        - when: manual
+#    needs:
+#        - job: push-artifactory
+#          artifacts: true
+#    script:
+#        - python3 poppup.py --install-latest --arch=windows-x64 --user=gitlab_ci --token=${ARTIFACTORY_REFERENCE_KEY}
+#        - poppy --version
+#        - poppy -u gitlab_ci -t ${ARTIFACTORY_REFERENCE_KEY} install --list-registry
 
 
 stages:
     - build
+    - test
     - install
     - package
     - push

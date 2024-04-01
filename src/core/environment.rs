@@ -1,5 +1,6 @@
 use colored::Colorize;
 use crate::{types, core};
+use crate::core::args::Command;
 
 pub struct Environment
 {
@@ -9,12 +10,23 @@ pub struct Environment
 
 impl Environment
 {
-  pub fn new(_args: &core::Args) -> anyhow::Result<Self>
+  pub fn new(args: &core::Args) -> anyhow::Result<Self>
   {
-    // todo: cross-compilation args
+    let mut os = types::OperatingSystem::from_env();
+    let mut arch = types::Arch::from_env()?;
+    match &args.command {
+      Some(x) => match x {
+        Command::Install(y) => {
+          if y.os.is_some() { os = y.os.unwrap(); }
+          if y.arch.is_some() { arch = y.arch.unwrap(); }
+        },
+        _ => ()
+      },
+      _ => ()
+    }
     Ok(Self {
-      os: types::OperatingSystem::from_env(),
-      arch: types::Arch::from_env()?
+      os,
+      arch
     })
   }
 

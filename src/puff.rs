@@ -4,7 +4,7 @@ use std::rc::Rc;
 use anyhow::Context;
 use colored::Colorize;
 use crate::core;
-use crate::core::args::{BuildArgs, InstallArgs, PurgeArgs};
+use crate::core::args::{InstallArgs, PurgeArgs};
 use crate::names::DEPENDENCIES_FOLDER;
 use crate::resolver::{Resolver};
 use crate::types::{Arch, Distribution, OperatingSystem};
@@ -151,25 +151,6 @@ impl Puff
         println!("{} directory does not exist", "cache".to_string().magenta().bold());
       }
     }
-    Ok(self)
-  }
-
-  // todo: refactor this
-  #[allow(dead_code)]
-  pub fn build(&mut self, arguments: &BuildArgs) -> anyhow::Result<&mut Self>
-  {
-    let install_args = InstallArgs {
-      folder: arguments.folder.clone(),
-      fresh: true
-    };
-    self
-      .install(&install_args)?;
-    let _ = Resolver::new(
-      self.config.clone(),
-      self.env.clone(),
-      self.remotes.clone(),
-      self.cache.clone()
-    );
     Ok(self)
   }
 }

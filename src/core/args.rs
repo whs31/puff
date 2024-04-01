@@ -110,6 +110,12 @@ pub struct InstallArgs
   /// Folder where manifest is located
   pub folder: Option<String>,
 
+  /// Target OS
+  #[arg(short, long)] pub os: Option<crate::types::OperatingSystem>,
+
+  /// Target architecture
+  #[arg(short, long)] pub arch: Option<crate::types::Arch>,
+
   /// Clean previously installed packages and perform fresh installation
   #[arg(short, long)] pub fresh: bool,
 }

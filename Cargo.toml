@@ -3,6 +3,12 @@ name = "puff"
 version = "2.0.0"
 description = "puff - a tool for managing c/c++ packages"
 edition = "2021"
+authors = [ "whs31 <ryazantsev.dl@edu.spbstu.ru>" ]
+license = "MIT"
+readme = "README.md"
+homepage = "https://github.com/whs31/puff"
+repository = "https://github.com/whs31/puff"
+keywords = ["puff", "c", "cxx", "package", "manager"]
 
 [dependencies]
 # essentials #
@@ -55,3 +61,17 @@ build-data = "0.1.5"
 
 [package.metadata.appimage]
 auto_link = true
+
+[package.metadata.deb]
+maintainer = "whs31 <ryazantsev.dl@edu.spbstu.ru>"
+copyright = "2024, whs31 <ryazantsev.dl@edu.spbstu.ru>"
+license-file = ["LICENSE", "4"]
+extended-description = """\
+puff - a tool for managing c/c++ packages"""
+depends = "$auto"
+section = "utility"
+priority = "optional"
+assets = [
+    ["target/release/cargo-deb", "usr/bin/", "755"],
+    ["README.md", "usr/share/doc/cargo-deb/README", "644"],
+]

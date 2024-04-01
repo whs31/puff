@@ -1,0 +1,181 @@
+{
+  "main": {
+    "id": "e125691d608dfa55",
+    "type": "split",
+    "children": [
+      {
+        "id": "545849e3d0646b46",
+        "type": "tabs",
+        "children": [
+          {
+            "id": "f2afb1d2c7c69def",
+            "type": "leaf",
+            "state": {
+              "type": "markdown",
+              "state": {
+                "file": "first-steps.md",
+                "mode": "source",
+                "source": false
+              }
+            }
+          },
+          {
+            "id": "9b672f2b4df26be0",
+            "type": "leaf",
+            "state": {
+              "type": "markdown",
+              "state": {
+                "file": "index.md",
+                "mode": "source",
+                "source": false
+              }
+            }
+          }
+        ],
+        "currentTab": 1
+      }
+    ],
+    "direction": "vertical"
+  },
+  "left": {
+    "id": "172e8c6a5d7269d0",
+    "type": "split",
+    "children": [
+      {
+        "id": "403d602958a1eb07",
+        "type": "tabs",
+        "children": [
+          {
+            "id": "05eb2d00fba28e56",
+            "type": "leaf",
+            "state": {
+              "type": "file-explorer",
+              "state": {
+                "sortOrder": "alphabetical"
+              }
+            }
+          },
+          {
+            "id": "febb7fa773598cdf",
+            "type": "leaf",
+            "state": {
+              "type": "search",
+              "state": {
+                "query": "",
+                "matchingCase": false,
+                "explainSearch": false,
+                "collapseAll": false,
+                "extraContext": false,
+                "sortOrder": "alphabetical"
+              }
+            }
+          },
+          {
+            "id": "1c45a04b05a66ed4",
+            "type": "leaf",
+            "state": {
+              "type": "bookmarks",
+              "state": {}
+            }
+          }
+        ]
+      }
+    ],
+    "direction": "horizontal",
+    "width": 300
+  },
+  "right": {
+    "id": "22bd9eeee97f8b1d",
+    "type": "split",
+    "children": [
+      {
+        "id": "d53c44c269c606e7",
+        "type": "tabs",
+        "children": [
+          {
+            "id": "48c44d99f75c0d6d",
+            "type": "leaf",
+            "state": {
+              "type": "backlink",
+              "state": {
+                "file": "index.md",
+                "collapseAll": false,
+                "extraContext": false,
+                "sortOrder": "alphabetical",
+                "showSearch": false,
+                "searchQuery": "",
+                "backlinkCollapsed": false,
+                "unlinkedCollapsed": true
+              }
+            }
+          },
+          {
+            "id": "39287dbdd7cbae2e",
+            "type": "leaf",
+            "state": {
+              "type": "outgoing-link",
+              "state": {
+                "file": "index.md",
+                "linksCollapsed": false,
+                "unlinkedCollapsed": true
+              }
+            }
+          },
+          {
+            "id": "37f6d9de7506480a",
+            "type": "leaf",
+            "state": {
+              "type": "tag",
+              "state": {
+                "sortOrder": "frequency",
+                "useHierarchy": true
+              }
+            }
+          },
+          {
+            "id": "f49c4019715dcb3c",
+            "type": "leaf",
+            "state": {
+              "type": "outline",
+              "state": {
+                "file": "index.md"
+              }
+            }
+          }
+        ]
+      }
+    ],
+    "direction": "horizontal",
+    "width": 300,
+    "collapsed": true
+  },
+  "left-ribbon": {
+    "hiddenItems": {
+      "switcher:Open quick switcher": false,
+      "graph:Open graph view": false,
+      "canvas:Create new canvas": false,
+      "daily-notes:Open today's daily note": false,
+      "templates:Insert template": false,
+      "command-palette:Open command palette": false
+    }
+  },
+  "active": "9b672f2b4df26be0",
+  "lastOpenFiles": [
+    "registries.md",
+    "installation.md",
+    "first-steps.md",
+    "index.md",
+    "images/img3.png",
+    "images/Group 8(1).png",
+    "images/img2.png",
+    "images/Group 8.png",
+    "images/img1.png",
+    "images/изображение 1.png",
+    "images/Точечный рисунок.bmp",
+    "images/windows.png",
+    "images/Microsoft_logo 1.png",
+    "images/header.png",
+    "images",
+    "Новая папка"
+  ]
+}

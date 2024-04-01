@@ -1,0 +1,159 @@
+{
+  "main": {
+    "id": "61523c9eccd9753d",
+    "type": "split",
+    "children": [
+      {
+        "id": "4adef49d60e21456",
+        "type": "tabs",
+        "children": [
+          {
+            "id": "19277efce06dbe45",
+            "type": "leaf",
+            "state": {
+              "type": "empty",
+              "state": {}
+            }
+          }
+        ]
+      }
+    ],
+    "direction": "vertical"
+  },
+  "left": {
+    "id": "25ee92914f0b60b0",
+    "type": "split",
+    "children": [
+      {
+        "id": "d22d1daa19beb12e",
+        "type": "tabs",
+        "children": [
+          {
+            "id": "b2dc5be36842eb6e",
+            "type": "leaf",
+            "state": {
+              "type": "file-explorer",
+              "state": {
+                "sortOrder": "alphabetical"
+              }
+            }
+          },
+          {
+            "id": "a0e5691a9e198467",
+            "type": "leaf",
+            "state": {
+              "type": "search",
+              "state": {
+                "query": "",
+                "matchingCase": false,
+                "explainSearch": false,
+                "collapseAll": false,
+                "extraContext": false,
+                "sortOrder": "alphabetical"
+              }
+            }
+          },
+          {
+            "id": "affdd326f7e991e0",
+            "type": "leaf",
+            "state": {
+              "type": "bookmarks",
+              "state": {}
+            }
+          }
+        ]
+      }
+    ],
+    "direction": "horizontal",
+    "width": 300
+  },
+  "right": {
+    "id": "00ca0df1c9ce515f",
+    "type": "split",
+    "children": [
+      {
+        "id": "68e3c9ec646ead31",
+        "type": "tabs",
+        "children": [
+          {
+            "id": "e96032f6447b66a5",
+            "type": "leaf",
+            "state": {
+              "type": "backlink",
+              "state": {
+                "collapseAll": false,
+                "extraContext": false,
+                "sortOrder": "alphabetical",
+                "showSearch": false,
+                "searchQuery": "",
+                "backlinkCollapsed": false,
+                "unlinkedCollapsed": true
+              }
+            }
+          },
+          {
+            "id": "2ffa81782cd481ef",
+            "type": "leaf",
+            "state": {
+              "type": "outgoing-link",
+              "state": {
+                "linksCollapsed": false,
+                "unlinkedCollapsed": true
+              }
+            }
+          },
+          {
+            "id": "bca8681dc4c23ed0",
+            "type": "leaf",
+            "state": {
+              "type": "tag",
+              "state": {
+                "sortOrder": "frequency",
+                "useHierarchy": true
+              }
+            }
+          },
+          {
+            "id": "095e924441c256cd",
+            "type": "leaf",
+            "state": {
+              "type": "outline",
+              "state": {}
+            }
+          }
+        ]
+      }
+    ],
+    "direction": "horizontal",
+    "width": 300,
+    "collapsed": true
+  },
+  "left-ribbon": {
+    "hiddenItems": {
+      "switcher:Open quick switcher": false,
+      "graph:Open graph view": false,
+      "canvas:Create new canvas": false,
+      "daily-notes:Open today's daily note": false,
+      "templates:Insert template": false,
+      "command-palette:Open command palette": false
+    }
+  },
+  "active": "19277efce06dbe45",
+  "lastOpenFiles": [
+    "quartz/images/img1.png",
+    "quartz/images/изображение 1.png",
+    "quartz/images/Точечный рисунок.bmp",
+    "quartz/images/windows.png",
+    "quartz/images/Microsoft_logo 1.png",
+    "quartz/Untitled.md",
+    "quartz/installation.md",
+    "quartz/images/header.png",
+    "quartz/header.png",
+    "quartz/images",
+    "quartz/Новая папка",
+    "quartz/Puff header.png",
+    "quartz/index.md",
+    "quartz/Welcome.md",
+    "quartz"
+  ]
+}

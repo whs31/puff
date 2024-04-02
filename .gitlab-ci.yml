@@ -39,7 +39,8 @@ package arch:
     needs:
         - job: build linux
           artifacts: true
-    script: 
+    script:
+        - rm -rf /tmp/arch_package
         - mkdir arch_package
         - cp puff arch_package/
         - cp PKGBUILD arch_package/

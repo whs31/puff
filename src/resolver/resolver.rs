@@ -71,7 +71,10 @@ impl Resolver
       pb.set_message(format!("installing {}", x.dependency.pretty_print()));
       x.install(install_path.to_str().context("failed to convert path to string")?)?;
       pb.inc(1);
+      print!("\x1b[A\x1b[2K\r");
+      println!("✅ installed {}\n", x.dependency.pretty_print());
     }
+    println!("\x1b[A\x1b[2K\r");
     pb.finish_with_message(format!("installed {} dependencies for {}",
       tree.len().to_string().magenta().bold(),
       manifest.this.name.bold().green()

@@ -225,9 +225,14 @@ impl PackageGet for Artifactory
   #[tokio::main]
   async fn get(&self, dependency: &Dependency, allow_sources: bool) -> anyhow::Result<PathBuf>
   {
-    let mut entry = self.available_packages
+    let valid_versions = self.available_packages
       .iter()
-      .find(|x| x.dependency.ranged_compare(dependency));
+      .filter(|x| x.dependency.ranged_compare(dependency))
+      .collect::<Vec<_>>();
+    let mut entry = valid_versions
+      .iter()
+      .max_by(|a, b| a.dependency.version.cmp(&b.dependency.version))
+      .map(|x| x.clone());
 
     if entry.is_none() && allow_sources {
       let dependency = dependency.as_sources_dependency();

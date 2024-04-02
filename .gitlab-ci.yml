@@ -6,8 +6,16 @@ build linux:
     script:
         - cargo build --release --target=x86_64-unknown-linux-musl
         - cp ./target/x86_64-unknown-linux-musl/release/puff ./puff
-
     artifacts: { paths: ["./puff"], expire_in: 1 hour }
+
+build windows:
+    tags: [dev-utils2]
+    stage: build
+    cache: { key: "${CI_JOB_NAME}", paths: [".cargo", "target"] }
+    script:
+        - cargo build --release --target=x86_64-pc-windows-gnu
+        - cp ./target/x86_64-pc-windows-gnu/release/puff.exe ./puff.exe
+    artifacts: { paths: ["./puff.exe"], expire_in: 1 hour }
 
 test linux:
     tags: [dev-utils]

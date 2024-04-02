@@ -110,8 +110,6 @@ impl Resolver
 
   pub fn try_get(&self, dependency: &Dependency) -> anyhow::Result<ResolverEntry>
   {
-    let pb = ProgressBar::new_spinner().with_finish(ProgressFinish::AndClear);
-    pb.set_message(format!("searching for {}", dependency.pretty_print()));
     match self.cache.get(&dependency, false) {
       Ok(x) => Ok(ResolverEntry::new(dependency.with_updated_version_from_archive_name(x.as_path())?, false, x)),
       Err(_) => match self.registry.borrow().get(&dependency, false) {

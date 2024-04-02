@@ -225,33 +225,17 @@ impl PackageGet for Artifactory
   #[tokio::main]
   async fn get(&self, dependency: &Dependency, allow_sources: bool) -> anyhow::Result<PathBuf>
   {
-    let valid_versions = self.available_packages
+    let dep = self.latest_satisfied(dependency, allow_sources)?;
+    let entry = self.available_packages
       .iter()
-      .filter(|x| x.dependency.ranged_compare(dependency))
-      .collect::<Vec<_>>();
-    let mut entry = valid_versions
-      .iter()
-      .max_by(|a, b| a.dependency.version.cmp(&b.dependency.version))
-      .map(|x| x.clone());
-
-    if entry.is_none() && allow_sources {
-      let dependency = dependency.as_sources_dependency();
-      entry = self.available_packages
-        .iter()
-        .find(|x| x.dependency.ranged_compare(&dependency));
-      if entry.is_none() {
-        bail!("source package not found: {} ({}..{})", dependency, dependency.version.min, dependency.version.max);
-      }
-    }
-
-    if entry.is_none() {
-      bail!("package not found: {}", dependency);
-    }
+      .find(|x| x.dependency == dep)
+      .context("fatal failure in resolving packages. contact the maintainers")?
+      .clone();
 
     let client = reqwest::Client::builder()
       .build()?;
     let result = client
-      .get(&entry.unwrap().url)
+      .get(&entry.url)
       .basic_auth(self.username.as_ref().unwrap_or(&"guest".to_string()), self.token.clone())
       .send()
       .await?;
@@ -266,11 +250,11 @@ impl PackageGet for Artifactory
         .progress_chars("█▒░")
     );
     pb.set_message(format!("downloading {}@{}/{}/{}/{}",
-                           &entry.unwrap().dependency.name.bold().magenta(),
-                           &entry.unwrap().dependency.version.to_string().green(),
-                           &entry.unwrap().dependency.arch.to_string().dimmed(),
-                           &entry.unwrap().dependency.os.to_string().dimmed(),
-                           &entry.unwrap().dependency.distribution.to_string().dimmed()
+      &entry.dependency.name.bold().magenta(),
+      &entry.dependency.version.to_string().green(),
+      &entry.dependency.arch.to_string().dimmed(),
+      &entry.dependency.os.to_string().dimmed(),
+      &entry.dependency.distribution.to_string().dimmed()
     ));
 
     let target_path = self.config
@@ -278,11 +262,11 @@ impl PackageGet for Artifactory
       .dirs
       .cache_dir()
       .join(format!("{}-{}-{}-{}-{}.tar.gz",
-        entry.unwrap().dependency.name,
-        entry.unwrap().dependency.version.to_string(),
-        entry.unwrap().dependency.arch.to_string(),
-        entry.unwrap().dependency.os.to_string(),
-        entry.unwrap().dependency.distribution.to_string()
+        entry.dependency.name,
+        entry.dependency.version.to_string(),
+        entry.dependency.arch.to_string(),
+        entry.dependency.os.to_string(),
+        entry.dependency.distribution.to_string()
       ));
     let mut downloaded: u64 = 0;
     let mut stream = result.bytes_stream();
@@ -297,7 +281,7 @@ impl PackageGet for Artifactory
     let md5 = md5::compute(&data);
 
     let checksum = client
-      .get(&entry.unwrap().api_url)
+      .get(&entry.api_url)
       .basic_auth(self.username.as_ref().unwrap_or(&"guest".to_string()), self.token.clone())
       .send()
       .await?
@@ -313,5 +297,50 @@ impl PackageGet for Artifactory
     let mut file = std::fs::File::create(&target_path)?;
     file.write_all(&data)?;
     Ok(target_path)
+  }
+
+  fn latest_satisfied(&self, dependency: &Dependency, allow_sources: bool) -> anyhow::Result<Dependency>
+  {
+    let pb = ProgressBar::new_spinner()
+      .with_message(format!("searching for {}", dependency));
+    let valid_versions = self.available_packages
+      .iter()
+      .cloned()
+      .filter(|x| x.dependency.ranged_compare(dependency))
+      .collect::<Vec<_>>();
+    let mut entry = valid_versions
+      .iter()
+      .cloned()
+      .max_by(|a, b| a.dependency.version.cmp(&b.dependency.version));
+
+    if entry.is_none() && allow_sources {
+      let src = dependency.as_sources_dependency();
+      let source_valid_versions = self.available_packages
+        .iter()
+        .cloned()
+        .filter(|x| x.dependency.ranged_compare(&src))
+        .collect::<Vec<_>>();
+      entry = source_valid_versions
+        .iter()
+        .cloned()
+        .max_by(|a, b| a.dependency.version.cmp(&b.dependency.version));
+    }
+    let entry = entry;
+    if entry.is_none() {
+      pb.finish_and_clear();
+    } else {
+      pb.finish_with_message(format!("{:<70} (latest: {})",
+        format!("found {}@{}/{}/{}/{} in {}",
+          dependency.name.bold().cyan(),
+          dependency.version.to_string().bold().green(),
+          dependency.arch.to_string().bold().dimmed(),
+          dependency.os.to_string().bold().dimmed(),
+          dependency.distribution.to_string().bold().blue().dimmed(),
+          String::from("registry").bold().magenta()
+        ),
+        entry.as_ref().context("package not found")?.dependency.version.to_string().green().bold()
+      ));
+    }
+    Ok(entry.context("package not found")?.dependency.clone())
   }
 }

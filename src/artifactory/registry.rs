@@ -77,4 +77,9 @@ impl PackageGet for Registry
     ensure!(result.is_file(), "{}", error);
     Ok(result)
   }
+
+  fn latest_satisfied(&self, dependency: &crate::resolver::Dependency, allow_sources: bool) -> anyhow::Result<crate::resolver::Dependency>
+  {
+    unimplemented!()
+  }
 }

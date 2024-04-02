@@ -79,4 +79,9 @@ impl PackageGet for Cache
 
     bail!("no such package in cache: {}", dependency)
   }
+
+  fn latest_satisfied(&self, dependency: &Dependency, allow_sources: bool) -> anyhow::Result<Dependency>
+  {
+    todo!()
+  }
 }

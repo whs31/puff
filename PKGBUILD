@@ -3,7 +3,7 @@ pkgver=2.0.0
 pkgrel=1
 license=("custom")
 makedepends=('rust' 'cargo')
-arch=('i686' 'x86_64' 'armv6h' 'armv7h')
+arch=('i686' 'x86_64')
 pkgdesc="puff - a tool for managing c/c++ packages"
 
 source=("puff")

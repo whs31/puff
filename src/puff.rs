@@ -1,5 +1,5 @@
 use std::cell::RefCell;
-use std::path::Path;
+use std::path::{Path, PathBuf};
 use std::rc::Rc;
 use anyhow::Context;
 use colored::Colorize;
@@ -130,6 +130,11 @@ impl Puff
 
     resolver
       .resolve(path.as_str())?;
+    std::fs::write(
+      [path.as_str(), DEPENDENCIES_FOLDER, ".gitignore"].iter().collect::<PathBuf>(),
+      "*\n!.gitignore"
+    )?;
+
     Ok(self)
   }
 

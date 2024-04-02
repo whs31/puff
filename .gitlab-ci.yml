@@ -40,16 +40,16 @@ package arch:
         - job: build linux
           artifacts: true
     script:
-        - rm -rf /tmp/arch_package
-        - mkdir arch_package
-        - cp puff arch_package/
-        - cp PKGBUILD arch_package/
-        - cp -r arch_package/ /tmp/
-        - cd /tmp/arch_package
+        - mkdir arch_package_$CI_PROJECT_TITLE
+        - cp puff arch_package_$CI_PROJECT_TITLE/
+        - cp PKGBUILD arch_package_$CI_PROJECT_TITLE/
+        - cp -r arch_package_$CI_PROJECT_TITLE/ /tmp/
+        - cd /tmp/arch_package_$CI_PROJECT_TITLE
         - chown -R nobody .
         - runuser -u nobody -- makepkg -g >> PKGBUILD
         - runuser -u nobody -- makepkg
         - cp *.pkg.tar.zst ${CI_PROJECT_DIR}/
+        - rm -rf /tmp/arch_package_$CI_PROJECT_TITLE
     artifacts: 
         paths: 
             - ${CI_PROJECT_DIR}/*.pkg.tar.zst

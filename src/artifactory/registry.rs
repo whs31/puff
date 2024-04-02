@@ -78,7 +78,7 @@ impl PackageGet for Registry
     Ok(result)
   }
 
-  fn latest_satisfied(&self, dependency: &crate::resolver::Dependency, allow_sources: bool) -> anyhow::Result<crate::resolver::Dependency>
+  fn latest_satisfied(&self, _dependency: &crate::resolver::Dependency, _allow_sources: bool) -> anyhow::Result<crate::resolver::Dependency>
   {
     unimplemented!()
   }

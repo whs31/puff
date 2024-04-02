@@ -9,7 +9,7 @@ build linux:
     artifacts: { paths: ["./puff"], expire_in: 1 hour }
 
 build windows:
-    tags: [dev-utils2]
+    tags: [windows-arch]
     stage: build
     cache: { key: "${CI_JOB_NAME}", paths: [".cargo", "target"] }
     script:

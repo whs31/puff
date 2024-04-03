@@ -313,6 +313,7 @@ impl PackageGet for Artifactory
       .cloned()
       .max_by(|a, b| a.dependency.version.cmp(&b.dependency.version));
 
+    let mut is_source = false;
     if entry.is_none() && allow_sources {
       let src = dependency.as_sources_dependency();
       let source_valid_versions = self.available_packages
@@ -324,13 +325,15 @@ impl PackageGet for Artifactory
         .iter()
         .cloned()
         .max_by(|a, b| a.dependency.version.cmp(&b.dependency.version));
+      is_source = true;
     }
     let entry = entry;
     if entry.is_none() {
       pb.finish_and_clear();
     } else {
       pb.finish_with_message(format!("{:<70} (latest: {})",
-        format!("found {}@{}/{}/{}/{} in {}",
+        format!("found {} package {}@{}/{}/{}/{} in {}",
+          if is_source { String::from("source").magenta().bold() } else { String::from("pre-built").green().bold() },
           dependency.name.bold().cyan(),
           dependency.version.to_string().bold().green(),
           dependency.arch.to_string().bold().dimmed(),

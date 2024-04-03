@@ -88,6 +88,7 @@ impl PackageGet for Cache
       bail!("no such package in cache: {}", dependency)
     }
 
+    let mut is_source = false;
     if found.is_none() && allow_sources {
       let src = dependency.as_sources_dependency();
       let mut valid_versions = Vec::new();
@@ -102,12 +103,14 @@ impl PackageGet for Cache
         .iter()
         .cloned()
         .max_by(|x, y| x.version.cmp(&y.version));
+      is_source = true;
       if found.is_none() {
         bail!("no such package in cache: {}", dependency)
       }
     }
     pb.finish_with_message(format!("{:<70} (latest: {})",
-      format!("found {}@{}/{}/{}/{} in {}",
+      format!("found {} package {}@{}/{}/{}/{} in {}",
+        if is_source { String::from("source").magenta().bold() } else { String::from("pre-built").green().bold() },
         dependency.name.cyan(),
         dependency.version.to_string().bold().green(),
         dependency.arch.to_string().bold().dimmed(),

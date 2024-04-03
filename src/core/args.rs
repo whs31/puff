@@ -1,6 +1,6 @@
 #[derive(clap::Parser, Debug, Clone)]
-#[command(name = "parcel")]
-#[command(about = "parcel - a tool for managing c/c++ packages", long_about = None)]
+#[command(name = "puff", bin_name = "puff")]
+#[command(about = "puff - a tool for managing c/c++ packages", long_about = None)]
 #[command(color = clap::ColorChoice::Auto)]
 pub struct Args
 {

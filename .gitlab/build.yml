@@ -1,4 +1,4 @@
 ---
 include:
-  - local: ./build/linux.yml
-  - local: ./build/windows.yml
+  - local: /.gitlab/build/linux.yml
+  - local: /.gitlab/build/windows.yml

@@ -1,4 +1,4 @@
 ---
 include:
-  - ./package/arch-x64.yml
-  - ./package/debian-x64.yml
+    - local: /.gitlab/package/arch-x64.yml
+    - local: /.gitlab/package/debian-x64.yml

@@ -6,6 +6,6 @@ deploy debian x64:
     - job: package debian x64
       artifacts: true
   script:
-    - DEB_NAME=puff-$CI_COMMIT_TIMESTAMP-$CI_COMMIT_REF_NAME-$CI_COMMIT_SHORT_SHA
+    - DEB_NAME=$(python3 scripts/packname.py)
     - echo $DEB_NAME
     - curl -u $ARTIFACTORY_USER:$ARTIFACTORY_REFERENCE_KEY -XPUT "http://192.168.18.15:8081/artifactory/radar-local-repo/pool/${DEB_NAME}.deb;deb.distribution=astra;deb.component=main;deb.architecture=amd64" -T *.deb

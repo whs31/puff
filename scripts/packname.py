@@ -2,7 +2,7 @@
 import tomllib
 import platform
 
-with open('../Cargo.toml', 'rb') as f:
+with open('Cargo.toml', 'rb') as f:
     cargo = tomllib.load(f)
 
 name = cargo['package']['name']

@@ -1,0 +1,23 @@
+---
+generate release:
+  stage: release
+  rules:
+    - if: $CI_COMMIT_TAG
+      when: always
+    - when: manual
+  tags: [dev-utils]
+  needs:
+    - job: package debian x64
+      artifacts: true
+    - job: package arch x64
+      artifacts: true
+    - job: build windows
+      artifacts: true
+    - job: unit test linux
+      artifacts: false
+  script:
+    - echo "Making auto-generated release..."
+  release:
+    name: $CI_COMMIT_TAG
+    tag_name: $CI_COMMIT_TAG
+    description: "Auto-generated release bundle for $CI_COMMIT_TAG"

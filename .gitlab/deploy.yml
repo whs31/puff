@@ -1,0 +1,3 @@
+---
+include:
+  - local: ./deploy/debian-x64.yml

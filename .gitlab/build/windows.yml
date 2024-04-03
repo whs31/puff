@@ -1,0 +1,9 @@
+---
+build windows:
+  tags: [windows-arch]
+  stage: build
+  cache: { key: "${CI_JOB_NAME}", paths: [".cargo", "target"] }
+  script:
+    - cargo build --release --target=i686-pc-windows-gnu
+    - cp ./target/i686-pc-windows-gnu/release/puff.exe ./puff.exe
+  artifacts: { paths: ["./puff.exe"], expire_in: 1 hour }

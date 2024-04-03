@@ -9,6 +9,7 @@ readme = "README.md"
 homepage = "https://github.com/whs31/puff"
 repository = "https://github.com/whs31/puff"
 keywords = ["puff", "c", "cxx", "package", "manager"]
+categories = ["command-line-utilities"]
 
 [dependencies]
 # essentials #
@@ -67,11 +68,12 @@ maintainer = "whs31 <ryazantsev.dl@edu.spbstu.ru>"
 copyright = "2024, whs31 <ryazantsev.dl@edu.spbstu.ru>"
 license-file = ["LICENSE", "4"]
 extended-description = """\
-puff - a tool for managing c/c++ packages"""
+A tool for managing c/c++ packages.
+"""
 depends = "$auto"
 section = "utility"
 priority = "optional"
 assets = [
     ["puff", "usr/bin/", "755"],
-    ["README.md", "usr/share/doc/cargo-deb/README", "644"],
+    ["README.md", "usr/share/doc/puff/README", "644"],
 ]

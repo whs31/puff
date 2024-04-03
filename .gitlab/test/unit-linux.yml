@@ -1,0 +1,11 @@
+unit test linux:
+  tags: [dev-utils]
+  stage: test
+  allow_failure: true
+  cache: { key: "${CI_JOB_NAME}", paths: [".cargo", "target"] }
+  script:
+    - cargo test #-- -Z unstable-options --format json --report-time | cargo2junit > results.xml
+#    artifacts:
+#        when: always
+#        reports:
+#            junit: ./results.xml

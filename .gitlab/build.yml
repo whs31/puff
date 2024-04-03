@@ -1,0 +1,4 @@
+---
+include:
+  - local: ./build/linux.yml
+  - local: ./build/windows.yml

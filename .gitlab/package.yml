@@ -1,0 +1,4 @@
+---
+include:
+  - ./package/arch-x64.yml
+  - ./package/debian-x64.yml

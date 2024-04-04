@@ -40,7 +40,7 @@ puff --version
 Для ОС на основе *Debian* доступна установка через пакетный менеджер **apt**.
 Для этого выполняем следующую команду:
 ```shell
-curl https://gist.githubusercontent.com/whs31/635f4331a5d668f83e8de9e830fbb54d/raw/5002a84bf0b01337791173c7e9d5244aeabe7e04/debian-local.pub -O debian-local.pub 
+curl https://gist.githubusercontent.com/whs31/635f4331a5d668f83e8de9e830fbb54d/raw/5002a84bf0b01337791173c7e9d5244aeabe7e04/debian-local.pub -o debian-local.pub 
 sudo apt-key add debian-local.pub 
 echo 'deb http://ИМЯ_ПОЛЬЗОВАТЕЛЯ:ТОКЕН@213.170.107.251/artifactory/radar-local-repo astra main'>>/etc/apt/sources.list 
 sudo apt update

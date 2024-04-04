@@ -37,7 +37,7 @@
             "state": {
               "type": "markdown",
               "state": {
-                "file": "index.md",
+                "file": "installation.md",
                 "mode": "source",
                 "source": false
               }
@@ -110,7 +110,7 @@
             "state": {
               "type": "backlink",
               "state": {
-                "file": "index.md",
+                "file": "installation.md",
                 "collapseAll": false,
                 "extraContext": false,
                 "sortOrder": "alphabetical",
@@ -127,7 +127,7 @@
             "state": {
               "type": "outgoing-link",
               "state": {
-                "file": "index.md",
+                "file": "installation.md",
                 "linksCollapsed": false,
                 "unlinkedCollapsed": true
               }
@@ -150,7 +150,7 @@
             "state": {
               "type": "outline",
               "state": {
-                "file": "index.md"
+                "file": "installation.md"
               }
             }
           }
@@ -173,11 +173,11 @@
   },
   "active": "e6f15738dac489c4",
   "lastOpenFiles": [
-    "installation.md",
     "remotes.md",
-    "first-steps.md",
-    "index.md",
     "recipes.md",
+    "index.md",
+    "installation.md",
+    "first-steps.md",
     "images/img3.png",
     "images/Group 8(1).png",
     "images/img2.png",

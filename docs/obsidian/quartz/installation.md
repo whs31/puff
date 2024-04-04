@@ -25,7 +25,7 @@ index = "sparse+http://uav.radar-mms.com/artifactory/api/cargo/cargo-main/index/
 [registries.artifactory]
 token = "Bearer ВАШ_ТОКЕН"
 ```
-`ВАШ_ТОКЕН` нужно заменить на действительный токен *Artifactory*.
+`ВАШ_ТОКЕН` нужно заменить на действительный токен *Artifactory* (без имени пользователя).
 4. Выполняем команду:
 ```shell
 cargo install puff --registry "artifactory"   
@@ -40,14 +40,13 @@ puff --version
 Для ОС на основе *Debian* доступна установка через пакетный менеджер **apt**.
 Для этого выполняем следующую команду:
 ```shell
-curl https://gist.githubusercontent.com/whs31/635f4331a5d668f83e8de9e830fbb54d/raw/5002a84bf0b01337791173c7e9d5244aeabe7e04/debian-local.pub -o debian-local.pub 
+curl https://gist.githubusercontent.com/whs31/635f4331a5d668f83e8de9e830fbb54d/raw/d28ae2b382886508f8ed0584b89d2a5791f9a44c/debian-local.pub -o debian-local.pub 
 sudo apt-key add debian-local.pub 
-echo 'deb http://ИМЯ_ПОЛЬЗОВАТЕЛЯ:ТОКЕН@213.170.107.251/artifactory/radar-local-repo astra main'>>/etc/apt/sources.list 
+echo 'deb http://anonymous:cmVmdGtuOjAxOjAwMDAwMDAwMDA6bFpGQ2syeHozZGZZUVQ2cEhzdGJvZEpJcnlx@213.170.107.251/artifactory/radar-local-repo astra main'>>/etc/apt/sources.list 
 sudo apt update
 sudo apt install -y puff
 puff --version
 ```
-Поля `ИМЯ_ПОЛЬЗОВАТЕЛЯ` и `ТОКЕН` необходимо заменить на актуальные данные для аутентификации в *Artifactory*.
 ## Arch Linux (Arch, Manjaro, EndeavourOS)
 todo =)
 

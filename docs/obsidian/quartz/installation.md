@@ -42,7 +42,7 @@ puff --version
 ```shell
 curl https://gist.githubusercontent.com/whs31/635f4331a5d668f83e8de9e830fbb54d/raw/d28ae2b382886508f8ed0584b89d2a5791f9a44c/debian-local.pub -o debian-local.pub 
 sudo apt-key add debian-local.pub 
-echo 'deb http://anonymous:cmVmdGtuOjAxOjAwMDAwMDAwMDA6bFpGQ2syeHozZGZZUVQ2cEhzdGJvZEpJcnlx@213.170.107.251/artifactory/radar-local-repo astra main'>>/etc/apt/sources.list 
+sudo echo 'deb http://anonymous:cmVmdGtuOjAxOjAwMDAwMDAwMDA6bFpGQ2syeHozZGZZUVQ2cEhzdGJvZEpJcnlx@213.170.107.251/artifactory/radar-local-repo astra main'>>/etc/apt/sources.list 
 sudo apt update
 sudo apt install -y puff
 puff --version

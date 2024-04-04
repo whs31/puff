@@ -1,3 +1,7 @@
+---
+title: Установка
+---
+
 ## Универсальный способ 
 1. Необходимо установить **Rust** и **Cargo**:
 	- Для ОС Windows: [ссылка](https://www.rust-lang.org/tools/install)

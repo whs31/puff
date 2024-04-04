@@ -5,6 +5,36 @@
       <link>https://quartz.jzhao.xyz</link>
       <description>Last 10 notes on 🪴 Quartz 4.0</description>
       <generator>Quartz -- quartz.jzhao.xyz</generator>
-      
+      <item>
+    <title>Удаленные репозитории</title>
+    <link>https://quartz.jzhao.xyz/remotes</link>
+    <guid>https://quartz.jzhao.xyz/remotes</guid>
+    <description>Для того, чтобы подключать сторонние библиотеки и публиковать свои, необходимо подключить удаленный репозиторий. Это делается командой puff registry add &lt;...&gt;.</description>
+    <pubDate>Thu, 04 Apr 2024 12:44:07 GMT</pubDate>
+  </item><item>
+    <title>Рецепты</title>
+    <link>https://quartz.jzhao.xyz/recipes</link>
+    <guid>https://quartz.jzhao.xyz/recipes</guid>
+    <description>Для того, чтобы пакет мог собираться в дереве зависимостей автоматически, ему нужен рецепт сборки (.puff/recipe.yml) Что должен делать рецепт: Собирать пакет, если требуется ...</description>
+    <pubDate>Thu, 04 Apr 2024 12:44:07 GMT</pubDate>
+  </item><item>
+    <title>Установка</title>
+    <link>https://quartz.jzhao.xyz/installation</link>
+    <guid>https://quartz.jzhao.xyz/installation</guid>
+    <description>Универсальный способ Необходимо установить Rust и Cargo: Для ОС Windows: ссылка Для OC Linux (любой дистрибутив): ввести следующую команду curl --proto &#039;=https&#039; --tlsv1.2 ...</description>
+    <pubDate>Thu, 04 Apr 2024 12:44:07 GMT</pubDate>
+  </item><item>
+    <title>Начало работы</title>
+    <link>https://quartz.jzhao.xyz/first-steps</link>
+    <guid>https://quartz.jzhao.xyz/first-steps</guid>
+    <description>В этой части будет краткая инструкция по тому, как создать свой пакет с использованием пакетного менеджера puff, добавить ему зависимость в виде библиотеки и скомпилировать код ...</description>
+    <pubDate>Thu, 04 Apr 2024 12:44:07 GMT</pubDate>
+  </item><item>
+    <title>Puff - пакетный менеджер</title>
+    <link>https://quartz.jzhao.xyz/</link>
+    <guid>https://quartz.jzhao.xyz/</guid>
+    <description> Puff - это пакетный менеджер для C/C++ в связке с системой сборки CMake. Puff позволяет автоматически скачивать, компилировать и публиковать распостраняемые пакеты и библиотеки, загружая их в выбранный реестр Artifactory.</description>
+    <pubDate>Thu, 04 Apr 2024 12:38:15 GMT</pubDate>
+  </item>
     </channel>
   </rss>

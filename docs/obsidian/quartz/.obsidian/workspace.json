@@ -13,7 +13,7 @@
             "state": {
               "type": "markdown",
               "state": {
-                "file": "Рецепты.md",
+                "file": "recipes.md",
                 "mode": "source",
                 "source": false
               }
@@ -25,7 +25,7 @@
             "state": {
               "type": "markdown",
               "state": {
-                "file": "Начало работы.md",
+                "file": "first-steps.md",
                 "mode": "source",
                 "source": false
               }
@@ -37,7 +37,7 @@
             "state": {
               "type": "markdown",
               "state": {
-                "file": "Начало работы.md",
+                "file": "index.md",
                 "mode": "source",
                 "source": false
               }
@@ -110,7 +110,7 @@
             "state": {
               "type": "backlink",
               "state": {
-                "file": "Начало работы.md",
+                "file": "index.md",
                 "collapseAll": false,
                 "extraContext": false,
                 "sortOrder": "alphabetical",
@@ -127,7 +127,7 @@
             "state": {
               "type": "outgoing-link",
               "state": {
-                "file": "Начало работы.md",
+                "file": "index.md",
                 "linksCollapsed": false,
                 "unlinkedCollapsed": true
               }
@@ -150,7 +150,7 @@
             "state": {
               "type": "outline",
               "state": {
-                "file": "Начало работы.md"
+                "file": "index.md"
               }
             }
           }
@@ -173,11 +173,11 @@
   },
   "active": "e6f15738dac489c4",
   "lastOpenFiles": [
-    "Рецепты.md",
-    "Удаленные репозитории.md",
-    "Установка.md",
-    "Puff - package manager.md",
-    "Начало работы.md",
+    "installation.md",
+    "remotes.md",
+    "first-steps.md",
+    "index.md",
+    "recipes.md",
     "images/img3.png",
     "images/Group 8(1).png",
     "images/img2.png",

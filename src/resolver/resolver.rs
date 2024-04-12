@@ -112,7 +112,7 @@ impl Resolver
 
   pub fn try_get(&self, dependency: &Dependency) -> anyhow::Result<ResolverEntry>
   {
-    if self.source_only {
+    if self.source_only && !dependency.name.starts_with("cmake") {
       match self.cache.get(&dependency, false) {
         Ok(x) => Ok(ResolverEntry::new(dependency.with_updated_version_from_archive_name(x.as_path())?, false, x)),
           Err(_) => match self.cache.get(&dependency, true) {

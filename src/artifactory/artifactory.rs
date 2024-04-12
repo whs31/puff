@@ -314,7 +314,7 @@ impl PackageGet for Artifactory
       .max_by(|a, b| a.dependency.version.cmp(&b.dependency.version));
 
     let mut is_source = false;
-    if entry.is_none() && allow_sources {
+    if allow_sources {
       let src = dependency.as_sources_dependency();
       let source_valid_versions = self.available_packages
         .iter()

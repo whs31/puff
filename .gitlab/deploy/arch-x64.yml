@@ -6,4 +6,4 @@ deploy arch x64:
     - job: package arch x64
       artifacts: true
   script:
-    - find . -maxdepth 1 -name "*.pkg.tar.zst" -exec curl --form file=@{} http://uav.radar-mms.com/pacman-upload \; 
+    - find . -maxdepth 1 -name "*.pkg.tar.zst" -exec curl --form file=@{} http://213.170.107.251/pacman-upload \; 

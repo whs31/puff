@@ -2,3 +2,4 @@
 include:
   - local: /.gitlab/deploy/debian-x64.yml
   - local: /.gitlab/deploy/arch-x64.yml
+  - local: /.gitlab/deploy/cargo.yml

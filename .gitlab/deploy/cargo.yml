@@ -1,0 +1,9 @@
+---
+deploy cargo:
+  tags: [dev-utils]
+  stage: deploy
+  needs:
+    - job: unit test linux
+      artifacts: false
+  script:
+    - cargo publish --registry "artifactory"

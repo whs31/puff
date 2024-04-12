@@ -118,6 +118,9 @@ pub struct InstallArgs
 
   /// Clean previously installed packages and perform fresh installation
   #[arg(short, long)] pub fresh: bool,
+
+  /// Compile all packages from source
+  #[arg(short, long)] pub source_only: bool
 }
 
 #[derive(clap::Args, Debug, Clone)]

@@ -125,7 +125,8 @@ impl Puff
       self.config.clone(),
       self.env.clone(),
       self.remotes.clone(),
-      self.cache.clone()
+      self.cache.clone(),
+      arguments.source_only
     );
 
     resolver

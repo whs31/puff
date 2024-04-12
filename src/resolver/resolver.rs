@@ -20,19 +20,21 @@ pub struct Resolver
   pub config: Rc<core::Config>,
   pub env: Rc<core::Environment>,
   pub registry: Rc<RefCell<Registry>>,
-  pub cache: Rc<crate::cache::Cache>
+  pub cache: Rc<crate::cache::Cache>,
+  source_only: bool
 }
 
 impl Resolver
 {
-  pub fn new(config: Rc<core::Config>, env: Rc<core::Environment>, registry: Rc<RefCell<Registry>>, cache: Rc<crate::cache::Cache>) -> Self
+  pub fn new(config: Rc<core::Config>, env: Rc<core::Environment>, registry: Rc<RefCell<Registry>>, cache: Rc<crate::cache::Cache>, source_only: bool) -> Self
   {
     Self
     {
       config,
       env,
       registry,
-      cache
+      cache,
+      source_only
     }
   }
 
@@ -110,18 +112,31 @@ impl Resolver
 
   pub fn try_get(&self, dependency: &Dependency) -> anyhow::Result<ResolverEntry>
   {
-    match self.cache.get(&dependency, false) {
-      Ok(x) => Ok(ResolverEntry::new(dependency.with_updated_version_from_archive_name(x.as_path())?, false, x)),
-      Err(_) => match self.registry.borrow().get(&dependency, false) {
+    if self.source_only {
+      match self.cache.get(&dependency, false) {
         Ok(x) => Ok(ResolverEntry::new(dependency.with_updated_version_from_archive_name(x.as_path())?, false, x)),
-        Err(_) => match self.cache.get(&dependency, true) {
-          Ok(x) => Ok(ResolverEntry::new(dependency.with_updated_version_from_archive_name(x.as_path())?, true, x)),
-          Err(_) => match self.registry.borrow().get(&dependency, true) {
+          Err(_) => match self.cache.get(&dependency, true) {
             Ok(x) => Ok(ResolverEntry::new(dependency.with_updated_version_from_archive_name(x.as_path())?, true, x)),
-            Err(e) => Err(anyhow!("failed to get package: {}", e))
+            Err(_) => match self.registry.borrow().get(&dependency, true) {
+              Ok(x) => Ok(ResolverEntry::new(dependency.with_updated_version_from_archive_name(x.as_path())?, true, x)),
+              Err(e) => Err(anyhow!("failed to get package: {}", e))
+            },
+          },
+      }
+    } else {
+      match self.cache.get(&dependency, false) {
+        Ok(x) => Ok(ResolverEntry::new(dependency.with_updated_version_from_archive_name(x.as_path())?, false, x)),
+        Err(_) => match self.registry.borrow().get(&dependency, false) {
+          Ok(x) => Ok(ResolverEntry::new(dependency.with_updated_version_from_archive_name(x.as_path())?, false, x)),
+          Err(_) => match self.cache.get(&dependency, true) {
+            Ok(x) => Ok(ResolverEntry::new(dependency.with_updated_version_from_archive_name(x.as_path())?, true, x)),
+            Err(_) => match self.registry.borrow().get(&dependency, true) {
+              Ok(x) => Ok(ResolverEntry::new(dependency.with_updated_version_from_archive_name(x.as_path())?, true, x)),
+              Err(e) => Err(anyhow!("failed to get package: {}", e))
+            },
           },
         },
-      },
+      }
     }
   }
 

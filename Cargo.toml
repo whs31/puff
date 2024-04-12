@@ -1,6 +1,6 @@
 [package]
 name = "puff"
-version = "2.0.6"
+version = "2.0.7"
 description = "puff - a tool for managing c/c++ packages"
 edition = "2021"
 authors = [ "whs31 <ryazantsev.dl@edu.spbstu.ru>" ]

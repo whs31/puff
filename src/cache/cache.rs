@@ -108,18 +108,7 @@ impl PackageGet for Cache
         bail!("no such package in cache: {}", dependency)
       }
     }
-    pb.finish_with_message(format!("{:<70} (latest: {})",
-      format!("found {} package {}@{}/{}/{}/{} in {}",
-        if is_source { String::from("source").magenta().bold() } else { String::from("pre-built").green().bold() },
-        dependency.name.cyan(),
-        dependency.version.to_string().bold().green(),
-        dependency.arch.to_string().bold().dimmed(),
-        dependency.os.to_string().bold().dimmed(),
-        dependency.distribution.to_string().bold().blue().dimmed(),
-        String::from("cache").bold().yellow()
-      ),
-      found.as_ref().context("something went wrong")?.version.to_string().green().bold()
-    ));
+    pb.finish_and_clear();
     Ok(found.context("something went wrong")?)
   }
 }

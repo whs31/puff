@@ -43,6 +43,7 @@ impl Toolchain for CMakeToolchain
       command.arg("-D").arg(x);
     }
     command.arg(format!("-DCMAKE_PREFIX_PATH={}", crate::names::DEPENDENCIES_FOLDER));
+    command.arg(format!("-DCMAKE_BUILD_TYPE={}", "Release"));
 
     let toolchain = recipe
       .extract_toolchain(distribution)?
@@ -57,6 +58,7 @@ impl Toolchain for CMakeToolchain
         command.arg(format!("-D{}={}", x.0.to_uppercase(), x.1.to_uppercase()));
       }
     }
+    //println!("\n\nconfigure command: {:?}\n\n", command);
     command.stdout(std::process::Stdio::null());
     ensure!(command.status()?.success(), "cmake configure step failed");
 
@@ -67,6 +69,7 @@ impl Toolchain for CMakeToolchain
       .arg("--config")
       .arg("release")
       .arg("--parallel");
+    //println!("\n\nbuild command: {:?}\n\n", command);
     command.stdout(std::process::Stdio::null());
     ensure!(command.status()?.success(), "cmake build step failed");
 

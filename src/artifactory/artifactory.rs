@@ -328,22 +328,7 @@ impl PackageGet for Artifactory
       is_source = true;
     }
     let entry = entry;
-    if entry.is_none() {
-      pb.finish_and_clear();
-    } else {
-      pb.finish_with_message(format!("{:<70} (latest: {})",
-        format!("found {} package {}@{}/{}/{}/{} in {}",
-          if is_source { String::from("source").magenta().bold() } else { String::from("pre-built").green().bold() },
-          dependency.name.bold().cyan(),
-          dependency.version.to_string().bold().green(),
-          dependency.arch.to_string().bold().dimmed(),
-          dependency.os.to_string().bold().dimmed(),
-          dependency.distribution.to_string().bold().blue().dimmed(),
-          String::from("registry").bold().magenta()
-        ),
-        entry.as_ref().context("package not found")?.dependency.version.to_string().green().bold()
-      ));
-    }
+    pb.finish_and_clear();
     Ok(entry.context("package not found")?.dependency.clone())
   }
 }

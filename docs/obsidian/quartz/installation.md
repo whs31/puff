@@ -48,7 +48,14 @@ sudo apt install -y puff
 puff --version
 ```
 ## Arch Linux (Arch, Manjaro, EndeavourOS)
-todo =)
+- Добавление репозитория
+```shell
+sudo echo -e "\n[radar]\nSigLevel = Never\nServer = http://uav.radar-mms.com/pacman-packages" | sudo tee -a /etc/pacman.conf
+```
+- Установка пакета
+```shell
+sudo pacman -Sy puff
+```
 
 ## Сборка вручную
 - Необходимо установить **Rust**: [ссылка](https://www.rust-lang.org/tools/install)

@@ -1,5 +1,5 @@
 pkgname=puff
-pkgver=2.0.7
+pkgver=2.0.8
 pkgrel=1
 license=("custom")
 makedepends=('rust' 'cargo')

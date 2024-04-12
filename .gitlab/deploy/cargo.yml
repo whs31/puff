@@ -6,4 +6,4 @@ deploy cargo:
     - job: unit test linux
       artifacts: false
   script:
-    - cargo publish --registry "artifactory"
+    - cargo publish --registry "artifactory" --no-verify

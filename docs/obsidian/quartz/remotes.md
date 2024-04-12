@@ -19,7 +19,7 @@ title: Удаленные репозитории
 
 Затем необходимо ввести вышеуказанную команду с правильными аргументами, например:
 ```shell
-puff registry add --name "puff-main" --url "http://uav.radar-mms.com/artifactory" -u whs31 -t "$ARTIFACTORY_REF_TOKEN"
+puff registry add --name "puff-main" --url "http://213.170.107.251/artifactory" -u whs31 -t "$ARTIFACTORY_REF_TOKEN"
 ```
 
 Готово! Удаленный репозиторий добавлен и доступен для загрузки пакетов.
